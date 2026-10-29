@@ -67,3 +67,11 @@ def test_fail_closed_without_backend(monkeypatch):
 def test_faces_flag_no_crash_on_blank():
     pytest.importorskip("cv2")
     assert ss._face_boxes(Image.new("RGB", (200, 200), "white")) == []
+
+
+def test_ocr_lookalike_letters_do_not_defeat_keyword_rules():
+    # OCR can return Cyrillic "А" for Latin "A"; "А/c no <digits>" must still be found as a bank account.
+    words = [ss.Word("А/c", (0, 0, 30, 10)), ss.Word("no", (35, 0, 50, 10)),
+             ss.Word("50100231784459", (55, 0, 200, 10))]
+    reds = ss._sensitive_boxes([words])
+    assert [(r.kind, r.box) for r in reds] == [("BANK_ACCOUNT", (55, 0, 200, 10))]

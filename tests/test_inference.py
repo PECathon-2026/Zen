@@ -145,3 +145,17 @@ def test_offline_attacker_checksum_completion():
     view = {"url": "", "title": "", "elements": [{"id": "e1", "text": f"Card {shown}"}]}
     hyps = OfflineAttacker().attack(view, [{"kind": "CARD", "length": 16, "label": "card"}])
     assert any(h.value == v for h in hyps)
+
+
+def test_minimize_keeps_amounts_and_ticket_ids_next_to_redacted_otp():
+    from zenlens.minimize import minimize
+    t = ("OTP is [REDACTED:OTP]. Refund of ₹18,499.00 for ticket TKT-20431, reference SR-77120-B, "
+         "order ORD-2026-118934, invoice total 2,55,024.00.")
+    out, notes = minimize(t)
+    assert out == t and notes == []
+
+
+def test_minimize_still_removes_otp_echoed_in_url():
+    from zenlens.minimize import minimize
+    out, notes = minimize("OTP is [REDACTED:OTP]. Continue at https://bank.example/verify?otp=482913&s=1")
+    assert "482913" not in out and any(n["rule"] == "echo" for n in notes)

@@ -1,0 +1,21 @@
+Meridian Bank · Customer Support · Chat transcript
+Ticket TKT-20431 · Channel: in-app chat · 27 Oct 2026, 14:02–14:19 IST
+SPECIMEN · synthetic data generated for the Zen privacy demo · not a real conversation
+------------------------------------------------------------------------
+
+[14:02] Priya Menon: Hi, mera card block ho gaya hai, I can't pay at checkout.
+[14:03] Agent Kavya: Sorry to hear that! Please share your registered mobile number so I can find the account.
+[14:03] Priya Menon: +91 98200 41763. Email is priya.menon@example.com if needed.
+[14:05] Agent Kavya: Thanks. Which card is affected?
+[14:05] Priya Menon: Card number 5555 5555 5555 4444, expiry 08/29
+[14:06] Agent Kavya: Got it. For verification, please confirm your PAN.
+[14:06] Priya Menon: BQRPK4721M
+[14:08] Agent Kavya: I've sent a one-time code to your phone. Please read it out.
+[14:08] Priya Menon: OTP is 482913
+[14:09] Priya Menon: Btw my net banking password: Monsoon@2026 – should I change it?
+[14:10] Agent Kavya: Please never share your password with anyone, including us. Change it right away from the app.
+[14:12] Priya Menon: Ok. Also can I get the refund on UPI? Mera UPI priya.menon@okaxis hai.
+[14:13] Agent Kavya: Yes, the refund of ₹18,499.00 for order ORD-2026-118934 will reach priya.menon@okaxis in 3–5 working days.
+[14:15] Priya Menon: And update my address proof, Aadhaar 4820 3917 5613.
+[14:17] Agent Kavya: Done. Your card has been unblocked. Reference SR-77120-B.
+[14:19] Agent Kavya: Is there anything else I can help with? Rate this chat 1–5.
