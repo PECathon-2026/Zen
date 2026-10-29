@@ -220,6 +220,49 @@ function updateRulesHint() {
   $('#text-rules-hint').textContent = n ? `+ ${n} custom rule${n > 1 ? 's' : ''}` : '';
 }
 
+const TRY_PROMPTS = [
+  'My PAN is ABCPD1234K and my phone is 98765 43210',
+  'Email me at meera.synthetic@example.org about order #4412',
+  'Pay with card 4111 1111 1111 1111, OTP 482913',
+];
+// Synthetic documents only. Values are made up and meant to be caught by the detectors.
+const TRY_FILES = [
+  { name: 'Resume', ext: 'PDF', note: 'Contact + ID numbers', text: 'ASHA VERMA\nSoftware engineer, Pune\nEmail: asha.synthetic@example.org | Phone: +91 98765 43210\nPAN: ABCPD1234K | Aadhaar: 4937 1825 0362\n\nExperience\n2022-2026  Backend engineer, Example Labs. Built payment APIs.\nSkills: Python, SQL, Docker' },
+  { name: 'Invoice', ext: 'PDF', note: 'Card + billing contact', text: 'INVOICE #2026-0417\nBill to: Rohan Mehta, rohan.synthetic@example.org\nItems: 2 x Annual licence  Rs 24,000\nPaid by card 4111 1111 1111 1111 (exp 08/29)\nQuestions: +91 91234 56780' },
+  { name: 'Business card', ext: 'IMG', note: 'Phone + email', text: 'MEERA IYER\nDesign lead, Example Studio\nmeera.synthetic@example.org\n+91 98765 43210\nwww.example.org' },
+  { name: 'Registration form', ext: 'FORM', note: 'KYC numbers', text: 'Account registration\nFull name: Kabir Shah\nAadhaar number: 4937 1825 0362\nPAN: ABCPD1234K\nMobile: 98765 43210\nEmail: kabir.synthetic@example.org' },
+  { name: 'HR email', ext: 'EML', note: 'Secrets in plain text', text: 'Hi team, new laptop setup:\nWiFi password: Synth3tic!Pass\nVPN login code is 482913\nStaging DB at 10.20.30.40\nCall Priya on 98765 43210 if locked out.' },
+  { name: 'Medical intake', ext: 'FORM', note: 'Contact + ID', text: 'Patient intake\nName: Anil Rao\nPhone: 98765 43210\nEmail: anil.synthetic@example.org\nAadhaar: 4937 1825 0362\nAllergies: none reported' },
+];
+function loadText(text, note) {
+  $('#text-in').value = text; $('#text-file-note').textContent = note || '';
+  $('#text-go').click();
+}
+TRY_PROMPTS.forEach(p => {
+  const b = el('button', { class: 'chip', type: 'button', text: p });
+  b.onclick = () => loadText(p, '');
+  $('#try-prompts').append(b);
+});
+TRY_FILES.forEach(f => {
+  const b = el('button', { class: 'file-card', type: 'button' }, el('span', { class: 'ext', text: f.ext }), el('b', { text: f.name }), el('small', { text: f.note }));
+  b.onclick = () => loadText(f.text, `Loaded sample "${f.name}" (synthetic).`);
+  $('#try-files').append(b);
+});
+async function takeFile(file) {
+  if (!file) return;
+  if (/^image\//.test(file.type) || /\.(png|jpe?g)$/i.test(file.name)) { showTab('image'); return redactFile(file); }
+  if (file.size > 1000000) { toast('File too large for text scan (1 MB max).', true); return; }
+  if (!/^text\//.test(file.type) && !/\.(txt|md|csv|json|log)$/i.test(file.name)) { toast('Use a text file (.txt .md .csv .json .log) or a PNG/JPEG image.', true); return; }
+  loadText(await file.text(), `Read "${file.name}" in this browser.`);
+}
+$('#text-file').addEventListener('change', e => { takeFile(e.target.files[0]); e.target.value = ''; });
+(function dropText() {
+  const c = $('#composer'), scr = $('#screen-text');
+  ['dragenter', 'dragover'].forEach(t => scr.addEventListener(t, e => { e.preventDefault(); c.classList.add('over'); }));
+  scr.addEventListener('dragleave', e => { if (!scr.contains(e.relatedTarget)) c.classList.remove('over'); });
+  scr.addEventListener('drop', e => { e.preventDefault(); c.classList.remove('over'); takeFile(e.dataTransfer.files[0]); });
+})();
+
 /* ---------- SCREENSHOT ---------- */
 let beforeURL = null, afterURL = null;
 async function redactFile(file) {
@@ -407,8 +450,21 @@ function renderSettings() {
 }
 $('#set-local').addEventListener('change', e => { store.set('localOnly', e.target.checked); applyLocalOnly(); toast(e.target.checked ? 'Local-only mode on.' : 'Local-only mode off.'); });
 $('#set-token-save').onclick = () => { store.set('token', $('#set-token').value.trim()); toast('Token saved in this browser.'); loadInfo(); };
-function applyTheme(t) { if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = t; }
+const mq = matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(t) {
+  const eff = t === 'system' ? (mq.matches ? 'dark' : 'light') : t;
+  document.documentElement.dataset.theme = eff;
+  document.documentElement.classList.toggle('is-dark', eff === 'dark');
+  const lbl = $('#theme-label'); if (lbl) lbl.textContent = eff === 'dark' ? 'Light' : 'Dark';
+  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = eff === 'dark' ? '#1a1714' : '#b8431e';
+}
+mq.addEventListener('change', () => { if (store.get('theme', 'system') === 'system') applyTheme('system'); });
 $$('input[name=theme]').forEach(r => r.addEventListener('change', () => { store.set('theme', r.value); applyTheme(r.value); }));
+$('#theme-toggle').onclick = () => {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  store.set('theme', next); applyTheme(next);
+  $$('input[name=theme]').forEach(r => { r.checked = r.value === next; });
+};
 
 function renderRules() {
   const ul = $('#rules'); ul.replaceChildren();
