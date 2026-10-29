@@ -1,4 +1,4 @@
-# Zen: privacy-preserving AI browser agent (PS-004 PrivacyLens, PECathon 2026)
+# Zen: privacy-preserving AI browser agent (PS-004)
 
 An AI agent that works on web pages for you, while sensitive data (cards, Aadhaar, PAN, passwords, OTPs,
 API keys, phones, emails, IPs, faces) never reaches the external model.
