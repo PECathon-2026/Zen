@@ -68,6 +68,7 @@ $("shield-mode").addEventListener("change", async (e) => {
 });
 $("mask").addEventListener("change", async (e) => {
   await send({ type: "zl:setMask", on: e.target.checked });
+  await CFG.save({ maskByDefault: e.target.checked }); // survives reloads and new tabs
   setStatus(e.target.checked ? "Sensitive items are masked on screen." : "Mask off.");
 });
 $("copy").addEventListener("click", async () => {

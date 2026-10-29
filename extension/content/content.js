@@ -35,11 +35,15 @@
   }
   ZL.adoptCss = adoptCss;
   function ensureOverlay() {
-    if (state.host && state.host.isConnected) return;
+    if (state.host && state.host.isConnected && state.host2 && state.host2.isConnected) return;
+    if (state.host) { state.host.remove(); if (state.host2) state.host2.remove(); }
     const host = document.createElement("zenlens-overlay");
     host.style.cssText = "all:initial;position:fixed;inset:0;pointer-events:none;z-index:2147483646;";
-    const sr = host.attachShadow({ mode: "closed" });
-    adoptCss(sr, `
+    // Second host anchored to the DOCUMENT (absolute, 0x0): boxes in it scroll with the page on the compositor, so they
+    // cannot lag or drift behind the content. Fixed/sticky content goes in the viewport-anchored host above.
+    const host2 = document.createElement("zenlens-overlay-doc");
+    host2.style.cssText = "all:initial;position:absolute;left:0;top:0;width:0;height:0;overflow:visible;pointer-events:none;z-index:2147483646;";
+    const css = `
       .b{position:fixed;box-sizing:border-box;border:2px solid var(--c);border-radius:3px;pointer-events:none}
       .b.m{background:color-mix(in srgb,var(--c) 18%,#111);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .b.m.f{background:transparent;backdrop-filter:none;border-style:dashed}
@@ -47,12 +51,26 @@
            overflow:hidden;font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;white-space:nowrap}
       .t{position:absolute;right:-2px;top:-15px;font:600 9px/13px system-ui,sans-serif;color:#fff;background:var(--c);
          padding:0 4px;border-radius:3px 3px 0 3px;white-space:nowrap;letter-spacing:.02em}
-      .b.low .t{top:auto;bottom:-15px}`);
+      .b.low .t{top:auto;bottom:-15px}
+      .d .b{position:absolute}`;
+    const sr = host.attachShadow({ mode: "closed" }), sr2 = host2.attachShadow({ mode: "closed" });
+    adoptCss(sr, css); adoptCss(sr2, css);
     state.layer = document.createElement("div");
-    sr.appendChild(state.layer);
-    state.host = host;
+    state.docLayer = document.createElement("div"); state.docLayer.className = "d";
+    sr.appendChild(state.layer); sr2.appendChild(state.docLayer);
+    state.host = host; state.host2 = host2;
     ZL.ui.shadow = sr;
-    document.documentElement.appendChild(host);
+    document.documentElement.append(host2, host);
+  }
+  /** Fixed/sticky content stays put while the document scrolls, so its covers must be viewport-anchored. */
+  function pinned(el) {
+    if (!state.pin) state.pin = new WeakMap();
+    for (let e = el; e && e.nodeType === 1; e = e.parentElement) {
+      let v = state.pin.get(e);
+      if (v === undefined) { const p = getComputedStyle(e).position; v = p === "fixed" || p === "sticky"; state.pin.set(e, v); }
+      if (v) return true;
+    }
+    return false;
   }
   const isOurs = (n) => !!(state.host && (n === state.host || state.host.contains(n))) ||
     (n && n.nodeType === 1 && n.tagName && n.tagName.startsWith("ZENLENS-"));
@@ -210,7 +228,7 @@
     }
   }
   function scan() {
-    state.rescanTimer = 0; state.lastScan = Date.now();
+    state.rescanTimer = 0; state.lastScan = Date.now(); state.pin = new WeakMap();
     if (!state.enabled || !document.body) { state.findings = []; render(); report(); return; }
     if (!shieldOn() && state.domRedacted.length) restoreDom();
     const out = [], covered = new Set();
@@ -248,26 +266,32 @@
     {
       const sh = shieldOn();
       const show = state.enabled && (sh || state.settings.highlight || state.mask) && state.findings.length;
-      if (!show) { if (state.layer) state.layer.textContent = ""; return; }
+      if (!show) { if (state.layer) state.layer.textContent = ""; if (state.docLayer) state.docLayer.textContent = ""; return; }
       ensureOverlay();
-      const frag = document.createDocumentFragment();
-      const vw = innerWidth, vh = innerHeight, active = document.activeElement;
+      const frag = document.createDocumentFragment(), docFrag = document.createDocumentFragment();
+      const vw = innerWidth, vh = innerHeight, active = document.activeElement, sx = scrollX, sy = scrollY;
       for (const f of state.findings) {
         const rs = rectsOf(f);
+        if (!rs.length) continue;
+        const host = f.el || (f.range && f.range.startContainer.parentElement);
+        const pin = pinned(host);
         rs.forEach((r, i) => {
-          if (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) return;
+          // doc layer keeps a 2-viewport margin: a native scroll can reveal boxes before the next paint
+          if (pin ? (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw)
+                  : (r.bottom < -2 * vh || r.top > 3 * vh || r.right < -2 * vw || r.left > 3 * vw)) return;
           const d = document.createElement("div");
           d.className = "b" + (sh ? " s" : state.mask ? " m" : "") + (!sh && state.mask && f.el && f.el === active ? " f" : "") + (r.top < 16 ? " low" : "");
-          d.style.cssText = `--c:${CFG.kindColor(f.kind)};left:${r.left - 2}px;top:${r.top - 2}px;width:${r.width + 4}px;height:${r.height + 4}px`;
-          if (sh) { if (r.width >= 44 && r.height >= 12) d.textContent = f.kind; frag.appendChild(d); return; }
+          const out = pin ? frag : docFrag, ox = pin ? 0 : sx, oy = pin ? 0 : sy;
+          d.style.cssText = `--c:${CFG.kindColor(f.kind)};left:${r.left + ox - 2}px;top:${r.top + oy - 2}px;width:${r.width + 4}px;height:${r.height + 4}px`;
+          if (sh) { if (r.width >= 44 && r.height >= 12) d.textContent = f.kind; out.appendChild(d); return; }
           if (!state.settings.highlight) d.style.borderColor = "transparent";
           if (i === 0 && state.settings.highlight) {
             const t = document.createElement("span"); t.className = "t"; t.textContent = f.kind; d.appendChild(t);
           }
-          frag.appendChild(d);
+          out.appendChild(d);
         });
       }
-      state.layer.replaceChildren(frag);
+      state.layer.replaceChildren(frag); state.docLayer.replaceChildren(docFrag);
     }
   }
 
@@ -375,7 +399,7 @@
     state.settings = s;
     state.customRules = Z.compileCustomRules(s.customRules).rules;
     state.enabled = CFG.siteEnabled(s, location.hostname);
-    if (state.mask === false && s.maskByDefault) state.mask = true;
+    state.mask = !!s.maskByDefault; // the popup toggle is saved in settings, so it survives reloads and applies to every tab
     if (shieldOn()) arm(); else { disarm(); restoreDom(); }
     scan();
     disarm(); // first scan is done: covers are up

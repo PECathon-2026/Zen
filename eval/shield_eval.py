@@ -143,10 +143,37 @@ def latency(ctx, base, trials=5):
             "max_ms": round(max(ok), 1) if ok else None}
 
 
+_LONG = """<!doctype html><html><body style="margin:0"><div style="height:1500px"></div>
+<input id="cc" autocomplete="cc-number" value="4111 1111 1111 1111" style="width:300px;height:30px;margin-left:60px">
+<div style="height:2500px"></div>
+<input id="fx" type="email" value="rahul.synthetic@example.org" style="position:fixed;top:120px;right:40px;width:260px;height:30px">
+</body></html>"""
+
+
+def scroll_reload(ctx, base):
+    """Covers must track scrolling (document-anchored and fixed content) and be up right after a reload."""
+    page = ctx.new_page()
+    page.route("**/long.html", lambda r: r.fulfill(body=_LONG, content_type="text/html"))
+    page.goto(f"{base}/long.html", wait_until="load")
+    page.wait_for_timeout(800)
+    rect = lambda i: page.evaluate("id => {const r = document.getElementById(id).getBoundingClientRect(); return {x: r.x, y: r.y, width: r.width, height: r.height}}", i)
+    scrolled, fixed = [], []
+    for step in (900, 400):  # wheel scrolls, screenshot straight after (30 ms), no settling
+        page.mouse.move(500, 400); page.mouse.wheel(0, step); page.wait_for_timeout(30)
+        png = page.screenshot()
+        if 0 < rect("cc")["y"] < 800:
+            scrolled.append(_cover_fraction(png, rect("cc")))
+        fixed.append(_cover_fraction(png, rect("fx")))
+    page.reload(); page.wait_for_timeout(300)
+    after = _cover_fraction(page.screenshot(), rect("fx"))
+    page.close()
+    return {"scrolled_field": [round(x, 2) for x in scrolled], "fixed_field": [round(x, 2) for x in fixed], "after_reload": round(after, 2)}
+
+
 def run():
     from playwright.sync_api import sync_playwright
     srv, base = _serve()
-    report = {"baseline": [], "shielded": [], "focus": None, "latency": None}
+    report = {"baseline": [], "shielded": [], "focus": None, "latency": None, "scroll": None}
     try:
         with sync_playwright() as p:
             for mode, key in (("off", "baseline"), ("auto", "shielded")):
@@ -158,6 +185,7 @@ def run():
                         report[key].append(eval_page(ctx, base, name, mode))
                     if mode == "auto":
                         report["latency"] = latency(ctx, base)
+                        report["scroll"] = scroll_reload(ctx, base)
                         pg = ctx.new_page()
                         pg.goto(f"{base}/checkout.html", wait_until="load"); pg.wait_for_timeout(600)
                         pg.focus("#cc-number")  # an agent clicking the field must not drop the cover
@@ -181,7 +209,7 @@ def summarize(r):
          "uncovered_items": [u for x in r["shielded"] for u in x["uncovered"]],
          "mean_coverage": round(statistics.mean(c for x in r["shielded"] for c in x["coverage"]), 3) if any(x["coverage"] for x in r["shielded"]) else None,
          "context_kept": round(statistics.mean(x["context_kept"] for x in r["shielded"] if x["context_kept"] is not None), 3),
-         "focus_cover": r["focus"], "latency": r["latency"]}
+         "focus_cover": r["focus"], "latency": r["latency"], "scroll": r["scroll"]}
     return s
 
 
