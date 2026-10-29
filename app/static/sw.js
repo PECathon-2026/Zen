@@ -9,7 +9,7 @@ const CACHE = 'zen-shell-v3';
 const INBOX = 'zenlens-share-inbox';
 const SHELL = ['/', '/index.html', '/app.css', '/app.js', '/manifest.webmanifest',
   '/share.html', '/share.css', '/share.js',
-  '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
+  '/fonts/fraunces-latin-wght-normal.woff2', '/fonts/public-sans-latin-wght-normal.woff2', '/fonts/jetbrains-mono-latin-wght-normal.woff2', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

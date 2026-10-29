@@ -1,3 +1,10 @@
+/* Self-hosted fonts (SIL OFL, via Fontsource): no font CDN in a privacy tool. */
+@font-face { font-family: "Fraunces"; font-style: normal; font-weight: 100 900; font-display: swap; src: url(/fonts/fraunces-latin-wght-normal.woff2) format("woff2"); }
+@font-face { font-family: "Fraunces"; font-style: italic; font-weight: 100 900; font-display: swap; src: url(/fonts/fraunces-latin-wght-italic.woff2) format("woff2"); }
+@font-face { font-family: "Public Sans"; font-style: normal; font-weight: 100 900; font-display: swap; src: url(/fonts/public-sans-latin-wght-normal.woff2) format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; font-display: swap; src: url(/fonts/jetbrains-mono-latin-wght-normal.woff2) format("woff2"); }
+:root { --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif; --font-head: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 /* Warm Civic Minimal (from Code-Flux). System fonts only: no font CDN in a privacy tool. */
 /* Tokens from the Peer Tutoring Marketplace design (css/theme.css): Warm Civic Minimal, light + dark. */
 :root {
@@ -25,17 +32,17 @@ body, .card, .rail, .topbar, .tabs, .btn, input, textarea, .chip, .file-card { t
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--text);
-  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 15px/1.55 var(--font-body);
   padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px);
   overflow-x: hidden;
 }
 /* dot-matrix backdrop, same as the Marketplace hero (radial-gradient dots on a 32px grid) */
 body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .8;
   background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 32px 32px; }
-h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 6px; letter-spacing: -.02em; font-weight: 800; }
-h2 { font-size: 1.02rem; margin: 0 0 8px; font-weight: 700; letter-spacing: -.01em; }
+h1, h2.serif { font-family: var(--font-head); font-size: 1.75rem; line-height: 1.15; margin: 0 0 8px; letter-spacing: -.015em; font-weight: 600; font-variation-settings: "opsz" 72; }
+h2 { font-family: var(--font-head); font-size: 1.12rem; margin: 0 0 8px; font-weight: 600; letter-spacing: -.005em; }
 small { color: var(--muted); }
-.mono, code, textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+.mono, code, textarea.mono { font-family: var(--font-mono); font-size: 12.5px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip { position: absolute; left: -999px; top: 8px; background: var(--accent); color: var(--accent-ink); padding: 8px 12px; border-radius: 8px; z-index: 50; }
 .skip:focus { left: 8px; }
@@ -52,8 +59,8 @@ small { color: var(--muted); }
 }
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand img { border-radius: 9px; }
-.brand-name { display: block; font-weight: 800; font-size: 1.25rem; letter-spacing: -.02em; line-height: 1.1; }
-.brand-sub { display: none; color: var(--muted); font-size: 12.5px; line-height: 1.3; }
+.brand-name { display: block; font-family: var(--font-head); font-weight: 700; font-size: 1.35rem; letter-spacing: -.02em; line-height: 1.1; }
+.brand-sub { display: none; color: var(--muted); font: 500 11px/1.4 var(--font-mono); letter-spacing: .02em; }
 .status { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); min-width: 0; }
 .status span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); flex: none; }
@@ -94,7 +101,7 @@ input[type=text], input[type=url], input[type=password], input:not([type]), text
   width: 100%; font: inherit; color: var(--text); background: var(--surface-2); border: 1px solid var(--border);
   border-radius: var(--radius-sm); padding: 10px 12px; min-height: 44px;
 }
-textarea { resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+textarea { resize: vertical; font-family: var(--font-mono); font-size: 12.5px; }
 input:focus, textarea:focus { border-color: var(--border-strong); }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
 .row.nowrap { flex-wrap: nowrap; }
@@ -240,7 +247,7 @@ details textarea { margin-top: 6px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation-duration: .01s !important; } }
 
 /* composer + samples */
-.eyebrow { margin: 14px 0 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.eyebrow { margin: 14px 0 8px; font: 600 11px/1.4 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .eyebrow:first-child { margin-top: 0; }
 .composer.over { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .try .chips { margin-top: 0; }
@@ -261,7 +268,7 @@ details textarea { margin-top: 6px; }
     padding: 28px 22px; background: var(--surface); border-left: 1px solid var(--border); }
   .topbar { position: static; order: 0; flex-wrap: wrap; padding: 0; background: none; backdrop-filter: none; border: 0; gap: 14px; }
   .brand { width: 100%; align-items: flex-start; } .brand img { width: 40px; height: 40px; }
-  .brand-name { font-size: 1.6rem; } .brand-sub { display: block; margin-top: 2px; }
+  .brand-name { font-size: 1.75rem; } .brand-sub { display: block; margin-top: 2px; }
   .status { margin-left: 0; } .theme-toggle { margin-left: auto; }
   .tabs { position: static; height: auto; flex-direction: column; gap: 4px; padding: 0; background: none; border: 0; }
   .tab { flex: none; flex-direction: row; justify-content: flex-start; gap: 12px; font-size: 14.5px; padding: 11px 14px; border-radius: var(--radius-sm); text-align: left; }
@@ -270,7 +277,7 @@ details textarea { margin-top: 6px; }
   .tab[aria-current="page"] { background: var(--accent-soft); color: var(--text); }
   .tab[aria-current="page"] svg { color: var(--accent); }
   .rail-note { display: block; margin: auto 0 0; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12.5px; line-height: 1.5; }
-  h1 { font-size: 2rem; }
+  h1 { font-size: 2.4rem; }
   .compare { grid-template-columns: 1fr 1fr; }
   .agent-grid { grid-template-columns: 1fr 1fr; }
   .rule-form { grid-template-columns: 200px 1fr auto; }
@@ -286,3 +293,8 @@ table.legend th, table.legend td { text-align: left; padding: 6px 8px; border-bo
 table.legend th { color: var(--muted); font-weight: 600; }
 table.legend td.num { font-variant-numeric: tabular-nums; }
 .verdict .answer { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; word-break: break-word; }
+
+/* technical accents in mono, warm editorial headings in serif */
+.tag, .pill, .badge, .chip-count, .el .eid, .step-n, .kv dt, .dot + span { font-family: var(--font-mono); }
+.tag, .pill, .badge { letter-spacing: .02em; }
+.tab { font-weight: 500; }
