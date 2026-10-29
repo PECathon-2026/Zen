@@ -1,0 +1,1 @@
+{"version":"0.0.1","configurations":[{"name":"zenlens-ui","runtimeExecutable":".venv/bin/python","runtimeArgs":["-m","zenlens.ui"],"port":8765}]}

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZenLens</title>
+<style>
+:root{--bg:#f7f7f5;--fg:#1b1b1a;--mut:#6b6b66;--card:#fff;--bd:#e2e2dc;--ok:#1a7f4b;--bad:#b3261e;--acc:#2f5bea}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--fg:#ecece8;--mut:#9a9a93;--card:#202020;--bd:#33332f;--ok:#4cc38a;--bad:#ff6b61;--acc:#7b9bff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}p.sub{color:var(--mut);margin:0 0 20px}
+section{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:16px}
+h2{font-size:15px;margin:0 0 10px}
+select,button{font:inherit;padding:7px 12px;border-radius:7px;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
+button{background:var(--acc);color:#fff;border-color:var(--acc);cursor:pointer}button:disabled{opacity:.5}
+button.alt{background:var(--card);color:var(--fg);border-color:var(--bd)}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd);vertical-align:top;word-break:break-all}
+th{color:var(--mut);font-weight:500}.local{color:var(--bad)}.model{color:var(--ok)}
+pre{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:10px;overflow:auto;font-size:12.5px;max-height:240px;margin:8px 0 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12.5px;border:1px solid var(--bd)}
+.pill.ok{color:var(--ok);border-color:var(--ok)}.pill.bad{color:var(--bad);border-color:var(--bad)}
+input[type=text]{font:inherit;padding:7px 10px;border-radius:7px;border:1px solid var(--bd);background:var(--card);color:var(--fg);flex:1;min-width:240px}
+.note{color:var(--mut);font-size:13px}
+</style></head><body><main>
+<h1>ZenLens</h1>
+<p class="sub">An AI agent drives the page. Sensitive values stay on this machine. All data here is synthetic.</p>
+
+<section><h2>1. Privacy preview</h2>
+ <div class="row"><select id="page"></select><button id="pv">Show what the model sees</button></div>
+ <table id="pvt"><thead><tr><th>Field</th><th>On this machine</th><th>Model sees</th></tr></thead><tbody></tbody></table>
+ <p class="note">Red column is local only. Green column is the only thing that may leave.</p></section>
+
+<section><h2>2. Agent run</h2>
+ <div class="row">
+  <select id="sc"><option value="signin">Sign in with saved password (auth.html)</option><option value="inject">Prompt-injection page (injection.html)</option></select>
+  <label><input type="checkbox" id="ap" checked> approve risky actions</label>
+  <button id="go">Run agent</button></div>
+ <div id="out" class="note">Uses a scripted planner, no network. Untick approval to see irreversible actions refused.</div></section>
+
+<section><h2>3. Egress gate</h2>
+ <div class="row"><input type="text" id="tx" value="Ship to Rahul, card 4111 1111 1111 1111, mail rahul.s@example.org"><button id="gt" class="alt">Check payload</button></div>
+ <div id="gout" class="note"></div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const post=(u,b)=>fetch(u,{method:'POST',body:JSON.stringify(b)}).then(r=>r.json());
+fetch('/api/pages').then(r=>r.json()).then(l=>{$('page').innerHTML=l.map(p=>`<option>${esc(p)}</option>`).join('');$('page').value='auth.html'});
+$('pv').onclick=async()=>{$('pv').disabled=true;const r=await post('/api/preview',{page:$('page').value});$('pv').disabled=false;
+ $('pvt').tBodies[0].innerHTML=r.error?`<tr><td colspan=3>${esc(r.error)}</td></tr>`:r.length?r.map(x=>`<tr><td>${esc(x.field)}</td><td class=local>${esc(x.local)}</td><td class=model>${esc(x.model)}</td></tr>`).join(''):'<tr><td colspan=3>No input values on this page.</td></tr>'};
+$('go').onclick=async()=>{$('go').disabled=true;$('out').textContent='Running…';
+ const r=await post('/api/run',{scenario:$('sc').value,approve:$('ap').checked});$('go').disabled=false;
+ if(r.error){$('out').textContent='Error: '+r.error;return}
+ const leak=r.secret_in_payload;
+ $('out').innerHTML=`<div class=row><span class="pill ${r.status=='done'?'ok':'bad'}">${esc(r.status)}</span>
+  <span class="pill ${leak?'bad':'ok'}">${leak?'secret reached model':'no secret reached the model'}</span>
+  <span class=note>${esc(r.goal)}</span></div>
+  <table><thead><tr><th>#</th><th>Action the model asked for</th><th>Result</th></tr></thead><tbody>
+  ${r.steps.map((s,i)=>`<tr><td>${i+1}</td><td>${esc(JSON.stringify(s.action))}</td><td class="${s.result=='ok'?'model':'local'}">${esc(s.result)}</td></tr>`).join('')}</tbody></table>
+  <p class=note>Approvals asked: ${r.approvals.length?esc(r.approvals.join(' · ')):'none'}</p>
+  <details><summary class=note>First payload sent to the model</summary><pre>${esc(JSON.stringify(r.payloads[0],null,1))}</pre></details>`};
+$('gt').onclick=async()=>{const r=await post('/api/gate',{text:$('tx').value});
+ $('gout').innerHTML=r.ok?'<span class="pill ok">allowed</span>':`<span class="pill bad">blocked</span> ${esc(r.reason)}`};
+</script></body></html>
