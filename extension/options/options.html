@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>ZenLens options</title>
+<link rel="stylesheet" href="../lib/ui.css"><link rel="stylesheet" href="options.css"></head>
+<body>
+<main>
+<h1><img src="../icons/icon48.png" width="28" height="28" alt=""> ZenLens options</h1>
+<p class="muted">Settings sync with your Chrome profile. ZenLens never stores detected values.</p>
+
+<fieldset>
+  <legend>Local server (optional)</legend>
+  <label>Server URL
+    <select id="serverUrl"><option>http://localhost:8765</option><option>http://127.0.0.1:8765</option></select></label>
+  <label>Token (X-ZenLens-Token, only needed in LAN mode)<input id="token" type="password" autocomplete="off"></label>
+  <div class="row"><button id="test">Test connection</button><span id="srv" class="muted"></span></div>
+  <p class="muted small">The extension may only talk to localhost:8765 (manifest host permission). Without the server everything except OCR works offline.</p>
+</fieldset>
+
+<fieldset>
+  <legend>Behaviour</legend>
+  <label class="chk"><input type="checkbox" id="highlight"> Outline sensitive items with badges</label>
+  <label class="chk"><input type="checkbox" id="guard"> Paste / submit guard on AI chat sites</label>
+  <label class="chk"><input type="checkbox" id="maskByDefault"> Mask sensitive items on screen by default</label>
+</fieldset>
+
+<fieldset>
+  <legend>AI chat sites (one host per line, subdomains included)</legend>
+  <textarea id="aiSites" rows="6" spellcheck="false"></textarea>
+</fieldset>
+
+<fieldset>
+  <legend>Site list</legend>
+  <label class="chk"><input type="radio" name="siteMode" value="deny"> Run everywhere <b>except</b> these sites</label>
+  <label class="chk"><input type="radio" name="siteMode" value="allow"> Run <b>only</b> on these sites</label>
+  <textarea id="siteList" rows="4" spellcheck="false" placeholder="bank.example.com"></textarea>
+</fieldset>
+
+<fieldset>
+  <legend>Custom rules</legend>
+  <p class="muted small">JavaScript regular expressions (Unicode mode). Kind: A–Z, 0–9, _ . Patterns that match the empty string are rejected.</p>
+  <table id="rules"><thead><tr><th>Kind</th><th>Pattern</th><th></th></tr></thead><tbody></tbody></table>
+  <div class="row"><button id="addrule">Add rule</button></div>
+  <label>Try rules on sample text<input id="sample" placeholder="EMP-123456 joined; card 4111 1111 1111 1111"></label>
+  <pre id="sampleout" class="muted"></pre>
+</fieldset>
+
+<div class="row sticky"><button id="save" class="p">Save</button><button id="reset">Restore defaults</button><span id="msg" role="status"></span></div>
+</main>
+<script src="../lib/detect.js"></script>
+<script src="../lib/settings.js"></script>
+<script src="options.js"></script>
+</body></html>

@@ -1,0 +1,879 @@
+{
+ "cases": {
+  "checkout-001": [
+   [
+    14,
+    33,
+    "CARD"
+   ]
+  ],
+  "checkout-002": [
+   [
+    13,
+    32,
+    "CARD"
+   ]
+  ],
+  "checkout-003": [
+   [
+    3,
+    19,
+    "CARD"
+   ]
+  ],
+  "checkout-004": [
+   [
+    11,
+    30,
+    "CARD"
+   ]
+  ],
+  "checkout-005": [
+   [
+    5,
+    22,
+    "CARD"
+   ]
+  ],
+  "checkout-006": [
+   [
+    5,
+    20,
+    "CARD"
+   ]
+  ],
+  "checkout-007": [
+   [
+    11,
+    30,
+    "CARD"
+   ]
+  ],
+  "checkout-008": [
+   [
+    14,
+    33,
+    "CARD"
+   ],
+   [
+    46,
+    68,
+    "EMAIL"
+   ]
+  ],
+  "checkout-009": [
+   [
+    8,
+    38,
+    "EMAIL"
+   ]
+  ],
+  "checkout-010": [],
+  "checkout-011": [],
+  "checkout-012": [],
+  "checkout-013": [],
+  "checkout-014": [],
+  "checkout-015": [],
+  "checkout-016": [],
+  "checkout-017": [],
+  "checkout-018": [
+   [
+    5,
+    24,
+    "CARD"
+   ]
+  ],
+  "checkout-019": [
+   [
+    11,
+    30,
+    "CARD"
+   ]
+  ],
+  "checkout-020": [
+   [
+    6,
+    28,
+    "CARD"
+   ]
+  ],
+  "checkout-021": [
+   [
+    9,
+    28,
+    "CARD"
+   ]
+  ],
+  "checkout-022": [
+   [
+    17,
+    36,
+    "CARD"
+   ]
+  ],
+  "checkout-023": [
+   [
+    11,
+    30,
+    "CARD"
+   ]
+  ],
+  "checkout-024": [
+   [
+    6,
+    37,
+    "CARD"
+   ]
+  ],
+  "checkout-025": [],
+  "checkout-026": [],
+  "auth-027": [
+   [
+    17,
+    26,
+    "PASSWORD"
+   ],
+   [
+    43,
+    49,
+    "OTP"
+   ]
+  ],
+  "auth-028": [
+   [
+    12,
+    26,
+    "AADHAAR"
+   ],
+   [
+    31,
+    41,
+    "PAN"
+   ]
+  ],
+  "auth-029": [
+   [
+    9,
+    23,
+    "AADHAAR"
+   ]
+  ],
+  "auth-030": [
+   [
+    4,
+    16,
+    "AADHAAR"
+   ]
+  ],
+  "auth-031": [],
+  "auth-032": [],
+  "auth-033": [
+   [
+    11,
+    21,
+    "PAN"
+   ]
+  ],
+  "auth-034": [],
+  "auth-035": [
+   [
+    4,
+    16,
+    "PASSWORD"
+   ]
+  ],
+  "auth-036": [
+   [
+    11,
+    24,
+    "PASSWORD"
+   ]
+  ],
+  "auth-037": [
+   [
+    15,
+    27,
+    "PASSWORD"
+   ]
+  ],
+  "auth-038": [
+   [
+    18,
+    27,
+    "PASSWORD"
+   ]
+  ],
+  "auth-039": [
+   [
+    9,
+    19,
+    "PASSWORD"
+   ]
+  ],
+  "auth-040": [],
+  "auth-041": [],
+  "auth-042": [
+   [
+    24,
+    30,
+    "OTP"
+   ]
+  ],
+  "auth-043": [
+   [
+    4,
+    8,
+    "OTP"
+   ]
+  ],
+  "auth-044": [
+   [
+    22,
+    28,
+    "OTP"
+   ]
+  ],
+  "auth-045": [
+   [
+    10,
+    16,
+    "OTP"
+   ]
+  ],
+  "auth-046": [
+   [
+    9,
+    15,
+    "OTP"
+   ]
+  ],
+  "auth-047": [
+   [
+    19,
+    25,
+    "OTP"
+   ]
+  ],
+  "auth-048": [],
+  "auth-049": [],
+  "auth-050": [
+   [
+    9,
+    36,
+    "EMAIL"
+   ]
+  ],
+  "auth-051": [
+   [
+    9,
+    38,
+    "EMAIL"
+   ]
+  ],
+  "auth-052": [
+   [
+    38,
+    50,
+    "PASSWORD"
+   ]
+  ],
+  "auth-053": [],
+  "support-054": [
+   [
+    11,
+    25,
+    "PHONE"
+   ]
+  ],
+  "support-055": [
+   [
+    13,
+    23,
+    "PHONE"
+   ]
+  ],
+  "support-056": [
+   [
+    9,
+    22,
+    "PHONE"
+   ]
+  ],
+  "support-057": [
+   [
+    12,
+    26,
+    "PHONE"
+   ]
+  ],
+  "support-058": [
+   [
+    15,
+    26,
+    "PHONE"
+   ]
+  ],
+  "support-059": [
+   [
+    5,
+    16,
+    "PHONE"
+   ]
+  ],
+  "support-060": [
+   [
+    7,
+    22,
+    "PHONE"
+   ]
+  ],
+  "support-061": [
+   [
+    5,
+    17,
+    "PHONE"
+   ]
+  ],
+  "support-062": [
+   [
+    12,
+    22,
+    "PHONE"
+   ]
+  ],
+  "support-063": [
+   [
+    5,
+    15,
+    "PHONE"
+   ]
+  ],
+  "support-064": [
+   [
+    10,
+    20,
+    "PHONE"
+   ]
+  ],
+  "support-065": [
+   [
+    7,
+    17,
+    "PHONE"
+   ]
+  ],
+  "support-066": [
+   [
+    9,
+    37,
+    "EMAIL"
+   ],
+   [
+    50,
+    64,
+    "PHONE"
+   ]
+  ],
+  "support-067": [],
+  "support-068": [],
+  "support-069": [],
+  "support-070": [],
+  "support-071": [
+   [
+    35,
+    49,
+    "PHONE"
+   ]
+  ],
+  "support-072": [],
+  "support-073": [
+   [
+    5,
+    15,
+    "PHONE"
+   ]
+  ],
+  "support-074": [],
+  "support-075": [],
+  "support-076": [],
+  "support-077": [
+   [
+    6,
+    24,
+    "EMAIL"
+   ]
+  ],
+  "support-078": [
+   [
+    9,
+    32,
+    "EMAIL"
+   ]
+  ],
+  "video-079": [
+   [
+    20,
+    34,
+    "EMAIL"
+   ]
+  ],
+  "video-080": [
+   [
+    10,
+    34,
+    "EMAIL"
+   ],
+   [
+    36,
+    53,
+    "EMAIL"
+   ]
+  ],
+  "video-081": [],
+  "video-082": [],
+  "video-083": [],
+  "video-084": [
+   [
+    9,
+    23,
+    "PHONE"
+   ]
+  ],
+  "video-085": [
+   [
+    6,
+    22,
+    "EMAIL"
+   ]
+  ],
+  "video-086": [
+   [
+    5,
+    21,
+    "EMAIL"
+   ]
+  ],
+  "video-087": [],
+  "video-088": [],
+  "video-089": [
+   [
+    20,
+    30,
+    "PHONE"
+   ]
+  ],
+  "video-090": [
+   [
+    28,
+    46,
+    "EMAIL"
+   ]
+  ],
+  "video-091": [
+   [
+    38,
+    44,
+    "OTP"
+   ]
+  ],
+  "video-092": [
+   [
+    25,
+    44,
+    "CARD"
+   ]
+  ],
+  "video-093": [],
+  "video-094": [],
+  "video-095": [],
+  "video-096": [],
+  "devsettings-097": [
+   [
+    11,
+    46,
+    "API_KEY"
+   ],
+   [
+    51,
+    71,
+    "API_KEY"
+   ]
+  ],
+  "devsettings-098": [
+   [
+    13,
+    53,
+    "API_KEY"
+   ]
+  ],
+  "devsettings-099": [
+   [
+    10,
+    49,
+    "API_KEY"
+   ]
+  ],
+  "devsettings-100": [
+   [
+    23,
+    71,
+    "API_KEY"
+   ]
+  ],
+  "devsettings-101": [
+   [
+    16,
+    72,
+    "API_KEY"
+   ]
+  ],
+  "devsettings-102": [
+   [
+    22,
+    127,
+    "TOKEN"
+   ]
+  ],
+  "devsettings-103": [
+   [
+    24,
+    64,
+    "API_KEY"
+   ]
+  ],
+  "devsettings-104": [
+   [
+    12,
+    27,
+    "PASSWORD"
+   ]
+  ],
+  "devsettings-105": [
+   [
+    16,
+    28,
+    "PASSWORD"
+   ]
+  ],
+  "devsettings-106": [
+   [
+    8,
+    18,
+    "IP"
+   ]
+  ],
+  "devsettings-107": [
+   [
+    22,
+    34,
+    "IP"
+   ]
+  ],
+  "devsettings-108": [
+   [
+    16,
+    28,
+    "IP"
+   ]
+  ],
+  "devsettings-109": [],
+  "devsettings-110": [],
+  "devsettings-111": [],
+  "devsettings-112": [],
+  "devsettings-113": [],
+  "devsettings-114": [],
+  "devsettings-115": [],
+  "devsettings-116": [
+   [
+    13,
+    23,
+    "IP"
+   ],
+   [
+    43,
+    53,
+    "IP"
+   ]
+  ],
+  "devsettings-117": [
+   [
+    13,
+    31,
+    "IP"
+   ],
+   [
+    41,
+    64,
+    "IP"
+   ]
+  ],
+  "devsettings-118": [],
+  "support-119": [
+   [
+    5,
+    19,
+    "PHONE"
+   ],
+   [
+    28,
+    35,
+    "IP"
+   ]
+  ],
+  "checkout-120": [],
+  "video-121": [],
+  "devsettings-122": [
+   [
+    36,
+    76,
+    "API_KEY"
+   ]
+  ],
+  "devsettings-123": [
+   [
+    11,
+    46,
+    "API_KEY"
+   ]
+  ],
+  "devsettings-124": []
+ },
+ "extra": [
+  [
+   [
+    10,
+    21,
+    "PASSWORD"
+   ],
+   [
+    30,
+    36,
+    "PASSWORD"
+   ]
+  ],
+  [
+   [
+    25,
+    32,
+    "PASSWORD"
+   ],
+   [
+    47,
+    54,
+    "PASSWORD"
+   ]
+  ],
+  [
+   [
+    7,
+    13,
+    "OTP"
+   ]
+  ],
+  [
+   [
+    23,
+    27,
+    "OTP"
+   ],
+   [
+    41,
+    47,
+    "OTP"
+   ]
+  ],
+  [
+   [
+    51,
+    61,
+    "PHONE"
+   ],
+   [
+    65,
+    80,
+    "PHONE"
+   ]
+  ],
+  [
+   [
+    32,
+    44,
+    "PHONE"
+   ]
+  ],
+  [
+   [
+    7,
+    15,
+    "IP"
+   ]
+  ],
+  [
+   [
+    5,
+    23,
+    "IP"
+   ],
+   [
+    36,
+    47,
+    "IP"
+   ],
+   [
+    49,
+    69,
+    "IP"
+   ]
+  ],
+  [
+   [
+    0,
+    20,
+    "API_KEY"
+   ],
+   [
+    21,
+    61,
+    "API_KEY"
+   ],
+   [
+    62,
+    99,
+    "API_KEY"
+   ]
+  ],
+  [
+   [
+    24,
+    64,
+    "API_KEY"
+   ]
+  ],
+  [],
+  [
+   [
+    6,
+    63,
+    "TOKEN"
+   ]
+  ],
+  [
+   [
+    13,
+    32,
+    "CARD"
+   ],
+   [
+    42,
+    62,
+    "EMAIL"
+   ],
+   [
+    69,
+    79,
+    "PAN"
+   ]
+  ],
+  [
+   [
+    8,
+    22,
+    "AADHAAR"
+   ],
+   [
+    26,
+    40,
+    "AADHAAR"
+   ]
+  ],
+  [
+   [
+    5,
+    24,
+    "CARD"
+   ]
+  ],
+  [
+   [
+    0,
+    26,
+    "API_KEY"
+   ],
+   [
+    34,
+    73,
+    "API_KEY"
+   ]
+  ],
+  [
+   [
+    7,
+    17,
+    "PHONE"
+   ],
+   [
+    25,
+    35,
+    "PHONE"
+   ]
+  ],
+  [
+   [
+    11,
+    17,
+    "PASSWORD"
+   ]
+  ],
+  [
+   [
+    9,
+    19,
+    "PASSWORD"
+   ],
+   [
+    29,
+    35,
+    "OTP"
+   ]
+  ],
+  [
+   [
+    11,
+    18,
+    "PASSWORD"
+   ]
+  ]
+ ],
+ "elements": [
+  "PASSWORD",
+  "CVV",
+  "CARD",
+  "CVV",
+  "OTP",
+  "PIN",
+  "ADDRESS",
+  "API_KEY",
+  "TOKEN",
+  "SECRET",
+  "EMAIL",
+  "PHONE",
+  null,
+  null,
+  "EMAIL",
+  "NAME",
+  null,
+  "ADDRESS",
+  null,
+  "IP",
+  "TOKEN",
+  null,
+  "TOKEN",
+  "FACE",
+  "FACE",
+  "AADHAAR",
+  "PAN",
+  "CARD_EXP",
+  null,
+  "CARD_EXP"
+ ]
+}

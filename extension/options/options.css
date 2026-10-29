@@ -1,0 +1,18 @@
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{display:flex;gap:10px;align-items:center;font-size:20px;margin:8px 0}
+fieldset{border:1px solid var(--line);border-radius:10px;margin:14px 0;padding:12px 14px;display:grid;gap:8px}
+legend{font-weight:700;padding:0 6px}
+label{display:grid;gap:4px}
+label.chk{display:flex;gap:8px;align-items:center}
+label.chk input{width:auto}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.small{font-size:12px;margin:0}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;color:var(--muted)}
+td{padding:3px 4px 3px 0}
+td:first-child{width:140px}
+td:last-child{width:40px}
+td input.bad{border-color:var(--bad)}
+pre{white-space:pre-wrap;font:12px ui-monospace,Menlo,monospace;margin:0}
+.sticky{position:sticky;bottom:0;background:var(--bg);padding:10px 0;border-top:1px solid var(--line)}
+#msg.err{color:var(--bad)}

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ZenLens</title>
+<meta name="description" content="Privacy preview: see exactly what is redacted before anything reaches an AI model.">
+<meta name="theme-color" content="#0f766e">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="stylesheet" href="/app.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="brand">
+    <img src="/icons/icon.svg" alt="" width="28" height="28">
+    <span>ZenLens</span>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite">
+    <span class="dot" id="status-dot"></span><span id="status-text">Connecting…</span>
+  </div>
+  <span class="pill local-pill" id="local-pill" hidden>Local-only</span>
+</header>
+
+<nav class="tabs" aria-label="Screens">
+  <button class="tab" data-tab="text" aria-current="page"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Text</span></button>
+  <button class="tab" data-tab="image"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span>Screenshot</span></button>
+  <button class="tab" data-tab="page"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><span>Web page</span></button>
+  <button class="tab" data-tab="agent"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01"/></svg><span>Agent</span></button>
+  <button class="tab" data-tab="settings"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button>
+</nav>
+
+<main id="main" tabindex="-1">
+
+<!-- TEXT -->
+<section class="screen" id="screen-text" aria-labelledby="h-text">
+  <div class="screen-head">
+    <h1 id="h-text">Text privacy preview</h1>
+    <p class="lede">Paste anything. Detection runs on your own machine; the right side is all an AI model would ever see.</p>
+  </div>
+  <div class="card">
+    <label class="label" for="text-in">Text to check</label>
+    <textarea id="text-in" rows="6" spellcheck="false" placeholder="e.g. Card 4111 1111 1111 1111, call me on 98765 43210"></textarea>
+    <div class="row">
+      <button class="btn primary" id="text-go">Sanitize</button>
+      <button class="btn" id="text-sample">Load sample</button>
+      <button class="btn ghost" id="text-clear">Clear</button>
+      <span class="hint" id="text-rules-hint"></span>
+    </div>
+  </div>
+  <div id="text-out" hidden>
+    <div class="counts" id="text-counts" aria-label="Redaction counts"></div>
+    <div class="compare">
+      <div class="card pane">
+        <div class="pane-head"><h2>Before</h2><span class="tag tag-local">stays on this device</span></div>
+        <div class="mono preview" id="text-before"></div>
+      </div>
+      <div class="card pane">
+        <div class="pane-head"><h2>After</h2><span class="tag tag-egress">what an AI would see</span>
+          <button class="btn small ghost" id="text-copy">Copy</button></div>
+        <div class="mono preview" id="text-after"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Why these were redacted</h2>
+      <ul class="why-list" id="text-why"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENSHOT -->
+<section class="screen" id="screen-image" aria-labelledby="h-image" hidden>
+  <div class="screen-head">
+    <h1 id="h-image">Screenshot redaction</h1>
+    <p class="lede">On-device OCR finds sensitive text and blacks it out. If OCR fails, you get an error, never the original.</p>
+  </div>
+  <div class="card">
+    <div class="row">
+      <label class="btn primary file-btn phone-only">Take photo
+        <input type="file" id="img-camera" accept="image/*" capture="environment"></label>
+      <label class="btn file-btn" id="img-pick-label">Choose image
+        <input type="file" id="img-pick" accept="image/png,image/jpeg"></label>
+      <label class="check"><input type="checkbox" id="img-faces"> Also blur faces</label>
+    </div>
+    <div class="drop" id="img-drop">or drop a PNG/JPEG here</div>
+    <p class="hint" id="img-ocr-hint"></p>
+  </div>
+  <div id="img-out" hidden>
+    <div class="counts" id="img-counts"></div>
+    <div class="card">
+      <div class="pane-head"><h2>Before / after</h2>
+        <a class="btn small" id="img-download" download="zenlens-redacted.png">Download redacted</a></div>
+      <div class="slider" id="img-slider">
+        <img id="img-after" alt="Redacted image">
+        <div class="slider-before" id="img-before-wrap"><img id="img-before" alt="Original image (local only)"></div>
+        <div class="slider-handle" id="img-handle" aria-hidden="true"></div>
+        <span class="slider-label left">Before</span><span class="slider-label right">After</span>
+      </div>
+      <label class="label" for="img-range">Drag to compare</label>
+      <input type="range" id="img-range" min="0" max="100" value="50">
+    </div>
+  </div>
+</section>
+
+<!-- WEB PAGE -->
+<section class="screen" id="screen-page" aria-labelledby="h-page" hidden>
+  <div class="screen-head">
+    <h1 id="h-page">Web page preview</h1>
+    <p class="lede">A local headless browser opens the page; you see the redacted screenshot and the sanitized element list a model would receive.</p>
+  </div>
+  <div class="card">
+    <label class="label" for="page-url">URL or bundled test page</label>
+    <div class="row nowrap">
+      <input id="page-url" type="url" inputmode="url" placeholder="https://example.com or pick a test page" autocomplete="off">
+    </div>
+    <div class="chips" id="page-tests" aria-label="Bundled test pages"></div>
+    <div class="row"><button class="btn primary" id="page-go">Preview</button></div>
+  </div>
+  <div id="page-out" hidden>
+    <div class="counts" id="page-counts"></div>
+    <div class="compare">
+      <div class="card pane">
+        <div class="pane-head"><h2>Redacted screenshot</h2><span class="tag tag-local">local only</span></div>
+        <div id="page-shot"></div>
+      </div>
+      <div class="card pane">
+        <div class="pane-head"><h2>Sanitized elements</h2><span class="tag tag-egress">model-visible</span></div>
+        <div class="el-list" id="page-els"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENT -->
+<section class="screen" id="screen-agent" aria-labelledby="h-agent" hidden>
+  <div class="screen-head">
+    <h1 id="h-agent">Agent task</h1>
+    <p class="lede">The planner only ever sees sanitized views. Each step is validated locally; risky steps need your approval.</p>
+  </div>
+  <div class="card">
+    <label class="label" for="agent-goal">Goal</label>
+    <input id="agent-goal" type="text" placeholder="e.g. Log in with my saved password">
+    <label class="label" for="agent-url">Start URL or test page</label>
+    <input id="agent-url" type="text" inputmode="url" placeholder="auth" autocomplete="off">
+    <div class="chips" id="agent-tests"></div>
+    <fieldset class="seg" id="agent-mode">
+      <legend class="label">Planner</legend>
+      <label><input type="radio" name="mode" value="scripted" checked> <span>Scripted demo <small>(nothing leaves)</small></span></label>
+      <label><input type="radio" name="mode" value="claude" id="mode-claude"> <span>Claude <small>(sanitized data only)</small></span></label>
+    </fieldset>
+    <p class="hint" id="agent-claude-hint"></p>
+    <details id="agent-script-box" open>
+      <summary>Demo script (actions the scripted planner replays)</summary>
+      <textarea id="agent-script" rows="5" class="mono" spellcheck="false"></textarea>
+    </details>
+    <label class="check"><input type="checkbox" id="agent-approve"> Auto-approve sensitive / irreversible steps</label>
+    <div class="row"><button class="btn primary" id="agent-go">Run task</button></div>
+  </div>
+  <div id="agent-out" hidden>
+    <div class="card verdict" id="agent-summary"></div>
+    <div class="compare agent-grid">
+      <div class="card pane">
+        <h2>Steps</h2>
+        <ol class="steps" id="agent-steps"></ol>
+      </div>
+      <div class="card pane egress-panel">
+        <div class="pane-head"><h2>Data that left this device</h2></div>
+        <p class="hint" id="agent-egress-note"></p>
+        <div id="agent-egress"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SETTINGS -->
+<section class="screen" id="screen-settings" aria-labelledby="h-settings" hidden>
+  <div class="screen-head"><h1 id="h-settings">Settings</h1></div>
+  <div class="card">
+    <h2>Privacy</h2>
+    <label class="switch"><input type="checkbox" id="set-local"><span class="track" aria-hidden="true"></span>
+      <span><strong>Local-only mode</strong><br><small>Disables Claude mode. Nothing is sent to any third party.</small></span></label>
+  </div>
+  <div class="card">
+    <h2>Your privacy rules</h2>
+    <p class="hint">Extra patterns (Python regex) redacted alongside the built-in detectors. Stored only in this browser; sent to your ZenLens server with each text request.</p>
+    <ul class="rules" id="rules"></ul>
+    <form class="rule-form" id="rule-form">
+      <input id="rule-kind" placeholder="KIND, e.g. EMPLOYEE_ID" maxlength="24" aria-label="Kind" autocapitalize="characters">
+      <input id="rule-pattern" placeholder="Regex, e.g. EMP-\d{6}" maxlength="200" aria-label="Pattern" class="mono">
+      <button class="btn" type="submit">Add rule</button>
+    </form>
+    <p class="hint err" id="rule-err" role="alert"></p>
+  </div>
+  <div class="card">
+    <h2>Connection</h2>
+    <dl class="kv">
+      <dt>Server</dt><dd id="set-server" class="mono"></dd>
+      <dt>Mode</dt><dd id="set-lan"></dd>
+      <dt>Features</dt><dd id="set-features"></dd>
+    </dl>
+    <label class="label" for="set-token">Pairing token <small>(needed when the server runs with --lan)</small></label>
+    <div class="row nowrap"><input id="set-token" type="password" autocomplete="off" class="mono">
+      <button class="btn" id="set-token-save">Save</button></div>
+  </div>
+  <div class="card">
+    <h2>Appearance</h2>
+    <fieldset class="seg" id="set-theme">
+      <legend class="sr-only">Theme</legend>
+      <label><input type="radio" name="theme" value="system" checked> <span>System</span></label>
+      <label><input type="radio" name="theme" value="light"> <span>Light</span></label>
+      <label><input type="radio" name="theme" value="dark"> <span>Dark</span></label>
+    </fieldset>
+  </div>
+  <p class="hint center">ZenLens runs on your own computer. Your phone talks to it over your local network.</p>
+</section>
+</main>
+
+<div class="toast" id="toast" role="alert" hidden></div>
+</body>
+</html>

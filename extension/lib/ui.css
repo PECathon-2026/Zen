@@ -1,0 +1,17 @@
+/* Shared tokens for extension pages (popup, side panel, options). */
+:root{--bg:#ffffff;--fg:#1f1d2b;--muted:#6b6780;--line:#e6e3f0;--soft:#f5f3fb;--acc:#7048e8;--acc-fg:#fff;--ok:#2b8a3e;--bad:#c92a2a;--warn:#e8590c;
+  font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root{--bg:#17151f;--fg:#ecebf2;--muted:#a19db3;--line:#2f2b3d;--soft:#211e2c;--acc:#9775fa;--acc-fg:#120f1c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg)}
+button{font:inherit;font-weight:600;border-radius:8px;padding:7px 12px;border:1px solid var(--line);background:var(--soft);color:var(--fg);cursor:pointer}
+button.p{background:var(--acc);border-color:var(--acc);color:var(--acc-fg)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+input,textarea,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%}
+textarea{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.muted{color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--soft);border:1px solid var(--line)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.dot.on{background:var(--ok)} .dot.off{background:var(--bad)}
+.kind{display:inline-block;font:700 10px/16px system-ui,sans-serif;color:#fff;padding:0 6px;border-radius:4px;letter-spacing:.02em}
