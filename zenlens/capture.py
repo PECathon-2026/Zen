@@ -208,7 +208,7 @@ def _structural_kinds(snap: PageSnapshot) -> dict[str, str]:
     return out
 
 
-def sanitized_view(snap: PageSnapshot, canaries: tuple[str, ...] = (), pseudonymizer=None) -> dict:
+def sanitized_view(snap: PageSnapshot, canaries: tuple[str, ...] = (), pseudonymizer=None, minimize: bool = False) -> dict:
     """The ONLY capture output meant to leave the machine. No HTML, no screenshot. Raises gate.Blocked on residue.
     With a pseudonym.Pseudonymizer, sensitive values become stable tokens ([EMAIL_1]) instead of [REDACTED:KIND],
     and every real value it has seen is added to the canaries."""
@@ -242,5 +242,9 @@ def sanitized_view(snap: PageSnapshot, canaries: tuple[str, ...] = (), pseudonym
                     "bbox": e.bbox, "sensitive": kind, "field_name": _clean(e.field_name, ps),
                     "placeholder": _clean(e.placeholder, ps), "name": _clean(e.name, ps), "text": text, "value": value})
     view = {"url": _clean_url(snap.url, ps), "title": _clean(snap.title, ps), "elements": els}
+    if minimize:  # strip partials / quasi-identifiers that let a model infer redacted values (zenlens.minimize)
+        from .minimize import minimize_view
+        view, notes = minimize_view(view)
+        view["minimized"] = [{k: n[k] for k in ("rule", "reason", "where") if k in n} for n in notes]
     egress_check(json.dumps(view, ensure_ascii=False), tuple(canaries) + (ps.canaries() if ps is not None else ()))
     return view
