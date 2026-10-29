@@ -122,3 +122,29 @@
 {"canaries": ["ZLCANARY-0E9CS232I8"], "id": "devsettings-122", "scenario": "devsettings", "tags": ["canary", "positive"], "text": "CI_SECRET=ZLCANARY-0E9CS232I8 TOKEN=ghp_ZCOKYoBMZIHNsja62NPlKg6qobx5LMafyzUg", "truth": [["ghp_ZCOKYoBMZIHNsja62NPlKg6qobx5LMafyzUg", "API_KEY"]]}
 {"canaries": [], "id": "devsettings-123", "scenario": "devsettings", "tags": ["mixed_lang", "positive"], "text": "key ye hai sk-YnrTNmRZ9ExRPDBm4lsNL2LpDPGiUXWr, kisi ko mat dena", "truth": [["sk-YnrTNmRZ9ExRPDBm4lsNL2LpDPGiUXWr", "API_KEY"]]}
 {"canaries": [], "id": "devsettings-124", "scenario": "devsettings", "tags": ["adversarial", "positive"], "text": "OPENAI_KEY=\"sk-5HCWJye5op0L6\" \"TjgerWGP7thISAFXiyn\"", "truth": [["sk-5HCWJye5op0L6", "API_KEY"]]}
+{"canaries": [], "id": "checkout-125", "scenario": "checkout", "tags": ["mixed_lang", "positive", "upi"], "text": "UPI se pay karo: 8900131543@ybl", "truth": [["8900131543@ybl", "UPI_ID"]]}
+{"canaries": [], "id": "checkout-126", "scenario": "checkout", "tags": ["positive", "upi"], "text": "Pay to riya.xrl@okhdfcbank or shop-360@paytm.", "truth": [["riya.xrl@okhdfcbank", "UPI_ID"], ["shop-360@paytm", "UPI_ID"]]}
+{"canaries": [], "id": "checkout-127", "scenario": "checkout", "tags": ["mixed_lang", "positive", "upi"], "text": "मेरा UPI kiran46@oksbi है", "truth": [["kiran46@oksbi", "UPI_ID"]]}
+{"canaries": [], "id": "support-128", "scenario": "support", "tags": ["positive", "upi_like"], "text": "Write to orders@paytm.com or help@upi.example.in for refunds", "truth": [["orders@paytm.com", "EMAIL"], ["help@upi.example.in", "EMAIL"]]}
+{"canaries": [], "id": "support-129", "scenario": "support", "tags": ["hard_negative", "upi_like"], "text": "Follow @paytm and @ybl for offers; handle@unknownbank is not a UPI handle", "truth": []}
+{"canaries": [], "id": "checkout-130", "scenario": "checkout", "tags": ["bank", "positive"], "text": "Bank transfer: A/c no. 222528153651, IFSC IDIB0090003", "truth": [["222528153651", "BANK_ACCOUNT"], ["IDIB0090003", "IFSC"]]}
+{"canaries": [], "id": "checkout-131", "scenario": "checkout", "tags": ["bank", "format_variant", "positive"], "text": "IFSC code: QZXW0695831", "truth": [["QZXW0695831", "IFSC"]]}
+{"canaries": [], "id": "checkout-132", "scenario": "checkout", "tags": ["bank", "positive"], "text": "Branch IDFB0659489 (Andheri East)", "truth": [["IDFB0659489", "IFSC"]]}
+{"canaries": [], "id": "checkout-133", "scenario": "checkout", "tags": ["hard_negative", "ifsc_like"], "text": "SKU ABCD0123456 and part QWER0X1Y2Z3 in stock", "truth": []}
+{"canaries": [], "id": "checkout-134", "scenario": "checkout", "tags": ["bank", "mixed_lang", "positive"], "text": "mera khata number 33327836586821 hai, paise bhej do", "truth": [["33327836586821", "BANK_ACCOUNT"]]}
+{"canaries": [], "id": "checkout-135", "scenario": "checkout", "tags": ["bank", "mixed_lang", "positive"], "text": "खाता संख्या: 53277860046", "truth": [["53277860046", "BANK_ACCOUNT"]]}
+{"canaries": [], "id": "checkout-136", "scenario": "checkout", "tags": ["bank", "format_variant", "positive"], "text": "Account number 9136270959344826 credited", "truth": [["9136270959344826", "BANK_ACCOUNT"]]}
+{"canaries": [], "id": "checkout-137", "scenario": "checkout", "tags": ["bank_like", "hard_negative"], "text": "Account ID 570028112183 created; order 709692934939 shipped", "truth": []}
+{"canaries": [], "id": "checkout-138", "scenario": "checkout", "tags": ["gstin", "positive"], "text": "GSTIN: 33PXSPK4492R2Z0", "truth": [["33PXSPK4492R2Z0", "GSTIN"]]}
+{"canaries": [], "id": "checkout-139", "scenario": "checkout", "tags": ["gstin", "positive"], "text": "Seller GST no 37XJHPY7315W1Z8, buyer 21NURPQ5140K1Z0", "truth": [["37XJHPY7315W1Z8", "GSTIN"], ["21NURPQ5140K1Z0", "GSTIN"]]}
+{"canaries": [], "id": "checkout-140", "scenario": "checkout", "tags": ["gstin_invalid", "hard_negative"], "text": "GSTIN 27EFHPO1607O7ZA (typo on invoice)", "truth": []}
+{"canaries": [], "id": "support-141", "scenario": "support", "tags": ["positive", "vehicle"], "text": "Vehicle MP 77 BK 1111 parked at gate 3", "truth": [["MP 77 BK 1111", "VEHICLE"]]}
+{"canaries": [], "id": "support-142", "scenario": "support", "tags": ["mixed_lang", "positive", "vehicle"], "text": "gaadi number JH04WV6718, dusri DL8CYP9646", "truth": [["JH04WV6718", "VEHICLE"], ["DL8CYP9646", "VEHICLE"]]}
+{"canaries": [], "id": "support-143", "scenario": "support", "tags": ["format_variant", "positive", "vehicle"], "text": "BH plate 26 BH 6530 TD registered", "truth": [["26 BH 6530 TD", "VEHICLE"]]}
+{"canaries": [], "id": "support-144", "scenario": "support", "tags": ["format_variant", "positive", "vehicle"], "text": "FASTag for SK-05-UL-4202 recharged", "truth": [["SK-05-UL-4202", "VEHICLE"]]}
+{"canaries": [], "id": "support-145", "scenario": "support", "tags": ["hard_negative", "vehicle_like"], "text": "Product XY12AB3456, ZZ 01 AB 1234 and HR 2 FY 2026 report", "truth": []}
+{"canaries": [], "id": "auth-146", "scenario": "auth", "tags": ["kyc", "positive"], "text": "Voter ID: CVA5563219", "truth": [["CVA5563219", "VOTER_ID"]]}
+{"canaries": [], "id": "auth-147", "scenario": "auth", "tags": ["kyc", "mixed_lang", "positive"], "text": "वोटर आईडी RYO7351284 जमा करें", "truth": [["RYO7351284", "VOTER_ID"]]}
+{"canaries": [], "id": "auth-148", "scenario": "auth", "tags": ["kyc", "positive"], "text": "Passport No. R3116169, valid till 2031", "truth": [["R3116169", "PASSPORT"]]}
+{"canaries": [], "id": "auth-149", "scenario": "auth", "tags": ["kyc", "mixed_lang", "positive"], "text": "पासपोर्ट नंबर F6579182 है", "truth": [["F6579182", "PASSPORT"]]}
+{"canaries": [], "id": "auth-150", "scenario": "auth", "tags": ["hard_negative", "kyc_like"], "text": "Batch LBA5361837 and coupon B8982461 applied", "truth": []}

@@ -2,7 +2,8 @@ import json
 
 from eval import make_cases, run_eval
 
-KINDS = {"CARD", "AADHAAR", "PAN", "EMAIL", "PHONE", "API_KEY", "OTP", "PASSWORD", "IP", "NAME", "TOKEN"}
+KINDS = {"CARD", "AADHAAR", "PAN", "EMAIL", "PHONE", "API_KEY", "OTP", "PASSWORD", "IP", "NAME", "TOKEN",
+         "UPI_ID", "IFSC", "BANK_ACCOUNT", "GSTIN", "VEHICLE", "VOTER_ID", "PASSPORT"}
 SCENARIOS = {"checkout", "auth", "support", "video", "devsettings"}
 
 

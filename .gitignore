@@ -7,3 +7,4 @@ demo/out/
 node_modules/
 .env
 secrets*.txt
+app/certs/

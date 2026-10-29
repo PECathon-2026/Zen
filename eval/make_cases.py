@@ -18,7 +18,8 @@ import string
 import sys
 from pathlib import Path
 
-from zenlens.detect import luhn_ok, verhoeff_check_digit, verhoeff_ok
+from zenlens.detect import (IFSC_BANKS, VEHICLE_STATES, gstin_check_char, gstin_ok, luhn_ok, verhoeff_check_digit,
+                            verhoeff_ok)
 
 SEED = 20260214
 OUT = Path(__file__).with_name("cases.jsonl")
@@ -71,6 +72,37 @@ class Gen:
 
     def otp(self, n: int = 6) -> str:
         return self.r.choice("123456789") + self.digits(n - 1)
+
+    # ---- India-first identifiers (all synthetic, checksums computed) ----
+    def upper(self, n: int) -> str:
+        return "".join(self.r.choice(string.ascii_uppercase) for _ in range(n))
+
+    def gstin(self) -> str:
+        body = f"{self.r.randint(1, 38):02d}" + self.pan() + self.r.choice("123456789") + "Z"
+        return body + gstin_check_char(body)
+
+    def gstin_invalid(self) -> str:
+        g = self.gstin()
+        bad = g[:-1] + ("A" if g[-1] != "A" else "B")
+        assert not gstin_ok(bad)
+        return bad
+
+    def ifsc(self) -> str:
+        return self.r.choice(sorted(IFSC_BANKS)) + "0" + self.digits(6)
+
+    def plate(self, sep: str = " ") -> str:
+        st = self.r.choice(sorted(VEHICLE_STATES - {"DL"}))
+        return sep.join([st, f"{self.r.randint(1, 99):02d}", self.upper(2), f"{self.r.randint(1, 9999):04d}"])
+
+    def bank_account(self, n: int = 12) -> str:
+        return self.r.choice("123456789") + self.digits(n - 1)
+
+    def epic(self) -> str:
+        return self.upper(3) + self.digits(7)
+
+    def passport(self) -> str:
+        return (self.r.choice("ABCDEFGHJKLMNPRSTUVWY") + self.r.choice("123456789") + self.digits(5)
+                + self.r.choice("123456789"))
 
     def canary(self) -> str:
         return "ZLCANARY-" + self.alnum(10, string.ascii_uppercase + string.digits)
@@ -257,6 +289,43 @@ def build(seed: int = SEED) -> list[dict]:
     k = "sk-" + g.alnum(32); C("devsettings", f"key ye hai {k}, kisi ko mat dena", [(k, "API_KEY")], ["mixed_lang"])
     k = "sk-" + g.alnum(32); C("devsettings", f"OPENAI_KEY=\"{k[:16]}\" \"{k[16:]}\"", [(k[:16], "API_KEY")],
                                ["adversarial"])
+
+    # ============================ India-first identifiers ============================
+    ph = g.phone(); u = f"{ph}@ybl"
+    C("checkout", f"UPI se pay karo: {u}", [(u, "UPI_ID")], ["mixed_lang", "upi"])
+    u = f"riya.{g.alnum(3).lower()}@okhdfcbank"; u2 = f"shop-{g.digits(3)}@paytm"
+    C("checkout", f"Pay to {u} or {u2}.", [(u, "UPI_ID"), (u2, "UPI_ID")], ["upi"])
+    u = f"kiran{g.digits(2)}@oksbi"; C("checkout", f"मेरा UPI {u} है", [(u, "UPI_ID")], ["mixed_lang", "upi"])
+    e = "orders@paytm.com"; e2 = "help@upi.example.in"
+    C("support", f"Write to {e} or {e2} for refunds", [(e, "EMAIL"), (e2, "EMAIL")], ["upi_like"])
+    C("support", "Follow @paytm and @ybl for offers; handle@unknownbank is not a UPI handle", [], ["upi_like"])
+    i = g.ifsc(); a = g.bank_account()
+    C("checkout", f"Bank transfer: A/c no. {a}, IFSC {i}", [(a, "BANK_ACCOUNT"), (i, "IFSC")], ["bank"])
+    i = "QZXW0" + g.digits(6); C("checkout", f"IFSC code: {i}", [(i, "IFSC")], ["format_variant", "bank"])
+    i = g.ifsc(); C("checkout", f"Branch {i} (Andheri East)", [(i, "IFSC")], ["bank"])
+    C("checkout", "SKU ABCD0123456 and part QWER0X1Y2Z3 in stock", [], ["ifsc_like"])
+    a = g.bank_account(14); C("checkout", f"mera khata number {a} hai, paise bhej do", [(a, "BANK_ACCOUNT")],
+                              ["mixed_lang", "bank"])
+    a = g.bank_account(11); C("checkout", f"खाता संख्या: {a}", [(a, "BANK_ACCOUNT")], ["mixed_lang", "bank"])
+    a = g.bank_account(16); C("checkout", f"Account number {a} credited", [(a, "BANK_ACCOUNT")],
+                              ["format_variant", "bank"])
+    C("checkout", f"Account ID {g.digits(12)} created; order 7{g.digits(11)} shipped", [], ["bank_like"])
+    v = g.gstin(); C("checkout", f"GSTIN: {v}", [(v, "GSTIN")], ["gstin"])
+    v = g.gstin(); v2 = g.gstin()
+    C("checkout", f"Seller GST no {v}, buyer {v2}", [(v, "GSTIN"), (v2, "GSTIN")], ["gstin"])
+    v = g.gstin_invalid(); C("checkout", f"GSTIN {v} (typo on invoice)", [], ["gstin_invalid"])
+    v = g.plate(); C("support", f"Vehicle {v} parked at gate 3", [(v, "VEHICLE")], ["vehicle"])
+    v = g.plate(""); v2 = f"DL{g.r.randint(1, 9)}C{g.upper(2)}{g.r.randint(1000, 9999)}"
+    C("support", f"gaadi number {v}, dusri {v2}", [(v, "VEHICLE"), (v2, "VEHICLE")], ["mixed_lang", "vehicle"])
+    v = f"{g.r.randint(21, 26)} BH {g.r.randint(1000, 9999)} {g.upper(2)}"
+    C("support", f"BH plate {v} registered", [(v, "VEHICLE")], ["format_variant", "vehicle"])
+    v = g.plate("-"); C("support", f"FASTag for {v} recharged", [(v, "VEHICLE")], ["format_variant", "vehicle"])
+    C("support", "Product XY12AB3456, ZZ 01 AB 1234 and HR 2 FY 2026 report", [], ["vehicle_like"])
+    v = g.epic(); C("auth", f"Voter ID: {v}", [(v, "VOTER_ID")], ["kyc"])
+    v = g.epic(); C("auth", f"वोटर आईडी {v} जमा करें", [(v, "VOTER_ID")], ["mixed_lang", "kyc"])
+    v = g.passport(); C("auth", f"Passport No. {v}, valid till 2031", [(v, "PASSPORT")], ["kyc"])
+    v = g.passport(); C("auth", f"पासपोर्ट नंबर {v} है", [(v, "PASSPORT")], ["mixed_lang", "kyc"])
+    C("auth", f"Batch {g.epic()} and coupon {g.passport()} applied", [], ["kyc_like"])
 
     for cs in cases:
         for val, _ in cs["truth"]:

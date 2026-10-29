@@ -86,6 +86,43 @@
     return ipv6Valid(s) && s.split(":").filter(Boolean).length >= 3;
   }
 
+  // ---------- India-first validators (identical to detect.py) ----------
+  const GST_CS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  function gstinCheckChar(first14) {
+    let total = 0;
+    chars(first14).forEach((ch, i) => {
+      const p = GST_CS.indexOf(ch) * (i % 2 === 0 ? 1 : 2);
+      total += Math.floor(p / 36) + (p % 36);
+    });
+    return GST_CS[(36 - (total % 36)) % 36];
+  }
+  function gstinOk(s) {
+    s = s.toUpperCase();
+    const st = Number(s.slice(0, 2));
+    return s.length === 15 && chars(s).every((c) => GST_CS.includes(c)) && st >= 1 && st <= 38 &&
+      gstinCheckChar(s.slice(0, 14)) === s[14];
+  }
+  const VEHICLE_STATES = new Set(("AN AP AR AS BR CG CH DD DL DN GA GJ HP HR JH JK KA KL LA LD MH ML MN MP MZ NL OD OR PB PY RJ SK TG TN " +
+    "TR TS UK UP WB").split(" "));
+  const PLATE = /^([A-Z]{2})([ -]?)([0-9]{1,2})\2([A-Z]{1,3})\2([0-9]{4})$/;
+  function vehicleOk(s) {
+    const m = PLATE.exec(s);
+    if (!m) return false;
+    const [, st, , dist, , num] = m;
+    return VEHICLE_STATES.has(st) && (dist.length === 2 || st === "DL") && Number(dist) > 0 && Number(num) > 0;
+  }
+  function bhPlateOk(s) {
+    return Number(s.slice(0, 2)) >= 21 && Number(digits(s).slice(2)) > 0;
+  }
+  const UPI_HANDLES = ("okhdfcbank okicici oksbi okaxis okbizaxis ybl ibl axl paytm pthdfc ptsbi ptyes ptaxis upi apl yapl " +
+    "fbl ratn rbl kotak kmbl icici hdfcbank sbi axisbank axisb idfcbank idfcfirst ikwik freecharge airtel " +
+    "jio waaxis wahdfcbank wasbi waicici yesbank yesbankltd indus federal aubank barodampay boi cnrb pnb " +
+    "unionbank mahb kbl idbi dbs hsbc citi sliceaxis jupiteraxis abfspay timecosmos dlb pockets ezeepay " +
+    "postbank ippb").split(" ");
+  const IFSC_BANKS = ("SBIN HDFC ICIC UTIB PUNB BARB CNRB UBIN BKID IOBA IDIB UCBA CBIN MAHB KKBK YESB INDB IDFB FDRL KARB " +
+    "SIBL CIUB KVBL TMBL DCBL RATN AUBL BDBL ESFB UJVN JAKA PSIB IBKL CSBK DLXB NTBL HSBC SCBL CITI DBSS " +
+    "DEUT AIRP PYTM FINO JSFB SURY NSPB USFB IPOS").split(" ");
+
   // ---------- Python-compatible regex building blocks ----------
   const WC = "\\p{L}\\p{N}_";                      // \w class body
   const W = `[${WC}]`;
@@ -107,16 +144,31 @@
   const OCT = `(?:25[0-5]|2[0-4]${D}|1${D}${D}|[1-9]?${D})`;
 
   const re = (src) => new RegExp(src, "gud");
+  /** Port of detect._ctx: keyword, up to two connector words, optional ':' / 'is' / 'hai'. */
+  const CONNECT = ["no\\.?", "number", "num", "code", "card", "sankhya"].map(ci).concat(["#", "संख्या", "नंबर", "कोड"]).join("|");
+  const ctx = (keys) => `(?:${keys})(?:${S}*(?:${CONNECT})){0,2}${S}*(?:[:=#-]|(?:${ci("is")}|${ci("hai")})${B}|है)?${S}*`;
+  const UPI_ALT = UPI_HANDLES.map(ci).join("|");
+  const IFSC_ALT = IFSC_BANKS.join("|");
 
   // (kind, regex, group, validator). Order = priority when spans overlap. Mirrors detect._RULES.
   const RULES = [
     ["API_KEY", re(`${B}(?:sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|AIza[0-9A-Za-z_-]{35}|xox[abprs]-[A-Za-z0-9-]{10,})${B}`), 0, null],
     ["API_KEY", re(`${ci("aws_secret_access_key")}${S}*[:=]${S}*([${AZ_I}0-9/+]{40})(?![${AZ_I}0-9/+])`), 1, null],
     ["TOKEN", re(`${B}eyJ[${WC}-]{10,}\\.[${WC}-]{10,}\\.[${WC}-]{10,}`), 0, null],
+    ["GSTIN", re(`${B}[0-9]{2}[A-Z]{3}[ABCFGHJLPT][A-Z][0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]${B}`), 0, gstinOk],
+    ["UPI_ID", re(`(?<![${WC}.+-])[${WC}][${WC}.-]*@(?:${UPI_ALT})(?![${WC}-]|\\.[${WC}-])`), 0, null],
+    ["IFSC", re(ctx(`${B}${ci("ifsc")}|आईएफएससी`) + `([A-Z]{4}0[A-Z0-9]{6})${B}`), 1, null],
+    ["IFSC", re(`${B}(?:${IFSC_ALT})0[A-Z0-9]{6}${B}`), 0, null],
+    ["BANK_ACCOUNT", re(ctx(`${B}(?:${["a/c", "acct", "account", "khata"].map(ci).join("|")})|खाता`) + `([0-9]{9,18})${B}`), 1, null],
+    ["VOTER_ID", re(ctx(`${B}(?:${ci("voter")}${S}*${ci("id")}|${ci("voter")}${S}*${ci("card")}|${ci("epic")})|मतदाता पहचान पत्र|वोटर आईडी|वोटर कार्ड`)
+      + `([A-Z]{3}[0-9]{7})${B}`), 1, null],
+    ["PASSPORT", re(ctx(`${B}${ci("passport")}|पासपोर्ट`) + `([A-PR-WY][1-9][0-9]{5}[1-9])${B}`), 1, null],
     ["CARD", re(`${B}${D}(?:[ .-]{0,2}${D}){12,18}${B}`), 0, (s) => luhnOk(digits(s))],
     ["AADHAAR", re(`${B}[2-9]${D}{3}[ -]?${D}{4}[ -]?${D}{4}${B}`), 0, (s) => verhoeffOk(digits(s))],
     ["PAN", re(`${B}[A-Z]{3}[ABCFGHJLPT][A-Z]${D}{4}[A-Z]${B}`), 0, null],  // 4th letter = PAN holder type
     ["EMAIL", re(`${B}[${WC}.+-]+@[${WC}-]+(?:\\.[${WC}-]+)+${B}`), 0, null],
+    ["VEHICLE", re(`${B}[A-Z]{2}([ -]?)[0-9]{1,2}\\1[A-Z]{1,3}\\1[0-9]{4}${B}`), 0, vehicleOk],
+    ["VEHICLE", re(`${B}[0-9]{2}([ -]?)BH\\1[0-9]{4}\\1[A-Z]{1,2}${B}`), 0, bhPlateOk],
     ["PHONE", re(`(?<![${WC}#-])(?<!${B}${ci("id")} )(?<!${B}${ci("id")}: )(?<!${B}${ci("id is")} )(?:(?:\\+?91|0)[ -]?)?[6-9]${D}{4}[ -]?${D}{5}${B}`), 0,
       (s) => new Set(chars(digits(s)).slice(-10)).size > 2],
     ["IP", re(`(?<![${WC}.])(?<!${B}${ci("version")} )(?<!${B}${ci("release")} )(?<!${B}${ci("build")} )(?<!${B}${ci("ver")} )(?:${OCT}\\.){3}${OCT}(?!\\.?${D}|${W})`), 0, null],
@@ -233,6 +285,7 @@
   const api = {
     detect, detectAll, detectEach, redact, redactAll, redactSpans, egressCheck, gate, Blocked,
     compileCustomRules, luhnOk, verhoeffOk, verhoeffCheckDigit, ipv6Ok, normaliseDigits,
+    gstinCheckChar, gstinOk, vehicleOk,
     _py: { W, WC, B, D, S, NS, ci },
   };
   root.ZenLensDetect = api;

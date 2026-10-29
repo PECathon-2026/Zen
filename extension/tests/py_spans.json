@@ -636,7 +636,178 @@
     "API_KEY"
    ]
   ],
-  "devsettings-124": []
+  "devsettings-124": [],
+  "checkout-125": [
+   [
+    17,
+    31,
+    "UPI_ID"
+   ]
+  ],
+  "checkout-126": [
+   [
+    7,
+    26,
+    "UPI_ID"
+   ],
+   [
+    30,
+    44,
+    "UPI_ID"
+   ]
+  ],
+  "checkout-127": [
+   [
+    9,
+    22,
+    "UPI_ID"
+   ]
+  ],
+  "support-128": [
+   [
+    9,
+    25,
+    "EMAIL"
+   ],
+   [
+    29,
+    48,
+    "EMAIL"
+   ]
+  ],
+  "support-129": [],
+  "checkout-130": [
+   [
+    23,
+    35,
+    "BANK_ACCOUNT"
+   ],
+   [
+    42,
+    53,
+    "IFSC"
+   ]
+  ],
+  "checkout-131": [
+   [
+    11,
+    22,
+    "IFSC"
+   ]
+  ],
+  "checkout-132": [
+   [
+    7,
+    18,
+    "IFSC"
+   ]
+  ],
+  "checkout-133": [],
+  "checkout-134": [
+   [
+    18,
+    32,
+    "BANK_ACCOUNT"
+   ]
+  ],
+  "checkout-135": [
+   [
+    13,
+    24,
+    "BANK_ACCOUNT"
+   ]
+  ],
+  "checkout-136": [
+   [
+    15,
+    31,
+    "BANK_ACCOUNT"
+   ]
+  ],
+  "checkout-137": [],
+  "checkout-138": [
+   [
+    7,
+    22,
+    "GSTIN"
+   ]
+  ],
+  "checkout-139": [
+   [
+    14,
+    29,
+    "GSTIN"
+   ],
+   [
+    37,
+    52,
+    "GSTIN"
+   ]
+  ],
+  "checkout-140": [],
+  "support-141": [
+   [
+    8,
+    21,
+    "VEHICLE"
+   ]
+  ],
+  "support-142": [
+   [
+    13,
+    23,
+    "VEHICLE"
+   ],
+   [
+    31,
+    41,
+    "VEHICLE"
+   ]
+  ],
+  "support-143": [
+   [
+    9,
+    22,
+    "VEHICLE"
+   ]
+  ],
+  "support-144": [
+   [
+    11,
+    24,
+    "VEHICLE"
+   ]
+  ],
+  "support-145": [],
+  "auth-146": [
+   [
+    10,
+    20,
+    "VOTER_ID"
+   ]
+  ],
+  "auth-147": [
+   [
+    10,
+    20,
+    "VOTER_ID"
+   ]
+  ],
+  "auth-148": [
+   [
+    13,
+    21,
+    "PASSPORT"
+   ]
+  ],
+  "auth-149": [
+   [
+    14,
+    22,
+    "PASSPORT"
+   ]
+  ],
+  "auth-150": []
  },
  "extra": [
   [
@@ -842,6 +1013,130 @@
     18,
     "PASSWORD"
    ]
+  ],
+  [
+   [
+    4,
+    18,
+    "UPI_ID"
+   ],
+   [
+    20,
+    36,
+    "UPI_ID"
+   ],
+   [
+    38,
+    49,
+    "EMAIL"
+   ],
+   [
+    50,
+    58,
+    "EMAIL"
+   ],
+   [
+    74,
+    79,
+    "UPI_ID"
+   ],
+   [
+    80,
+    90,
+    "UPI_ID"
+   ]
+  ],
+  [
+   [
+    6,
+    21,
+    "GSTIN"
+   ]
+  ],
+  [
+   [
+    13,
+    24,
+    "IFSC"
+   ],
+   [
+    31,
+    42,
+    "IFSC"
+   ],
+   [
+    57,
+    68,
+    "IFSC"
+   ]
+  ],
+  [
+   [
+    9,
+    18,
+    "BANK_ACCOUNT"
+   ],
+   [
+    65,
+    77,
+    "BANK_ACCOUNT"
+   ],
+   [
+    89,
+    99,
+    "BANK_ACCOUNT"
+   ]
+  ],
+  [
+   [
+    22,
+    32,
+    "VOTER_ID"
+   ],
+   [
+    42,
+    52,
+    "VOTER_ID"
+   ],
+   [
+    65,
+    75,
+    "VOTER_ID"
+   ]
+  ],
+  [
+   [
+    19,
+    27,
+    "PASSPORT"
+   ]
+  ],
+  [
+   [
+    0,
+    13,
+    "VEHICLE"
+   ],
+   [
+    14,
+    27,
+    "VEHICLE"
+   ],
+   [
+    28,
+    38,
+    "VEHICLE"
+   ],
+   [
+    39,
+    50,
+    "VEHICLE"
+   ],
+   [
+    78,
+    91,
+    "VEHICLE"
+   ]
   ]
  ],
  "elements": [
@@ -874,6 +1169,21 @@
   "PAN",
   "CARD_EXP",
   null,
-  "CARD_EXP"
+  "CARD_EXP",
+  "UPI_ID",
+  "UPI_ID",
+  "IFSC",
+  "BANK_ACCOUNT",
+  "BANK_ACCOUNT",
+  "GSTIN",
+  "VOTER_ID",
+  "PASSPORT",
+  "VEHICLE",
+  "PHONE",
+  "PHONE",
+  "NAME",
+  "ADDRESS",
+  "PIN",
+  "GSTIN"
  ]
 }
