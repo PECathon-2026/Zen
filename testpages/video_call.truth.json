@@ -1,0 +1,42 @@
+{
+ "page": "video_call.html",
+ "items": [
+  {
+   "id": "p1-video",
+   "value": "Asha Verma",
+   "kind": "FACE"
+  },
+  {
+   "id": "p1-name",
+   "value": "Asha Verma",
+   "kind": "NAME"
+  },
+  {
+   "id": "p2-video",
+   "value": "Rohan Mehta",
+   "kind": "FACE"
+  },
+  {
+   "id": "p2-name",
+   "value": "Rohan Mehta",
+   "kind": "NAME"
+  },
+  {
+   "id": "self-view",
+   "value": null,
+   "kind": "FACE"
+  },
+  {
+   "id": "chat-1",
+   "value": "rohan.synthetic@example.net",
+   "kind": "EMAIL"
+  }
+ ],
+ "negatives": [
+  "845 2210 9931",
+  "00:42:17",
+  "3 participants",
+  "Room 4B",
+  "item 3 of 7"
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "page": "dev_settings.html",
+ "items": [
+  {
+   "id": "openai-key",
+   "value": "sk-synthTESTkey0123456789abcdefABCDEF",
+   "kind": "API_KEY"
+  },
+  {
+   "id": "gh-token",
+   "value": "ghp_SyntheticTestToken000000000000000000",
+   "kind": "API_KEY"
+  },
+  {
+   "id": "aws-access-key",
+   "value": "AKIAZZTESTSYNTH00012",
+   "kind": "API_KEY"
+  },
+  {
+   "id": "webhook-secret",
+   "value": "whsec_synthetic_9f8e7d6c5b4a",
+   "kind": "SECRET"
+  },
+  {
+   "id": "csrf",
+   "value": "c5rf-Synth-7f3a9b2e4d1c",
+   "kind": "TOKEN"
+  },
+  {
+   "id": "curl-example",
+   "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c3ludGhldGljc2ln",
+   "kind": "TOKEN"
+  },
+  {
+   "id": "curl-example",
+   "value": "10.0.12.34",
+   "kind": "IP"
+  },
+  {
+   "id": "db-host",
+   "value": "192.168.1.20",
+   "kind": "IP"
+  },
+  {
+   "id": "cache-host",
+   "value": "172.16.5.4",
+   "kind": "IP"
+  },
+  {
+   "id": "ipv6-gw",
+   "value": "fd00:1234:5678::25",
+   "kind": "IP"
+  }
+ ],
+ "negatives": [
+  "v2.14.3",
+  "2026.10.29",
+  "ap-south-1",
+  "4.2.1",
+  "5432",
+  "6379",
+  "29/10/2026",
+  "90 days"
+ ]
+}

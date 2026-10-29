@@ -2,11 +2,12 @@
 
 Goal: AI agent that interacts with web interfaces while sensitive data never reaches an external model.
 Core rule: compute what is sensitive locally; reason globally only on sanitized data.
-Stack: Python 3, pytest, Playwright (planned), Claude API (planned).
+Stack: Python 3, pytest, Playwright, Claude API (`ClaudeLLM`, key via ANTHROPIC_API_KEY env only). Reference-only third-party repo: `~/Desktop/Github-C` (do not copy code from it).
 
 ## Commands
 - Setup: `python3 -m venv .venv && .venv/bin/pip install pytest`
 - Tests: `.venv/bin/python -m pytest -q`
+- Demo: `.venv/bin/python -m zenlens.demo` (needs `pip install -r requirements.txt` + `playwright install chromium`; `--live` uses Claude)
 - Eval: `.venv/bin/python -m eval.run_eval` (prints recall, precision, leaks; exit 1 on any leak)
 
 ## Done

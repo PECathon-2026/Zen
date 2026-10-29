@@ -1,0 +1,50 @@
+{
+ "page": "auth.html",
+ "items": [
+  {
+   "id": "login-email",
+   "value": "rahul.synthetic@example.org",
+   "kind": "EMAIL"
+  },
+  {
+   "id": "login-password",
+   "value": "Synth3tic!Pass",
+   "kind": "PASSWORD"
+  },
+  {
+   "id": "new-password",
+   "value": null,
+   "kind": "PASSWORD"
+  },
+  {
+   "id": "otp-sms",
+   "value": "739205",
+   "kind": "OTP"
+  },
+  {
+   "id": "otp-input",
+   "value": "482913",
+   "kind": "OTP"
+  },
+  {
+   "id": "upi-pin",
+   "value": "2580",
+   "kind": "PIN"
+  },
+  {
+   "id": "kyc-aadhaar",
+   "value": "4937 1825 0362",
+   "kind": "AADHAAR"
+  },
+  {
+   "id": "kyc-pan",
+   "value": "ABCPD1234K",
+   "kind": "PAN"
+  }
+ ],
+ "negatives": [
+  "REQ-77120",
+  "10 minutes",
+  "v3.2.1"
+ ]
+}

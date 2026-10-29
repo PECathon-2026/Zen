@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>ZenLens Capture Fixture</title></head>
+<body>
+<!-- Synthetic data only. -->
+<h1>Checkout</h1>
+<p>Signed in as asha.test@example.com, phone 9876543210.</p>
+<p>Your OTP is 482913. Aadhaar on file: 2345 6789 0124. PAN ABCDE1234F.</p>
+<form>
+  <label for="email">Email:</label>
+  <input id="email" type="email" autocomplete="email" value="asha.test@example.com">
+  <label for="pw">Password:</label>
+  <input id="pw" type="password" autocomplete="current-password" value="Tr0ub4dor-xyz">
+  <label for="otp">One-time code</label>
+  <input id="otp" type="text" autocomplete="one-time-code" value="482913">
+  <label for="cc">Card number</label>
+  <input id="cc" type="text" autocomplete="cc-number" value="4111 1111 1111 1111">
+  <label for="cvv">CVV</label>
+  <input id="cvv" type="text" value="123">
+  <label for="city">City</label>
+  <input id="city" type="text" value="Pune">
+  <select aria-label="Country"><option>India</option><option>Nepal</option></select>
+  <textarea aria-label="Notes">Call me on 9876543210</textarea>
+  <input type="hidden" name="csrf" value="sk-test_abcdefghijklmnopqrstuvwxyz">
+  <button type="submit">Pay now</button>
+</form>
+<a href="/help">Help centre</a>
+<div style="display:none">Hidden card 4111111111111111</div>
+</body></html>

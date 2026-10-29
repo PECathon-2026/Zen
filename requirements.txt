@@ -1,0 +1,7 @@
+pytest
+playwright
+Pillow
+pytesseract
+pyobjc-framework-Vision; sys_platform == "darwin"
+opencv-python-headless<5
+anthropic

@@ -1,0 +1,54 @@
+{
+ "page": "checkout.html",
+ "items": [
+  {
+   "id": "cc-name",
+   "value": "Meera Iyer",
+   "kind": "NAME"
+  },
+  {
+   "id": "cc-number",
+   "value": "4111 1111 1111 1111",
+   "kind": "CARD"
+  },
+  {
+   "id": "cc-exp",
+   "value": "08/29",
+   "kind": "CARD_EXP"
+  },
+  {
+   "id": "f3",
+   "value": "737",
+   "kind": "CVV"
+  },
+  {
+   "id": "addr-line1",
+   "value": "42 Lakeview Road, Indiranagar",
+   "kind": "ADDRESS"
+  },
+  {
+   "id": "postal",
+   "value": "560038",
+   "kind": "ADDRESS"
+  },
+  {
+   "id": "ship-address",
+   "value": "17 Gulmohar Lane, Koramangala",
+   "kind": "ADDRESS"
+  },
+  {
+   "id": "contact-email",
+   "value": "meera.synthetic@example.com",
+   "kind": "EMAIL"
+  }
+ ],
+ "negatives": [
+  "ORD-2026-118934",
+  "29 Oct 2026",
+  "88213409",
+  "1,499.00",
+  "2,998.00",
+  "03/11/2026",
+  "SAVE10"
+ ]
+}
