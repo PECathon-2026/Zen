@@ -36,8 +36,7 @@
     "debugger"
   ],
   "host_permissions": [
-    "http://localhost:8765/*",
-    "http://127.0.0.1:8765/*"
+    "<all_urls>"
   ],
   "content_scripts": [
     {
@@ -67,6 +66,6 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:8765 http://127.0.0.1:8765; img-src 'self' data: blob:"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http: https: data: blob:; img-src 'self' data: blob:"
   }
 }

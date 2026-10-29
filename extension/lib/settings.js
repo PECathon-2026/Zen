@@ -12,7 +12,7 @@
     guard: true,              // paste/submit guard on AI sites
     maskByDefault: false,
     shieldMode: "auto",      // Agent Shield: "auto" (when an AI agent drives the tab), "on" (always), "off"
-    shieldImages: "all",     // shield mode: "all" covers every photo-sized image (no face detector in stock Chrome), "hinted" only face-like ones
+    shieldImages: "detect",  // shield mode: "detect" = bundled face detector (+ local-server OCR) boxes faces/text in images, unanalysable ones are covered; "all" covers every photo; "hinted" only face-like ones
     shieldCanvas: "cover",    // shield mode: "cover" blanks canvases (text drawn in them cannot be read), "off"
     domRedact: true,          // in shield mode also replace sensitive text in the DOM so text/a11y reads are redacted
   };
@@ -82,12 +82,13 @@
     ADDRESS: "Postal address field",
     FACE: "Camera / face media",
     IMAGE: "Image or canvas covered because it cannot be scanned for faces or text",
+    TEXT: "Text found inside an image or canvas (OCR)",
   };
   const KIND_COLORS = {
     UPI_ID: "#2f9e44", IFSC: "#5f3dc4", BANK_ACCOUNT: "#a61e4d", GSTIN: "#e67700", VEHICLE: "#495057", VOTER_ID: "#1864ab", PASSPORT: "#0b7285",
     CARD: "#d9480f", CVV: "#d9480f", CARD_EXP: "#e8590c", AADHAAR: "#9c36b5", PAN: "#862e9c", EMAIL: "#1971c2",
     PHONE: "#0c8599", IP: "#5c940d", API_KEY: "#c92a2a", TOKEN: "#c2255c", SECRET: "#c92a2a", PASSWORD: "#e03131",
-    OTP: "#f08c00", PIN: "#f08c00", NAME: "#495057", ADDRESS: "#2b8a3e", FACE: "#364fc7", IMAGE: "#6c5b7b",
+    OTP: "#f08c00", PIN: "#f08c00", NAME: "#495057", ADDRESS: "#2b8a3e", FACE: "#364fc7", IMAGE: "#6c5b7b", TEXT: "#8a5a00",
   };
   const kindColor = (k) => KIND_COLORS[k] || "#7048e8";
 

@@ -56,3 +56,12 @@ def test_copy_from_covered_content_yields_no_real_values(report):
     c = mod.summarize(rep)["copy_leaks"]
     assert c["baseline"], "without the extension's guard copy must leak, else this test proves nothing"
     assert c["mask"] == [] and c["shield"] == []
+
+
+def test_faces_in_photos_are_covered_text_clear_images_left_alone(report):
+    rep, mod = report
+    f = mod.summarize(rep)["faces"]
+    assert f["same"] >= 0.6 and f["cross"] >= 0.6 and f["fit"] >= 0.6, f  # same-origin, cross-origin (worker fetch), object-fit: cover
+    assert f["clean_covered"] < 0.25, f  # an image with no face and no text is not blanked
+    if f["ocr_up"]:
+        assert not f["text_image_ocr_leak"] and f["canvas_text_hidden"], f

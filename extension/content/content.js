@@ -17,7 +17,7 @@
     settings: { ...CFG.DEFAULTS }, customRules: [], enabled: false, mask: false,
     findings: [],   // {kind, reason, el?:Element, range?:Range, field?:bool}  — no values kept
     host: null, layer: null, rescanTimer: 0, rafPending: false, lastScan: 0,
-    agent: false, probeTimer: 0, armSheet: null, domRedacted: [], masked: new Map(), attrMasked: [], roots: [], observed: new WeakSet(), watching: false, sig: "",  // Agent Shield
+    agent: false, probeTimer: 0, armSheet: null, domRedacted: [], masked: new Map(), attrMasked: [], img: new Map(), analyzing: 0, roots: [], observed: new WeakSet(), watching: false, sig: "",  // Agent Shield
   };
   const STICKY_MS = 10 * 60 * 1000;
   const SHIELD_MIN_GAP = 40; // ms between rescans while the shield is up (normal mode: 600)
@@ -307,6 +307,67 @@
   const hintText = (el) => [el.getAttribute("alt"), el.getAttribute("title"), el.id, typeof el.className === "string" ? el.className : "",
     el.getAttribute("aria-label"), (el.getAttribute("src") || "").slice(0, 200), el.parentElement && el.parentElement.id,
     el.parentElement && typeof el.parentElement.className === "string" ? el.parentElement.className : ""].filter(Boolean).join(" ");
+  // ---------- image / canvas analysis (faces via the bundled detector, text via the optional local server) ----------
+  const canvasIds = new WeakMap(); let canvasSeq = 0;
+  const canvasId = (c) => { if (!canvasIds.has(c)) canvasIds.set(c, ++canvasSeq); return canvasIds.get(c); };
+  const imgKey = (el) => el.currentSrc || el.src || "";
+  function elementDataUrl(el) { // same-origin / data / blob pixels, read in the page (tainted canvases throw)
+    try {
+      const nw = el.naturalWidth || el.width, nh = el.naturalHeight || el.height;
+      if (!nw || !nh) return null;
+      const s = Math.min(1, 1024 / Math.max(nw, nh)), c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(nw * s)); c.height = Math.max(1, Math.round(nh * s));
+      c.getContext("2d").drawImage(el, 0, 0, c.width, c.height);
+      return c.toDataURL("image/jpeg", 0.85);
+    } catch (_) { return null; }
+  }
+  function imgMessage(el) {
+    const src = imgKey(el);
+    if (/^https?:/i.test(src)) return { type: "zl:analyze", src };
+    const dataUrl = el.complete ? elementDataUrl(el) : null;       // data:, blob:, or not decodable by the worker
+    return dataUrl ? { type: "zl:analyze", dataUrl } : null;
+  }
+  function canvasMessage(el) {
+    try { return { type: "zl:analyze", dataUrl: el.toDataURL("image/jpeg", 0.8), ttl: 1500 }; } catch (_) { return null; }
+  }
+  /** Ask the service worker about an image once (cached); until the answer is in, or if it fails, cover the whole element. */
+  function requestAnalysis(key, make, ttl) {
+    let ent = state.img.get(key);
+    if (ent && (ent.status === "pending" || Date.now() - ent.ts < ttl)) return ent;
+    if (ent && ent.status === "fail" && Date.now() - ent.ts < 30000) return ent;
+    if (state.analyzing >= 4) return ent || { status: "pending" };   // retried on a later scan
+    const fresh = { status: "pending", ts: Date.now(), boxes: ent ? ent.boxes : [], nw: ent && ent.nw, nh: ent && ent.nh, ocrUp: ent && ent.ocrUp };
+    state.img.set(key, fresh); state.analyzing++;
+    Promise.resolve().then(make).then((msg) => (msg ? chrome.runtime.sendMessage(msg) : { ok: false }))
+      .then((r) => { if (r && r.ok) Object.assign(fresh, r.res, { status: "done" }); else fresh.status = "fail"; })
+      .catch(() => { fresh.status = "fail"; })
+      .finally(() => { fresh.ts = Date.now(); state.analyzing--; scheduleScan(0); });
+    return fresh;
+  }
+  function imageFindings(el, key, make, ttl, needOcr, out, covered) {
+    const ent = key ? requestAnalysis(key, make, ttl) : { status: "fail" };
+    covered.add(el);
+    if (ent.status === "done" && !(needOcr && !ent.ocrUp)) {
+      for (const b of ent.boxes) out.push({ kind: b.kind, reason: "image:" + b.kind, el, media: true, box: { ...b, nw: ent.nw, nh: ent.nh } });
+      return;
+    }
+    // pending, failed, or a canvas without OCR: fail closed
+    out.push({ kind: "IMAGE", reason: ent.status === "done" ? "no-ocr" : ent.status, el, media: true });
+  }
+  /** Map a box (fractions of the image) to viewport pixels, honouring object-fit. */
+  function boxRect(f) {
+    const el = f.el, b = f.box;
+    if (!el.isConnected) return [];
+    const r = el.getBoundingClientRect(), cs = getComputedStyle(el), fit = el.tagName === "CANVAS" ? "fill" : cs.objectFit;
+    let sx = r.width / b.nw, sy = r.height / b.nh;
+    if (fit === "contain" || fit === "scale-down") sx = sy = Math.min(sx, sy);
+    else if (fit === "cover") sx = sy = Math.max(sx, sy);
+    else if (fit === "none") sx = sy = 1;
+    const ox = (r.width - b.nw * sx) / 2, oy = (r.height - b.nh * sy) / 2;
+    const left = Math.max(r.left, r.left + ox + b.x * b.nw * sx - 2), top = Math.max(r.top, r.top + oy + b.y * b.nh * sy - 2);
+    const right = Math.min(r.right, r.left + ox + (b.x + b.w) * b.nw * sx + 2), bottom = Math.min(r.bottom, r.top + oy + (b.y + b.h) * b.nh * sy + 2);
+    return right > left && bottom > top ? [{ left, top, right, bottom, width: right - left, height: bottom - top }] : [];
+  }
   /** Video-call tiles, webcam previews, avatars and profile photos: covered whole (a screenshot shows faces, not text). */
   function scanMedia(out, covered) {
     for (const el of qsa("video,img,canvas")) {
@@ -327,10 +388,13 @@
       if (face) { out.push({ kind: "FACE", reason: "media:" + el.tagName.toLowerCase(), el, media: true }); covered.add(el); continue; }
       // Stock Chrome has no face detector and canvas text cannot be read: in shield mode cover what we cannot scan (fail closed).
       if (shieldOn()) {
-        const big = r.width >= 80 && r.height >= 80;
-        if ((el.tagName === "IMG" && big && state.settings.shieldImages !== "hinted") ||
-            (el.tagName === "CANVAS" && r.width >= 64 && r.height >= 32 && state.settings.shieldCanvas !== "off")) {
-          out.push({ kind: "IMAGE", reason: "unscannable:" + el.tagName.toLowerCase(), el, media: true }); covered.add(el);
+        const mode = state.settings.shieldImages;
+        if (el.tagName === "IMG" && r.width >= 64 && r.height >= 64 && mode !== "hinted") {
+          if (mode === "all") { out.push({ kind: "IMAGE", reason: "unscannable:img", el, media: true }); covered.add(el); }
+          else imageFindings(el, imgKey(el), () => imgMessage(el), 10 * 60 * 1000, false, out, covered);
+        } else if (el.tagName === "CANVAS" && r.width >= 64 && r.height >= 32 && state.settings.shieldCanvas !== "off") {
+          // canvas content changes: re-analyse every 2 s; without OCR we cannot know it holds no text, so cover it whole
+          imageFindings(el, "canvas:" + canvasId(el), () => canvasMessage(el), 2000, true, out, covered);
         }
       }
     }
@@ -388,6 +452,7 @@
 
   // ---------- rendering ----------
   function rectsOf(f) {
+    if (f.box) return boxRect(f);
     if (f.el) { if (!f.el.isConnected) return []; const r = f.el.getBoundingClientRect(); return r.width || r.height ? [r] : []; }
     if (f.range) { if (!f.range.startContainer.isConnected) return []; return Array.from(f.range.getClientRects()).filter((r) => r.width && r.height); }
     return [];

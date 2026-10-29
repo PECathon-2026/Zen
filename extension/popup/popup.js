@@ -39,7 +39,7 @@ function renderSummary(s) {
   $("mask").checked = !!s.mask;
   const sh = s.shield || { mode: "auto", active: false, agent: false };
   $("shield-mode").value = sh.mode || "auto";
-  CFG.load().then((st) => { $("shield-img").value = st.shieldImages || "all"; });
+  CFG.load().then((st) => { $("shield-img").value = st.shieldImages || "detect"; });
   $("shield-state").textContent = sh.active ? (sh.agent ? "active: agent detected" : "active") : "standing by";
   $("shield-state").className = "pill" + (sh.active ? " on" : "");
   $("guard").hidden = !(s.aiSite && s.guard);

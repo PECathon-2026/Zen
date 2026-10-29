@@ -208,6 +208,69 @@ def adversarial(ctx, base):
     return {"items": len(truth["items"]), "protected": sum(res.values()), "failed": bad}
 
 
+FACE_REF = (177, 66, 95, 95)  # OpenCV Haar box of the 512x512 public-domain NASA portrait (testpages/img)
+
+
+def _color_fraction(png: bytes, rect: dict, rgb, tol=22) -> float:
+    from PIL import Image
+    im = Image.open(io.BytesIO(png)).convert("RGB")
+    x0, y0, x1, y1 = (max(0, int(rect["x"])), max(0, int(rect["y"])), min(im.width, int(rect["x"] + rect["width"])), min(im.height, int(rect["y"] + rect["height"])))
+    if x1 <= x0 or y1 <= y0:
+        return 0.0
+    px = list(im.crop((x0, y0, x1, y1)).getdata())
+    return sum(1 for p in px if all(abs(p[i] - rgb[i]) <= tol for i in range(3))) / len(px)
+
+
+def _ocr_server():
+    """Start the local Zen server (OCR) on :8765 if nothing answers there; returns (proc|None, up)."""
+    import subprocess, sys, urllib.request
+    def up():
+        try:
+            return json.load(urllib.request.urlopen("http://localhost:8765/api/health", timeout=1)).get("features", {}).get("ocr", False)
+        except Exception:
+            return None
+    st = up()
+    if st is not None:
+        return None, bool(st)
+    proc = subprocess.Popen([sys.executable, "-m", "app.server", "--port", "8765"], cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    for _ in range(30):
+        time.sleep(0.5)
+        st = up()
+        if st is not None:
+            return proc, bool(st)
+    proc.terminate()
+    return None, False
+
+
+def faces(ctx, base, base2, ocr_up):
+    """Faces in ordinary photos (bundled detector), object-fit mapping, no over-covering, text in images/canvas (needs OCR server)."""
+    page = ctx.new_page()
+    page.goto(f"{base}/faces.html#x={base2}", wait_until="load")
+    page.wait_for_timeout(3500)  # analysis in the service worker
+    png = page.screenshot()
+    rect = lambda i: page.evaluate("id => {const r = document.getElementById(id).getBoundingClientRect(); return {x: r.x, y: r.y, width: r.width, height: r.height}}", i)
+    def face_rect(i, fit):
+        r = rect(i); fx, fy, fw, fh = FACE_REF
+        if fit == "fill":
+            sx, sy, ox, oy = r["width"] / 512, r["height"] / 512, 0, 0
+        else:  # contain
+            sx = sy = min(r["width"], r["height"]) / 512; ox, oy = (r["width"] - 512 * sx) / 2, (r["height"] - 512 * sy) / 2
+        # inner 60% of the reference face box
+        cx, cy, w, h = fx + fw / 2, fy + fh / 2, fw * 0.6, fh * 0.6
+        return {"x": r["x"] + ox + (cx - w / 2) * sx, "y": r["y"] + oy + (cy - h / 2) * sy, "width": w * sx, "height": h * sy}
+    FACE_RGB = (44, 62, 147)  # kind colour of FACE (#364fc7) as the opaque cover renders it
+    res = {}
+    for i, fit in (("same", "fill"), ("cross", "fill"), ("fit", "contain")):
+        res[i] = round(_color_fraction(png, face_rect(i, fit), FACE_RGB), 2)
+    res["clean_covered"] = round(1 - _color_fraction(png, rect("clean"), (235, 228, 195), tol=60), 2)  # share NOT light gradient
+    res["ocr_up"] = ocr_up
+    if ocr_up:
+        res["text_image_ocr_leak"] = "4111111111111111" in _norm(_ocr(png))
+        res["canvas_text_hidden"] = _norm("4111 1111 1111 1111") not in _norm(_ocr(png))
+    page.close()
+    return res
+
+
 def copy_guard(p, base):
     """Select + copy covered content (field, then whole page): the clipboard must never hold the real values."""
     import tempfile as _t
@@ -241,7 +304,7 @@ def copy_guard(p, base):
 def run():
     from playwright.sync_api import sync_playwright
     srv, base = _serve()
-    report = {"baseline": [], "shielded": [], "focus": None, "latency": None, "scroll": None, "adversarial": None, "copy": None}
+    report = {"baseline": [], "shielded": [], "focus": None, "latency": None, "scroll": None, "adversarial": None, "copy": None, "faces": None}
     try:
         with sync_playwright() as p:
             for mode, key in (("off", "baseline"), ("auto", "shielded")):
@@ -263,6 +326,19 @@ def run():
                         report["focus"] = round(_cover_fraction(pg.screenshot(), rect), 3)
                     ctx.close()
             report["copy"] = copy_guard(p, base)
+            srv2, base2 = _serve()
+            proc, ocr_up = _ocr_server()
+            try:
+                with tempfile.TemporaryDirectory() as tmp:
+                    ctx = _launch(p, tmp)
+                    _set_mode(ctx, "on")
+                    time.sleep(0.5)
+                    report["faces"] = faces(ctx, base, base2, ocr_up)
+                    ctx.close()
+            finally:
+                srv2.shutdown()
+                if proc:
+                    proc.terminate()
     finally:
         srv.shutdown()
     return report
@@ -279,7 +355,7 @@ def summarize(r):
          "uncovered_items": [u for x in r["shielded"] for u in x["uncovered"]],
          "mean_coverage": round(statistics.mean(c for x in r["shielded"] for c in x["coverage"]), 3) if any(x["coverage"] for x in r["shielded"]) else None,
          "context_kept": round(statistics.mean(x["context_kept"] for x in r["shielded"] if x["context_kept"] is not None), 3),
-         "focus_cover": r["focus"], "latency": r["latency"], "scroll": r["scroll"], "adversarial": r["adversarial"], "copy_leaks": r["copy"]}
+         "focus_cover": r["focus"], "latency": r["latency"], "scroll": r["scroll"], "adversarial": r["adversarial"], "copy_leaks": r["copy"], "faces": r["faces"]}
     return s
 
 

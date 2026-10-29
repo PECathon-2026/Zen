@@ -30,8 +30,20 @@ items; screenshots taken with `page.screenshot()` like a CDP agent, read back wi
 - Focusing a field keeps it covered (95%). Insert-to-redacted latency: median 3 ms, max 4.5 ms.
 - These claims cover the tested pages and these two channels (screenshot, DOM read) only.
 
-**Known gaps:** canvas, images, video and cross-origin iframes with no content script access are not read (faces in video
-tiles are only flagged by structure); closed shadow DOM text is not scanned; an agent that runs JavaScript in the page's
+**Photos, faces and text in pictures.** In shield mode each photo-sized image (64 px and up) is analysed once by a
+bundled face detector (`lib/vendor/tracking-min.js` + `face-min.js`, tracking.js, BSD, Viola-Jones; runs in the service
+worker, cross-origin pixels included because the worker fetches them with host permission) and covered **per face**,
+object-fit aware. Until the answer is in, and if analysis fails, the whole image is covered (fail closed). If the local Zen
+server is running, its OCR/OpenCV boxes are added, so text inside images and canvases is covered too; canvases are
+re-analysed every 2 s, and without the server a canvas is covered whole. Setting `shieldImages`: `detect` (default),
+`all` (cover every photo) or `hinted`.
+Test portrait: NASA public-domain astronaut photo (`testpages/img/nasa_pd_1.png`).
+
+**Copying.** Copy, cut and drag of covered content put `[REDACTED:KIND]` on the clipboard; covers over text and media block
+clicks and selection starts. Closed shadow roots are scanned (`chrome.dom.openOrClosedShadowRoot`).
+
+**Known gaps:** faces the Viola-Jones cascade misses (profile, small, occluded) are not covered; video that is not a live
+camera stream is only covered by hint; text inside images without the local server running is not read; an agent that runs JavaScript in the page's
 *main world* can read the page's own variables (we protect what the DOM shows, not what the app's scripts hold);
 detection is regex/structure based (see Limitations below).
 
@@ -75,7 +87,7 @@ Optional: start the local server (`.venv/bin/python -m app.server`). The popup's
 ## Privacy guarantees
 
 - **Detection is local.** The detector and classifier are plain JS bundled in the extension. There is no remote code, CDN or analytics.
-- **No network traffic except the local server.** Content scripts never call `fetch`. Extension pages are limited by CSP to `localhost:8765` and `127.0.0.1:8765`. The screenshot is blacked out locally *before* it is sent to the local OCR server.
+- **Network:** content scripts never call `fetch`. The service worker makes plain GET requests for images it analyses (needs `<all_urls>` host access and a wide `connect-src`) and POSTs image bytes only to the local server on `localhost:8765`. Nothing is sent to any other host. The screenshot is blacked out locally *before* it is sent to the local OCR server.
 - **Nothing is persisted.** Findings live only in page memory and hold element/range references and kinds, not copies of values. Settings hold configuration only.
 - **The page is not changed.** Highlights and masks are an overlay, and input values are never rewritten. The single exception is the guard: when you choose "Send sanitized" or "Paste sanitized", the text of the prompt box you are using is replaced.
 - **The guard does not send anything.** The site's own UI sends whatever is in the box.
