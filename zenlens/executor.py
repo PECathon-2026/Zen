@@ -47,7 +47,7 @@ class Rejected(Exception):
 
 
 Approve = Callable[[Action, str], bool]
-SENSITIVE_FIELDS = {"password", "otp", "card", "secret"}
+SENSITIVE_FIELDS = {"password", "otp", "card"}
 IRREVERSIBLE = re.compile(r"(?i)\b(submit|pay|purchase|buy|order|checkout|delete|remove|send|transfer|confirm|"
                           r"post|publish|sign ?up|register|unsubscribe|cancel)\b")
 
@@ -58,9 +58,8 @@ def origin(url: str) -> str:
 
 
 def field_kind(el: dict) -> str:
-    if el.get("field_kind") or el.get("sensitive"):  # capture/structural detector annotates directly
-        k = (el.get("field_kind") or el["sensitive"]).lower()
-        return k if k in SENSITIVE_FIELDS else "secret"  # api_key etc.: placeholder-only, matches no vault kind
+    if el.get("field_kind"):  # capture/structural detector may annotate directly
+        return el["field_kind"]
     t, ac = (el.get("type") or "").lower(), (el.get("autocomplete") or "").lower()
     lbl = f'{el.get("label") or ""} {el.get("text") or ""} {el.get("name") or ""}'.lower()
     if t == "password" or ac in ("current-password", "new-password"):
@@ -121,7 +120,7 @@ class Executor:
             return Verdict(False, f"unknown target: {_safe(a.target)}")
         el = els[a.target]
         if a.type == "click":
-            label = f'{el.get("label") or ""} {el.get("name") or ""} {el.get("text") or ""} {el.get("value") or ""}'
+            label = f'{el.get("label") or ""} {el.get("text") or ""} {el.get("value") or ""}'
             if (el.get("type") or "").lower() == "submit" or IRREVERSIBLE.search(label):
                 return Verdict(True, approval=f"irreversible click on {a.target}")
             return Verdict(True)

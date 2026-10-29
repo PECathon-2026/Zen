@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "ZenLens — local privacy lens",
+  "short_name": "ZenLens",
+  "version": "0.1.0",
+  "description": "Finds and masks sensitive data on web pages and guards what you paste into AI chats. All detection runs locally.",
+  "minimum_chrome_version": "116",
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "action": {
+    "default_title": "ZenLens",
+    "default_popup": "popup/popup.html",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png" }
+  },
+  "background": { "service_worker": "background.js" },
+  "side_panel": { "default_path": "sidepanel/sidepanel.html" },
+  "options_page": "options/options.html",
+  "permissions": ["activeTab", "storage", "scripting", "sidePanel", "contextMenus"],
+  "host_permissions": ["http://localhost:8765/*", "http://127.0.0.1:8765/*"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["lib/detect.js", "lib/structural.js", "lib/settings.js", "content/content.js", "content/guard.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:8765 http://127.0.0.1:8765; img-src 'self' data: blob:"
+  }
+}

@@ -2,3 +2,10 @@
 .pytest_cache/
 .venv/
 __pycache__/
+.pytest_cache/
+demo/out/
+.DS_Store
+*.pyc
+node_modules/
+.env
+secrets*.txt

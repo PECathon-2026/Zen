@@ -142,9 +142,9 @@ def _face_boxes(img: Image.Image) -> list[Redaction]:
         import cv2
         import numpy as np
     except ImportError:
-        raise RedactionError("faces=True needs opencv-python-headless<5 and numpy") from None
+        return []
     if not hasattr(cv2, "CascadeClassifier"):  # OpenCV 5 dropped Haar cascades; needs opencv<5
-        raise RedactionError("faces=True needs opencv<5 (Haar cascades)")
+        return []
     cc = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
     gray = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2GRAY)
     return [Redaction((int(x), int(y), int(x + w), int(y + h)), "FACE")

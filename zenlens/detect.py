@@ -53,7 +53,8 @@ _RULES = [
     ("TOKEN", r"\beyJ[\w-]{10,}\.[\w-]{10,}\.[\w-]{10,}", 0, None),
     ("CARD", r"\b\d(?:[ .-]{0,2}\d){12,18}\b", 0, lambda s: luhn_ok(_digits(s))),
     ("AADHAAR", r"\b[2-9]\d{3}[ -]?\d{4}[ -]?\d{4}\b", 0, lambda s: verhoeff_ok(_digits(s))),
-    ("PAN", r"\b[A-Z]{5}\d{4}[A-Z]\b", 0, None),
+    # 4th letter = holder type (P person, C company, H HUF, F firm, A AOP, T trust, B BOI, L local, J AJP, G govt)
+    ("PAN", r"\b[A-Z]{3}[ABCFGHJLPT][A-Z]\d{4}[A-Z]\b", 0, None),
     ("EMAIL", r"\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b", 0, None),
     # 5+5 splits, +91/91/0 prefixes; skip "#123..." / "ID is ..." and repeated-digit sentinels like 9999999999.
     ("PHONE", r"(?<![\w#-])(?<!(?i:\bid) )(?<!(?i:\bid:) )(?<!(?i:\bid is) )(?:(?:\+?91|0)[ -]?)?[6-9]\d{4}[ -]?\d{5}\b", 0,

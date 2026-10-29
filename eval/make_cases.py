@@ -227,8 +227,7 @@ def build(seed: int = SEED) -> list[dict]:
     # avoid trailing '-' / '_' which breaks the \b boundary (would be an artifact, not a test)
     k = k[:-1] + "Q"; C("devsettings", f"maps_key: {k}", [(k, "API_KEY")])
     k = "sk-proj-" + g.alnum(40); C("devsettings", f"export OPENAI_API_KEY='{k}'", [(k, "API_KEY")], ["format_variant"])
-    g.digits(12), g.digits(13)  # keep RNG stream (and every other case) unchanged
-    k = "xoxb-SYNTHETIC-" + g.alnum(24)  # not Slack-shaped digits, so GitHub push protection stays quiet
+    k = "xoxb-" + g.digits(12) + "-" + g.digits(13) + "-" + g.alnum(24)
     C("devsettings", f"SLACK_BOT_TOKEN={k}", [(k, "API_KEY")])
     k = "eyJhbGciOiJIUzI1NiJ9." + g.alnum(40) + "." + g.alnum(43)
     C("devsettings", f"Authorization: Bearer {k}", [(k, "TOKEN")])

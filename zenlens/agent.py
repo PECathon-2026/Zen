@@ -49,7 +49,7 @@ def run(goal: str, page: Page, llm: LLM, executor: Executor, max_steps: int = 10
     history: list[dict] = []
     for step in range(1, max_steps + 1):
         try:
-            view = capture_view(page)  # a real page raises Blocked here if sanitizing left residue
+            view = capture_view(page)  # a live page's sanitized_view may itself raise Blocked
             egress_check(build_payload(goal, view, history), canaries)
         except Blocked as e:  # fail closed: nothing goes to the model
             log.warning("step %d: egress %s", step, e)

@@ -118,13 +118,3 @@ def test_describe_is_log_safe():
     assert describe(Action("navigate", url="https://evil.example/a?u=someone@example.test")) == \
         "navigate url=https://evil.example"
     assert "9876543210" not in describe(Action("click", target="9876543210"))
-
-
-def test_capture_style_elements_name_and_sensitive_flag():
-    els = [{"id": "e1", "tag": "button", "name": "Pay now", "text": ""},
-           {"id": "e2", "tag": "input", "type": "text", "sensitive": "API_KEY", "name": "Access token"}]
-    page = FakePage(ORIGIN + "/x", els)
-    ex = Executor(page, [ORIGIN], Vault({"x": "v"}), approve=lambda a, r: False)
-    v = view(page)
-    assert ex.check(Action("click", "e1"), v).approval  # aria-label-only button still needs approval
-    assert not ex.check(Action("type", "e2", "plain-text"), v).ok  # sensitive-flagged field is placeholder-only

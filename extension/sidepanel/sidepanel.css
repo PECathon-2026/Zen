@@ -1,0 +1,16 @@
+body{padding:0 12px 24px}
+header{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:1}
+.grow{flex:1}
+h2{font-size:13px;margin:16px 0 6px}
+#page{margin:8px 0 0;word-break:break-all}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:top;word-break:break-word}
+td code{font:11px ui-monospace,Menlo,monospace}
+.tabs{display:flex;gap:4px;margin-top:16px}
+.tabs button{flex:1;border-radius:8px 8px 0 0}
+.tabs button[aria-selected=true]{background:var(--acc);color:var(--acc-fg);border-color:var(--acc)}
+.text{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,monospace;background:var(--soft);border:1px solid var(--line);padding:10px;max-height:46vh;overflow:auto;border-radius:0 0 8px 8px}
+mark{color:#fff;border-radius:3px;padding:0 2px}
+.red{color:var(--acc);font-weight:700}
+.row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+#shotimg{max-width:100%;margin-top:8px;border:1px solid var(--line);border-radius:6px}

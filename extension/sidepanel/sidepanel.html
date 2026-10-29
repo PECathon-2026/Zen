@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>ZenLens privacy preview</title>
+<link rel="stylesheet" href="../lib/ui.css"><link rel="stylesheet" href="sidepanel.css"></head>
+<body>
+<header>
+  <img src="../icons/icon32.png" width="18" height="18" alt="">
+  <strong>Privacy preview</strong>
+  <span class="pill">Local-only</span>
+  <span class="grow"></span>
+  <button id="refresh" title="Rescan the current tab">Refresh</button>
+</header>
+<p id="page" class="muted"></p>
+<p id="err" class="muted" hidden></p>
+
+<section>
+  <h2>Form fields</h2>
+  <table id="fields"><thead><tr><th>Field</th><th>Kind</th><th>What an AI would see</th></tr></thead><tbody></tbody></table>
+  <p id="nofields" class="muted" hidden>No sensitive form fields.</p>
+</section>
+
+<section>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t-before" aria-selected="true">Before (stays local)</button>
+    <button role="tab" id="t-after" aria-selected="false">After (sanitized)</button>
+  </div>
+  <div id="before" class="text" role="tabpanel"></div>
+  <div id="after" class="text" role="tabpanel" hidden></div>
+  <div class="row"><button id="copyafter">Copy sanitized text</button><span id="counts" class="muted"></span></div>
+</section>
+
+<section>
+  <h2>Redact a screenshot</h2>
+  <p class="muted">Captures the visible tab, blacks out every sensitive element ZenLens found in the page, then (if the local ZenLens server with OCR is running) runs OCR redaction on top.</p>
+  <div class="row"><button id="shot" class="p">Capture &amp; redact</button><button id="dl" hidden>Download PNG</button></div>
+  <p id="shotinfo" class="muted" role="status"></p>
+  <img id="shotimg" alt="Redacted screenshot" hidden>
+</section>
+<script src="../lib/settings.js"></script>
+<script src="sidepanel.js"></script>
+</body></html>

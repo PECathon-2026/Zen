@@ -1,0 +1,143 @@
+[
+ {
+  "tag": "input",
+  "type": "password",
+  "id": "pw"
+ },
+ {
+  "tag": "input",
+  "autocomplete": "cc-csc",
+  "id": "f1"
+ },
+ {
+  "tag": "input",
+  "autocomplete": "shipping cc-number",
+  "id": "x"
+ },
+ {
+  "tag": "input",
+  "id": "f3",
+  "name": "CVV / CVC"
+ },
+ {
+  "tag": "input",
+  "field_name": "otpCode"
+ },
+ {
+  "tag": "input",
+  "placeholder": "Enter your UPI PIN"
+ },
+ {
+  "tag": "input",
+  "placeholder": "PIN code"
+ },
+ {
+  "tag": "input",
+  "field_name": "apiKey"
+ },
+ {
+  "tag": "input",
+  "field_name": "csrf_token",
+  "type": "hidden"
+ },
+ {
+  "tag": "input",
+  "field_name": "webhook_secret"
+ },
+ {
+  "tag": "input",
+  "type": "email"
+ },
+ {
+  "tag": "input",
+  "type": "tel",
+  "id": "t"
+ },
+ {
+  "tag": "input",
+  "type": "submit",
+  "field_name": "password"
+ },
+ {
+  "tag": "button",
+  "name": "Password"
+ },
+ {
+  "tag": "span",
+  "id": "contact-email",
+  "text": "meera@example.com",
+  "class": "email"
+ },
+ {
+  "tag": "span",
+  "class": "participant-name",
+  "text": "Meera Iyer"
+ },
+ {
+  "tag": "span",
+  "class": "participant-name",
+  "text": "meera iyer"
+ },
+ {
+  "tag": "p",
+  "class": "shipping-address",
+  "text": "17 Gulmohar Lane, Koramangala"
+ },
+ {
+  "tag": "p",
+  "class": "shipping-address",
+  "text": "Gulmohar Lane"
+ },
+ {
+  "tag": "td",
+  "id": "db-host",
+  "class": "host-ip",
+  "text": "192.168.1.20"
+ },
+ {
+  "tag": "code",
+  "class": "token",
+  "text": "abcdefghijklmnopqrst"
+ },
+ {
+  "tag": "code",
+  "class": "token",
+  "text": "short"
+ },
+ {
+  "tag": "code",
+  "class": "token",
+  "text": "Bearer abc.def-123"
+ },
+ {
+  "tag": "img",
+  "class": "avatar",
+  "id": "a1"
+ },
+ {
+  "tag": "video",
+  "id": "selfView",
+  "class": "self-view"
+ },
+ {
+  "tag": "input",
+  "name": "Aadhaar number"
+ },
+ {
+  "tag": "input",
+  "field_name": "pan_no"
+ },
+ {
+  "tag": "input",
+  "field_name": "cardExpiry"
+ },
+ {
+  "tag": "input",
+  "field_name": "username"
+ },
+ {
+  "tag": "select",
+  "field_name": "exp-month",
+  "name": "Expiration month"
+ }
+]

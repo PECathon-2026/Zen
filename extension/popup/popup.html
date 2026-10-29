@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>ZenLens</title>
+<link rel="stylesheet" href="../lib/ui.css"><link rel="stylesheet" href="popup.css"></head>
+<body>
+<header>
+  <img src="../icons/icon32.png" width="20" height="20" alt="">
+  <strong>ZenLens</strong>
+  <span class="pill" title="All detection runs inside your browser. Nothing is sent anywhere.">Local-only</span>
+  <span class="grow"></span>
+  <span class="pill" id="server" title="Optional local ZenLens server (OCR)"><span class="dot" id="srvdot"></span><span id="srvtxt">server…</span></span>
+</header>
+<main>
+  <p id="host" class="muted"></p>
+  <div id="unavailable" hidden class="muted">ZenLens cannot scan this page (browser pages, the Web Store and PDFs are off-limits to extensions). </div>
+  <div id="disabled" hidden class="muted">ZenLens is turned off for this site (site list in Options).</div>
+  <section id="summary">
+    <div class="total"><span id="total">0</span> <span id="totlabel">sensitive items on this page</span></div>
+    <ul id="kinds"></ul>
+    <p id="guard" class="muted" hidden>Paste/submit guard is active on this AI site.</p>
+  </section>
+  <label class="toggle"><input type="checkbox" id="mask"> <span>Mask on screen</span></label>
+  <div class="actions">
+    <button id="copy">Copy sanitized page text</button>
+    <button id="preview" class="p">Privacy preview</button>
+  </div>
+  <p id="status" class="muted" role="status"></p>
+</main>
+<footer><a href="#" id="options">Options</a><span class="muted">Values never leave this device.</span></footer>
+<script src="../lib/settings.js"></script>
+<script src="popup.js"></script>
+</body></html>

@@ -5,3 +5,9 @@ pytesseract
 pyobjc-framework-Vision; sys_platform == "darwin"
 opencv-python-headless<5
 anthropic
+# app/ (local server + PWA)
+fastapi
+uvicorn
+python-multipart
+qrcode
+httpx

@@ -6,9 +6,9 @@ import os
 import re
 
 PLACEHOLDER = re.compile(r"\{\{SECRET:([A-Za-z0-9_.-]+)\}\}")
-KINDS = ("password", "otp", "card", "email", "secret", "text")
+KINDS = ("password", "otp", "card", "email", "text")
 _KIND_HINTS = [("password", r"pass|pwd"), ("otp", r"otp|one_?time|2fa"), ("card", r"card|cvv|cvc|cc_"),
-               ("email", r"email|mail"), ("secret", r"api|token|key|secret")]
+               ("email", r"email|mail")]
 
 
 class VaultError(Exception):
@@ -89,7 +89,7 @@ class Vault:
 
     def canaries(self) -> tuple[str, ...]:
         """Real values, for egress_check(canaries=...) so a value can never leave even if it leaks into a payload."""
-        return tuple(v for _, v in self._s.values() if len(v) >= 6)  # shorter values match bbox numbers etc.
+        return tuple(v for _, v in self._s.values() if v)
 
     def __repr__(self):
         return f"Vault(names={self.names()})"

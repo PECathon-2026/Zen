@@ -7,7 +7,7 @@ from zenlens.capture import Element, PageSnapshot, sanitized_view, sensitive_kin
 from zenlens.gate import Blocked, egress_check
 
 FIXTURE = Path(__file__).parent / "fixtures" / "capture_page.html"
-PII = ["asha.test@example.com", "9876543210", "482913", "2345 6789 0124", "ABCDE1234F",
+PII = ["asha.test@example.com", "9876543210", "482913", "2345 6789 0124", "ABCPE1234F",
        "Tr0ub4dor-xyz", "4111 1111 1111 1111", "4111111111111111", "sk-test_abcdefghijklmnopqrstuvwxyz"]
 
 
