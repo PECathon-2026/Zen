@@ -438,12 +438,12 @@
       try { state.roots = collectRoots(); } catch (e) { state.roots = [document]; console.debug("[Zen] roots error", e && e.message); }
       // each stage on its own: one failing stage (odd markup on some site) must not hide what the others found
       for (const stage of [scanFields, scanStructuralLeaves, scanMedia, scanText, scanSplit, scanFrames]) {
-        try { stage(out, covered); } catch (e) { console.debug("[Zen] scan stage error", stage.name, e && e.message); }
+        try { stage(out, covered); } catch (e) { console.debug("[Zen] scan stage error", stage.name, e && e.message); try { document.documentElement.setAttribute("data-zen-err", stage.name + ":" + String(e && e.message).slice(0, 80)); } catch (_) { /* TEMP diag */ } }
       }
     } catch (e) { console.debug("[Zen] scan error", e && e.message); }
     state.findings = out.slice(0, MAX_FINDINGS);
     checkFrames();
-    try { document.documentElement.setAttribute("data-zen-dbg", [state.enabled ? 1 : 0, shieldOn() ? 1 : 0, state.findings.length, state.roots.length, state.agent ? 1 : 0, state.settings.shieldMode].join(":")); } catch (_) { /* TEMP diag */ }
+    try { document.documentElement.setAttribute("data-zen-dbg", [state.enabled ? 1 : 0, shieldOn() ? 1 : 0, state.findings.length, state.roots.length, state.agent ? 1 : 0, state.settings.shieldMode, document.readyState, qsa(FIELD_SEL).length, (() => { const f = qsa(FIELD_SEL)[0]; if (!f) return "nofield"; let c = null; try { c = ST.classifyDomElement(f); } catch (e) { c = "ERR" + e.message; } return [f.type, visible(f) ? "vis" : "invis", c && c.join ? c.join("/") : c, (f.value || "").length].join(","); })()].join(":")); } catch (_) { /* TEMP diag */ }
     if (shieldOn()) { try { maskFields(); maskAttrs(); applyDom(); ensureWatch(); } catch (e) { console.debug("[Zen] dom redact error", e && e.message); } }
     render(); report();
   }
