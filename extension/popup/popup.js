@@ -1,4 +1,4 @@
-/* Popup: per-tab summary, mask toggle, sanitized copy, side panel launcher, server status. */
+/* Popup: per-tab summary, mask toggle, sanitized copy, side panel launcher. */
 const CFG = globalThis.ZenSettings;
 const $ = (id) => document.getElementById(id);
 let tab = null;
@@ -47,11 +47,6 @@ function renderSummary(s) {
 async function init() {
   [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const settings = await CFG.load();
-  CFG.health(settings).then((h) => {
-    $("srvdot").className = "dot " + (h.ok ? "on" : "off");
-    $("srvtxt").textContent = h.ok ? `server${h.features && h.features.ocr ? " · OCR" : ""}` : "server offline";
-    $("server").title = h.ok ? `Zen server ${h.version || ""} at ${CFG.serverBase(settings)}` : "Local server not running — everything still works offline (no OCR).";
-  });
   const s = tab && /^(https?|file):/.test(tab.url || "") ? await ensureContent() : null;
   if (!s) {
     $("unavailable").hidden = false; $("summary").hidden = true;

@@ -184,7 +184,7 @@
   const ATTRS = ["alt", "title", "aria-label", "placeholder", "href"];
   function maskAttrs() {
     if (!state.settings.domRedact || state.attrMasked.length > MAX_DOM_EDITS) return;
-    const faces = new Set(state.findings.filter((f) => f.media).map((f) => f.el));
+    const faces = new Set(state.findings.filter((f) => f.media || f.kind === "FACE").map((f) => f.el));
     for (const el of qsa("[alt],[title],[aria-label],[placeholder],a[href]")) {
       if (isOurs(el)) continue;
       for (const a of ATTRS) {

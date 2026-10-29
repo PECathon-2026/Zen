@@ -21,3 +21,7 @@ footer{display:flex;justify-content:space-between;gap:8px;padding:9px 14px;borde
 .shield-head strong{font:600 15px var(--head)}
 .shield select { margin-top: 8px }
 .pill.on { background: var(--acc); color: var(--acc-fg); border-color: var(--acc) }
+
+.iconbtn .i-sun{display:none}
+:root[data-theme=dark] .iconbtn .i-sun{display:inline}
+:root[data-theme=dark] .iconbtn .i-moon{display:none}

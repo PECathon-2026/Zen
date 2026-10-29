@@ -1,0 +1,16 @@
+{"page": "adversarial.html", "note": "kinds: text must vanish from innerText/OCR; field/media must be covered; attr must vanish from outerHTML",
+ "items": [
+  {"id": "sh-text", "value": "4111 1111 1111 1111", "kind": "CARD", "how": "text", "shadow": true},
+  {"id": "sh-field", "value": "4111 1111 1111 1111", "kind": "CARD", "how": "field", "shadow": true},
+  {"id": "split-phone", "value": "98765", "kind": "PHONE", "how": "text"},
+  {"id": "split-card", "value": "4111", "kind": "CARD", "how": "text"},
+  {"id": "face-alt", "value": "Asha Verma", "kind": "FACE", "how": "attr"},
+  {"id": "mail", "value": "asha.synthetic@example.org", "kind": "EMAIL", "how": "attr"},
+  {"id": "ph", "value": "rahul.synthetic@example.org", "kind": "EMAIL", "how": "attr"},
+  {"id": "cam", "value": "", "kind": "FACE", "how": "media"},
+  {"id": "live", "value": "", "kind": "FACE", "how": "media"},
+  {"id": "round", "value": "", "kind": "FACE", "how": "media"},
+  {"id": "bgav", "value": "", "kind": "FACE", "how": "media"},
+  {"id": "anim", "value": "4111 1111 1111 1111", "kind": "CARD", "how": "field"},
+  {"id": "fin", "value": "4111 1111 1111 1111", "kind": "CARD", "how": "frame-field"}
+ ]}

@@ -43,3 +43,9 @@ def test_covers_follow_scrolling_and_survive_reload(report):
     sc = mod.summarize(rep)["scroll"]
     assert sc["scrolled_field"] and min(sc["scrolled_field"] + sc["fixed_field"]) >= 0.7
     assert sc["after_reload"] >= 0.7
+
+
+def test_adversarial_cases_are_protected(report):
+    rep, mod = report
+    adv = mod.summarize(rep)["adversarial"]
+    assert adv["failed"] == [], adv  # shadow DOM, split text, attributes, faces/video/avatars, animation, iframe

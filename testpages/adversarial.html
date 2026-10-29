@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Adversarial cases (synthetic)</title>
+<style>body{font:16px sans-serif;margin:16px}section{margin:0 0 10px}video,img,.avatar{background:#ecd9b8}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(220px)}}#anim{animation:slide 1.2s linear infinite alternate;width:240px}</style></head>
+<body>
+<section id="shadow-host"></section>
+<section><p id="split-phone">Call <span>98765</span> <span>43210</span> now</p>
+<p id="split-card">Card <b>4111</b> 1111 <i>1111</i> 1111</p></section>
+<section><img id="face-alt" alt="Asha Verma" title="Asha Verma" width="64" height="64" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+<a id="mail" href="mailto:asha.synthetic@example.org">Contact</a>
+<input id="ph" placeholder="rahul.synthetic@example.org" style="width:260px"></section>
+<section><video id="cam" class="webcam" width="160" height="110"></video>
+<video id="live" width="160" height="110"></video>
+<img id="round" width="80" height="80" style="border-radius:50%" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+<div id="bgav" class="avatar" style="display:inline-block;width:70px;height:70px;background-image:url(data:image/gif;base64,R0lGODlhAQABAAAAACw=)"></div></section>
+<section><input id="anim" autocomplete="cc-number" value="4111 1111 1111 1111"></section>
+<section><iframe id="frame" width="320" height="60" srcdoc="<body style='margin:4px'><input id='fin' autocomplete='cc-number' value='4111 1111 1111 1111' style='width:280px'>"></iframe></section>
+<script>
+const host = document.getElementById('shadow-host'), sr = host.attachShadow({mode: 'open'});
+sr.innerHTML = '<p id="sh-text">Card 4111 1111 1111 1111</p><input id="sh-field" autocomplete="cc-number" value="4111 1111 1111 1111" style="width:260px">';
+// a live MediaStream on a video with no hint at all: this is what a video-call tile looks like
+const c = document.createElement('canvas'); c.width = 64; c.height = 48; c.getContext('2d').fillRect(0, 0, 64, 48);
+document.getElementById('live').srcObject = c.captureStream(); document.getElementById('live').muted = true;
+</script></body></html>

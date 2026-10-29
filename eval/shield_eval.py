@@ -171,10 +171,47 @@ def scroll_reload(ctx, base):
     return {"scrolled_field": [round(x, 2) for x in scrolled], "fixed_field": [round(x, 2) for x in fixed], "after_reload": round(after, 2)}
 
 
+def adversarial(ctx, base):
+    """Shadow DOM, text split over elements, attribute leaks, faces/video/avatars, animated fields, iframes."""
+    truth = json.loads((PAGES / "adversarial.truth.json").read_text())
+    page = ctx.new_page()
+    page.goto(f"{base}/adversarial.html", wait_until="load")
+    page.wait_for_timeout(1200)
+    png = page.screenshot()
+    html = page.evaluate("document.documentElement.outerHTML + [...document.querySelectorAll('*')].filter(e => e.shadowRoot).map(e => e.shadowRoot.innerHTML).join('')")
+    text = page.evaluate("document.body.innerText")
+    ocr = _norm(_ocr(png))
+    res, bad = {}, []
+    for it in truth["items"]:
+        how, iid = it["how"], it["id"]
+        if how == "text":
+            ok = _norm(it["value"]) not in ocr and it["value"] not in text
+        elif how == "attr":
+            ok = it["value"] not in html
+        else:
+            if how == "frame-field":
+                fr = page.frame_locator("#frame").locator("#fin")
+                box = fr.bounding_box()
+                rect = {"x": box["x"], "y": box["y"], "width": box["width"], "height": box["height"]}
+            else:
+                js = ("id => { const e = document.getElementById(id) || document.getElementById('shadow-host').shadowRoot.getElementById(id);"
+                      " const r = e.getBoundingClientRect(); return {x: r.x, y: r.y, width: r.width, height: r.height}; }")
+                if how == "field" and iid == "anim":  # sample a moving field at an arbitrary instant
+                    page.wait_for_timeout(430)
+                rect = page.evaluate(js, iid)
+                png = page.screenshot() if (how == "field" and iid == "anim") else png
+            ok = _cover_fraction(png, rect) >= CLEAR
+        res[iid] = ok
+        if not ok:
+            bad.append(f'{it["kind"]}:{iid}({how})')
+    page.close()
+    return {"items": len(truth["items"]), "protected": sum(res.values()), "failed": bad}
+
+
 def run():
     from playwright.sync_api import sync_playwright
     srv, base = _serve()
-    report = {"baseline": [], "shielded": [], "focus": None, "latency": None, "scroll": None}
+    report = {"baseline": [], "shielded": [], "focus": None, "latency": None, "scroll": None, "adversarial": None}
     try:
         with sync_playwright() as p:
             for mode, key in (("off", "baseline"), ("auto", "shielded")):
@@ -187,6 +224,7 @@ def run():
                     if mode == "auto":
                         report["latency"] = latency(ctx, base)
                         report["scroll"] = scroll_reload(ctx, base)
+                        report["adversarial"] = adversarial(ctx, base)
                         pg = ctx.new_page()
                         pg.goto(f"{base}/checkout.html", wait_until="load"); pg.wait_for_timeout(600)
                         pg.focus("#cc-number")  # an agent clicking the field must not drop the cover
@@ -210,7 +248,7 @@ def summarize(r):
          "uncovered_items": [u for x in r["shielded"] for u in x["uncovered"]],
          "mean_coverage": round(statistics.mean(c for x in r["shielded"] for c in x["coverage"]), 3) if any(x["coverage"] for x in r["shielded"]) else None,
          "context_kept": round(statistics.mean(x["context_kept"] for x in r["shielded"] if x["context_kept"] is not None), 3),
-         "focus_cover": r["focus"], "latency": r["latency"], "scroll": r["scroll"]}
+         "focus_cover": r["focus"], "latency": r["latency"], "scroll": r["scroll"], "adversarial": r["adversarial"]}
     return s
 
 
