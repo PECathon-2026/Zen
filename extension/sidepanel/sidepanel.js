@@ -1,5 +1,5 @@
 /* Side panel: before/after privacy preview + screenshot redaction (local DOM boxes, optional local OCR). */
-const CFG = globalThis.ZenLensSettings;
+const CFG = globalThis.ZenSettings;
 const $ = (id) => document.getElementById(id);
 const MAX_TEXT = 200000;
 let current = null;
@@ -36,7 +36,7 @@ async function refresh() {
   $("page").textContent = tab ? (tab.title || tab.url || "") : "";
   const p = tab && await ask(tab, { type: "zl:preview" });
   if (!p) {
-    showErr("ZenLens is not running on this tab (browser page, or opened before install). Click the ZenLens toolbar icon once, then Refresh.");
+    showErr("Zen is not running on this tab (browser page, or opened before install). Click the Zen toolbar icon once, then Refresh.");
     $("before").textContent = ""; $("after").textContent = ""; $("fields").tBodies[0].replaceChildren(); return;
   }
   showErr("");
@@ -75,10 +75,10 @@ async function captureAndRedact() {
   const info = $("shotinfo"); info.textContent = "Capturing…"; $("dl").hidden = true;
   const tab = await activeTab();
   const boxes = tab && await ask(tab, { type: "zl:boxes" });
-  if (!boxes) { info.textContent = "ZenLens is not running on this tab, so a safe redaction is not possible. Nothing captured."; return; }
+  if (!boxes) { info.textContent = "Zen is not running on this tab, so a safe redaction is not possible. Nothing captured."; return; }
   let dataUrl;
   try { dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }); }
-  catch (e) { info.textContent = "Capture needs permission: click the ZenLens toolbar icon on this tab first, then retry. (" + (e && e.message) + ")"; return; }
+  catch (e) { info.textContent = "Capture needs permission: click the Zen toolbar icon on this tab first, then retry. (" + (e && e.message) + ")"; return; }
   const img = await loadImage(dataUrl);
   const cv = document.createElement("canvas"); cv.width = img.width; cv.height = img.height;
   const g = cv.getContext("2d"); g.drawImage(img, 0, 0);
@@ -100,7 +100,7 @@ async function captureAndRedact() {
         const ocrImg = await loadImage(URL.createObjectURL(await r.blob()));
         const c2 = document.createElement("canvas"); c2.width = ocrImg.width; c2.height = ocrImg.height; c2.getContext("2d").drawImage(ocrImg, 0, 0);
         out = c2;
-        method += ` + local OCR server (${r.headers.get("X-ZenLens-Redactions") || "?"} OCR redaction(s))`;
+        method += ` + local OCR server (${r.headers.get("X-Zen-Redactions") || "?"} OCR redaction(s))`;
       } else method += ` (OCR server returned ${r.status}; DOM boxes only)`;
     } catch (_) { method += " (OCR server unreachable; DOM boxes only)"; }
   } else method += " (no OCR server: text inside images/canvas is NOT redacted)";

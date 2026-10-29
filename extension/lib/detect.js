@@ -1,7 +1,7 @@
 /*
- * ZenLens local PII detector: a faithful JS port of zenlens/detect.py (+ redact, egress gate,
+ * Zen local PII detector: a faithful JS port of zenlens/detect.py (+ redact, egress gate,
  * structural extras). Pure functions, no DOM, no network. Works as a classic script (sets
- * globalThis.ZenLensDetect) in content scripts / extension pages / service worker, and via
+ * globalThis.ZenDetect) in content scripts / extension pages / service worker, and via
  * require() in Node for the parity tests.
  *
  * Python `re` on str is Unicode-aware; JS is not, so the Python classes are emulated:
@@ -288,6 +288,6 @@
     gstinCheckChar, gstinOk, vehicleOk,
     _py: { W, WC, B, D, S, NS, ci },
   };
-  root.ZenLensDetect = api;
+  root.ZenDetect = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

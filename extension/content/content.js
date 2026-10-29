@@ -1,12 +1,12 @@
 /*
- * ZenLens content script: scans visible text + form fields LOCALLY, outlines sensitive items with a
+ * Zen content script: scans visible text + form fields LOCALLY, outlines sensitive items with a
  * per-kind badge, optional on-screen mask. Never mutates page text or input values (all visuals live
  * in a closed shadow-root overlay), never sends anything over the network, never stores values.
  */
 (function () {
   "use strict";
-  if (globalThis.__ZenLensContent) return; // idempotent (scripting.executeScript re-injection)
-  const Z = globalThis.ZenLensDetect, ST = globalThis.ZenLensStructural, CFG = globalThis.ZenLensSettings;
+  if (globalThis.__ZenContent) return; // idempotent (scripting.executeScript re-injection)
+  const Z = globalThis.ZenDetect, ST = globalThis.ZenStructural, CFG = globalThis.ZenSettings;
 
   const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "TEXTAREA", "INPUT", "SELECT", "OPTION", "IFRAME", "OBJECT", "HEAD", "TITLE"]);
   const MAX_NODES = 20000, MAX_FINDINGS = 800, MAX_ELEMS = 6000;
@@ -18,7 +18,7 @@
     findings: [],   // {kind, reason, el?:Element, range?:Range, field?:bool}  — no values kept
     host: null, layer: null, rescanTimer: 0, rafPending: false, lastScan: 0,
   };
-  const ZL = (globalThis.__ZenLensContent = { state, scheduleScan, render, ui: {} });
+  const ZL = (globalThis.__ZenContent = { state, scheduleScan, render, ui: {} });
 
   // ---------- overlay ----------
   /** Constructable stylesheet (not subject to page style-src CSP); <style> fallback. */
@@ -128,7 +128,7 @@
       scanFields(out, covered);
       scanStructuralLeaves(out, covered);
       scanText(out, covered);
-    } catch (e) { console.debug("[ZenLens] scan error", e && e.message); }
+    } catch (e) { console.debug("[Zen] scan error", e && e.message); }
     state.findings = out.slice(0, MAX_FINDINGS);
     render(); report();
   }
@@ -261,7 +261,7 @@
         const sel = String(getSelection() || "") || msg.fallback || "";
         const r = Z.redactAll(sel, state.customRules);
         copyText(r.text).then((ok) => {
-          toast(ok ? `ZenLens: copied sanitized selection (${r.spans.length} item${r.spans.length === 1 ? "" : "s"} redacted)` : "ZenLens: clipboard blocked by page");
+          toast(ok ? `Zen: copied sanitized selection (${r.spans.length} item${r.spans.length === 1 ? "" : "s"} redacted)` : "Zen: clipboard blocked by page");
           reply({ ok, count: r.spans.length });
         });
         return true;

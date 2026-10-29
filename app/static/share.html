@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ZenLens: redact before you share</title>
+<title>Zen: redact before you share</title>
 <meta name="description" content="Black out card numbers, phone numbers and other sensitive text in a screenshot before you share it. Runs on your own computer.">
 <meta name="theme-color" content="#0f766e">
 <meta name="color-scheme" content="light dark">
@@ -15,10 +15,10 @@
 </head>
 <body>
 <header class="bar">
-  <a class="brand" href="/" aria-label="Open the ZenLens app">
-    <img src="/icons/icon.svg" alt="" width="24" height="24"><span>ZenLens</span>
+  <a class="brand" href="/" aria-label="Open the Zen app">
+    <img src="/icons/icon.svg" alt="" width="24" height="24"><span>Zen</span>
   </a>
-  <span class="badge" title="The image is only sent to the ZenLens server on your own computer">on your computer</span>
+  <span class="badge" title="The image is only sent to the Zen server on your own computer">on your computer</span>
 </header>
 
 <main id="main">
@@ -30,7 +30,7 @@
   <section id="st-pick" class="card" aria-labelledby="h-pick">
     <h2 id="h-pick">Pick a screenshot</h2>
     <p class="muted">Card numbers, phone numbers, emails, IDs and codes are found by on-device OCR and blacked out.
-      From Android you can also use <b>Share → ZenLens</b> in your gallery.</p>
+      From Android you can also use <b>Share → Zen</b> in your gallery.</p>
     <label class="btn primary file" id="pick-label">Choose image
       <input type="file" id="pick" accept="image/*"></label>
   </section>
@@ -67,7 +67,7 @@
   <section id="st-err" class="card err" role="alert" hidden>
     <h2>Couldn't redact this image</h2>
     <p id="err-msg"></p>
-    <p class="muted small">Nothing was shared. ZenLens never hands back an unredacted image.</p>
+    <p class="muted small">Nothing was shared. Zen never hands back an unredacted image.</p>
     <button type="button" class="btn" id="err-again">Try another image</button>
   </section>
 </main>

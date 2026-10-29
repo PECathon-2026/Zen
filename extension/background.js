@@ -1,4 +1,4 @@
-/* ZenLens service worker: context menu, toolbar badge. No network access, no storage of values. */
+/* Zen service worker: context menu, toolbar badge. No network access, no storage of values. */
 
 const MENU_ID = "zenlens-redact-copy";
 
@@ -17,7 +17,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       await chrome.scripting.executeScript({ target: { tabId: tab.id },
         files: ["lib/detect.js", "lib/structural.js", "lib/settings.js", "content/content.js", "content/guard.js"] });
       await chrome.tabs.sendMessage(tab.id, msg);
-    } catch (e) { console.warn("ZenLens: cannot redact on this page", e && e.message); }
+    } catch (e) { console.warn("Zen: cannot redact on this page", e && e.message); }
   }
 });
 

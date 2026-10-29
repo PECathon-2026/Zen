@@ -1,8 +1,8 @@
-"""ZenLens local server: JSON API + installable PWA.
+"""Zen local server: JSON API + installable PWA.
 
 Privacy model
 - Runs on the user's own machine. Default bind 127.0.0.1; `--lan` binds 0.0.0.0 so a phone on the same
-  network can use it, and then every POST needs the pairing token (header X-ZenLens-Token).
+  network can use it, and then every POST needs the pairing token (header X-Zen-Token).
 - Detection/sanitization/OCR are local. The only path that can reach a third party is /api/agent/run in
   "claude" mode, which goes through zenlens.runner -> ClaudeLLM -> egress_check (fail closed).
 - Request/response bodies are never logged. Findings carry offsets/kinds/reasons, never values.
@@ -239,7 +239,7 @@ def _err(status: int, msg: str) -> JSONResponse:
 def create_app(*, lan: bool = False, token: str | None = None, local_only: bool = False,
                allowed_hosts: set[str] | None = None) -> FastAPI:
     token = token or secrets.token_urlsafe(18)
-    app = FastAPI(title="ZenLens", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title="Zen", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
     app.state.token, app.state.lan, app.state.local_only = token, lan, local_only
 
     def host_ok(host: str) -> bool:
@@ -267,9 +267,9 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
             return Response(status_code=204, headers=_cors(origin, preflight=True))
         # 3. Pairing token on POSTs when reachable from the network.
         if request.method == "POST" and lan:
-            got = request.headers.get("x-zenlens-token", "")
+            got = request.headers.get("x-zen-token", "")
             if not hmac.compare_digest(got.encode(), token.encode()):
-                resp = _err(401, "missing or bad X-ZenLens-Token")
+                resp = _err(401, "missing or bad X-Zen-Token")
                 if ext:
                     resp.headers.update(_cors(origin))
                 return resp
@@ -358,7 +358,7 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
         except Exception as e:  # fail closed: never echo the input
             return _err(422, f"redaction failed, image not returned: {type(e).__name__}")
         hdr = json.dumps([{"box": list(r.box), "kind": r.kind} for r in reds], separators=(",", ":"))
-        return Response(out, media_type="image/png", headers={"X-ZenLens-Redactions": hdr})
+        return Response(out, media_type="image/png", headers={"X-Zen-Redactions": hdr})
 
     @app.post("/api/gate")
     def gate(req: GateReq):
@@ -467,10 +467,10 @@ CSP = ("default-src 'self'; img-src 'self' blob: data:; style-src 'self'; script
 
 def _cors(origin: str, preflight: bool = False) -> dict:
     h = {"Access-Control-Allow-Origin": origin, "Vary": "Origin",
-         "Access-Control-Expose-Headers": "X-ZenLens-Redactions"}
+         "Access-Control-Expose-Headers": "X-Zen-Redactions"}
     if preflight:
         h.update({"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                  "Access-Control-Allow-Headers": "Content-Type, X-ZenLens-Token",
+                  "Access-Control-Allow-Headers": "Content-Type, X-Zen-Token",
                   "Access-Control-Max-Age": "600"})
     return h
 
@@ -534,7 +534,7 @@ class _NoBodies(logging.Filter):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="python -m app.server", description="ZenLens local server + PWA")
+    ap = argparse.ArgumentParser(prog="python -m app.server", description="Zen local server + PWA")
     ap.add_argument("--lan", action="store_true", help="bind 0.0.0.0 so a phone on this network can connect (token required)")
     ap.add_argument("--port", type=int, default=PORT)
     ap.add_argument("--local-only", action="store_true", help="disable Claude mode / any third-party egress")
@@ -557,7 +557,7 @@ def main(argv=None):
     host = "0.0.0.0" if a.lan else "127.0.0.1"
     scheme = "https" if a.cert else "http"
     tok = app.state.token
-    print(f"\nZenLens {VERSION}  (local-only: {'on' if a.local_only else 'off'})")
+    print(f"\nZen {VERSION}  (local-only: {'on' if a.local_only else 'off'})")
     print(f"  This computer:  {scheme}://127.0.0.1:{a.port}/")
     print(f"  Pairing token:  {tok}")
     if tls_msg:

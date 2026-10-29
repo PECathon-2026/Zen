@@ -1,5 +1,5 @@
 /* Options: server URL + token, AI site list, custom rules (validated), site allow/deny list. */
-const CFG = globalThis.ZenLensSettings, Z = globalThis.ZenLensDetect;
+const CFG = globalThis.ZenSettings, Z = globalThis.ZenDetect;
 const $ = (id) => document.getElementById(id);
 const lines = (t) => t.split(/\r?\n/).map((s) => s.trim().toLowerCase()).filter(Boolean)
   .map((s) => s.replace(/^https?:\/\//, "").replace(/\/.*$/, ""));
@@ -44,7 +44,7 @@ async function save() {
   const badHost = [...aiSites, ...siteList].find((h) => !HOST_RE.test(h));
   if (badHost) return msg(`Not a host name: ${badHost}`, true);
   const siteMode = document.querySelector("input[name=siteMode]:checked").value;
-  if (siteMode === "allow" && !siteList.length) return msg("Allow-list mode with an empty list would disable ZenLens everywhere.", true);
+  if (siteMode === "allow" && !siteList.length) return msg("Allow-list mode with an empty list would disable Zen everywhere.", true);
   await CFG.save({
     serverUrl: $("serverUrl").value, token: $("token").value.trim(), aiSites, siteList, siteMode, customRules,
     highlight: $("highlight").checked, guard: $("guard").checked, maskByDefault: $("maskByDefault").checked,

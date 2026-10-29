@@ -1,4 +1,4 @@
-/* ZenLens share screen. Self-contained (same tokens as app.css) so it loads fast from the share sheet. */
+/* Zen share screen. Self-contained (same tokens as app.css) so it loads fast from the share sheet. */
 :root {
   --bg: #f6f7f9; --surface: #ffffff; --surface-2: #f0f2f5; --text: #14181f; --muted: #5b6573;
   --border: #dde1e7; --accent: #0f766e; --accent-ink: #ffffff; --accent-soft: #d6f2ee;
