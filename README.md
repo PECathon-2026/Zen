@@ -114,7 +114,7 @@ or report.
 
 The server runs on your own machine; the phone reaches it over Wi-Fi. The token sits in the URL fragment
 (never sent to the server or its logs), is stored by the page, and every POST needs `X-Zen-Token`
-in LAN mode. Flags: `--local-only` (disables Claude mode), `--port`, `--token` / `ZENLENS_TOKEN`,
+in LAN mode. Flags: `--local-only` (disables Claude mode; the on-device model still works), `--port`, `--token` / `ZENLENS_TOKEN`,
 `--cert`/`--key` for your own HTTPS certificate, `--https` to have one made with mkcert.
 
 **Install on a phone (needed for share-to-redact):**
@@ -139,6 +139,7 @@ Screens (mobile bottom bar / desktop tabs, light/dark, no CDNs, strict CSP):
 - **Agent task**: goal + page, scripted demo or Claude; each step's verdict (allowed / rejected / needs
   approval) and a **"Data that left this device"** panel showing the exact sanitized payloads. In pseudonym
   mode the model's answer is shown twice: as sent (tokens) and "on this device only" (real values).
+- **On-device planner (Ollama)**: the Agent tab can use a small local model instead of Claude, so even the planning step never leaves your machine. Install [Ollama](https://ollama.com), then `ollama pull llama3.2:3b` (or set `ZENLENS_OLLAMA_MODEL`, e.g. `qwen2.5:3b`) and keep it running; the app detects it. The model gets the same sanitized view and the same egress gate as Claude, and the host must be loopback (`OLLAMA_HOST` pointing elsewhere is refused). Small models plan worse than Claude: the executor still validates every action, so a bad plan is rejected, not run.
 - **Settings**: local-only mode, custom regex rules (validated server-side), connection status.
 
 API (port 8765, also used by the extension): `GET /api/health`, `POST /api/sanitize`,

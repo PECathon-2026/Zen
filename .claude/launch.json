@@ -1,1 +1,3 @@
-{"version":"0.0.1","configurations":[{"name":"zenlens-ui","runtimeExecutable":".venv/bin/python","runtimeArgs":["-m","zenlens.ui"],"port":8765}]}
+{"version":"0.0.1","configurations":[
+{"name":"zen-app","runtimeExecutable":".venv/bin/python","runtimeArgs":["-m","app.server","--port","8790"],"port":8790},
+{"name":"zenlens-ui","runtimeExecutable":".venv/bin/python","runtimeArgs":["-m","zenlens.ui"],"port":8765}]}
