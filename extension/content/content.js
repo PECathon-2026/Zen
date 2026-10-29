@@ -224,7 +224,9 @@
       for (const el of r.querySelectorAll("*")) {
         n++;
         // chrome.dom.openOrClosedShadowRoot also returns CLOSED shadow roots (extensions only)
-        const sr = el.shadowRoot || (chrome.dom && chrome.dom.openOrClosedShadowRoot ? chrome.dom.openOrClosedShadowRoot(el) : null);
+        // openOrClosedShadowRoot throws for non-HTMLElements (SVG, MathML): never let one element abort the whole scan
+        let sr = el.shadowRoot;
+        if (!sr && el instanceof HTMLElement && chrome.dom && chrome.dom.openOrClosedShadowRoot) { try { sr = chrome.dom.openOrClosedShadowRoot(el); } catch (_) { sr = null; } }
         if (sr && !isOurs(el)) { rs.push(sr); q.push(sr); observeRoot(sr); }
       }
     }
@@ -431,12 +433,11 @@
     if (!shieldOn() && state.domRedacted.length) restoreDom();
     const out = [], covered = new Set();
     try {
-      state.roots = collectRoots();
-      scanFields(out, covered);
-      scanStructuralLeaves(out, covered);
-      scanMedia(out, covered);
-      scanText(out, covered);
-      scanSplit(out, covered);
+      try { state.roots = collectRoots(); } catch (e) { state.roots = [document]; console.debug("[Zen] roots error", e && e.message); }
+      // each stage on its own: one failing stage (odd markup on some site) must not hide what the others found
+      for (const stage of [scanFields, scanStructuralLeaves, scanMedia, scanText, scanSplit]) {
+        try { stage(out, covered); } catch (e) { console.debug("[Zen] scan stage error", stage.name, e && e.message); }
+      }
     } catch (e) { console.debug("[Zen] scan error", e && e.message); }
     state.findings = out.slice(0, MAX_FINDINGS);
     checkFrames();
