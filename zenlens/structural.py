@@ -32,6 +32,15 @@ KEYWORDS = [
     ("CVV", r"\b(?:cvv2?|cvc2?|csc|card security|security code)\b"),
     ("PASSWORD", r"\b(?:password|passwd|passcode|pwd)\b"),
     ("PIN", r"\b(?:upi |atm )?pin\b(?! ?code)"),
+    ("UPI_ID", r"\b(?:upi ?id|upi address|upi handle|vpa)\b"),
+    ("IFSC", r"\bifsc(?: code)?\b"),
+    ("BANK_ACCOUNT", r"\b(?:bank account|account ?(?:no|number|num)|acc ?no|acct(?: ?no| ?number)?|a c no"
+                     r"|khata(?: sankhya| number| no)?)\b"),
+    ("GSTIN", r"\b(?:gstin|gst ?no|gst ?number|gst ?reg(?:istration)? ?no)\b"),
+    ("VOTER_ID", r"\b(?:voter ?id|voter card|epic ?(?:no|number))\b"),
+    ("PASSPORT", r"\bpassport(?: ?(?:no|number))?\b"),
+    ("VEHICLE", r"\b(?:vehicle ?(?:no|number|reg(?:istration)?(?: no| number)?)|number ?plate|licen[cs]e ?plate"
+                r"|gaadi ?(?:no|number))\b"),
     ("API_KEY", r"\b(?:api ?key|access ?key|secret ?key|private ?key)\b"),
     ("TOKEN", r"\b(?:token|bearer|session ?id|csrf|authorization)\b"),
     ("SECRET", r"\bsecret\b"),
@@ -40,11 +49,11 @@ KEYWORDS = [
     ("CARD", r"\b(?:card ?number|cc ?number|credit card|debit card)\b"),
     ("CARD_EXP", r"\b(?:expiry|expiration|exp date|cc exp|valid thru)\b"),
     ("EMAIL", r"\be ?mail\b"),
-    ("PHONE", r"\b(?:phone|mobile|telephone)\b"),
+    ("PHONE", r"\b(?:phone|mobile|telephone|mob ?no|contact ?(?:no|number)|whatsapp ?(?:no|number)|fone)\b"),
     ("IP", r"\b(?:ip|ipv4|ipv6|ip address|host ip)\b"),
     ("FACE", r"\b(?:face|webcam|camera|selfie|avatar|participant|self view|video tile)\b"),
-    ("NAME", r"\b(?:participant|display|full|speaker|caller|card ?holder) name\b|\bcardholder\b"),
-    ("ADDRESS", r"\b(?:address|street|postal code|zip|pincode|pin code)\b"),
+    ("NAME", r"\b(?:participant|display|full|speaker|caller|card ?holder) name\b|\bcardholder\b|\bnaam\b"),
+    ("ADDRESS", r"\b(?:address|street|postal code|zip|pincode|pin code|ghar ka pata)\b"),
 ]
 FACE_TAGS = {"img", "video", "canvas"}
 # Text-only extras for values detect() has no rule for (bearer tokens, JWTs).

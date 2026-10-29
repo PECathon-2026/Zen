@@ -19,12 +19,20 @@ const KIND = {
   PHONE: ['Phone number', 'Indian mobile: 10 digits starting 6–9, optional +91/0 prefix'],
   API_KEY: ['API key', 'Known key prefix (sk-, AKIA, ghp_, AIza, xox*) or AWS secret assignment'],
   TOKEN: ['Access token', 'JWT (eyJ… with three segments) or bearer token'],
+  UPI_ID: ['UPI ID', 'name@handle with a known UPI app handle (ybl, okhdfcbank, paytm…), no .com after it'],
+  IFSC: ['IFSC code', '4 letters + 0 + 6 characters; known bank code or next to “IFSC”'],
+  BANK_ACCOUNT: ['Bank account number', '9–18 digits right after “A/c no”, “account number”, “khata”, “खाता संख्या”'],
+  GSTIN: ['GSTIN', '15 characters: state code 01–38 + PAN + entity number + Z + valid mod-36 check character'],
+  VEHICLE: ['Vehicle registration', 'Indian number plate with a valid state code (MH 12 AB 1234) or BH series (22 BH 1234 AA)'],
+  VOTER_ID: ['Voter ID (EPIC)', '3 letters + 7 digits next to “Voter ID”, “EPIC”, “वोटर आईडी”'],
+  PASSPORT: ['Passport number', '1 letter + 7 digits next to “passport” or “पासपोर्ट”'],
   OTP: ['One-time code', '4–8 digits next to “OTP”, “verification code”, “code is”…'],
   PASSWORD: ['Password', 'Value after “password:”, “pwd=”, “passwd is”… or a password field'],
   PIN: ['PIN', 'Field labelled PIN / UPI PIN'],
   SECRET: ['Secret', 'Field labelled secret'],
   IP: ['IP address', 'Valid IPv4/IPv6 address (version numbers excluded)'],
   NAME: ['Person name', 'Field marked as a name (cardholder, participant, autocomplete=name)'],
+  PERSON: ['Person name', 'Field marked as a name (cardholder, participant, autocomplete=name)'],
   ADDRESS: ['Postal address', 'Field marked as address / postal code'],
   FACE: ['Face', 'Face detected locally (OpenCV) or a camera/avatar element'],
   EXTRA: ['Sensitive field', 'Screen area of a field the DOM detector flagged'],
@@ -154,15 +162,22 @@ document.addEventListener('focusin', e => { const t = e.target.closest('[data-ti
 document.addEventListener('click', e => { const t = e.target.closest('[data-tip]'); if (t) showTip(t); else hideTip(); });
 addEventListener('scroll', hideTip, { passive: true });
 
-function redactedSpan(kind) {
-  return kindAttrs(el('span', { class: 'redacted', 'data-tip': '', tabindex: '0', text: `[REDACTED:${kind}]` }), kind);
+function redactedSpan(kind, token) {
+  return kindAttrs(el('span', { class: 'redacted' + (token ? ' token' : ''), 'data-tip': '', tabindex: '0', text: token || `[REDACTED:${kind}]` }), kind);
 }
-/* Render a sanitized string with [REDACTED:KIND] tokens styled. */
+/* Render a sanitized string with [REDACTED:KIND] and pseudonym [KIND_n] tokens styled (same pattern as zenlens.pseudonym.TOKEN). */
+const MASK_RE = /\[REDACTED:([A-Z0-9_]+)\]|\[([A-Z][A-Z0-9_]*?)_([1-9]\d{0,5})(?: [a-z]{2,12})?\]/g;
 function renderSanitized(node, s) {
   node.replaceChildren();
-  const re = /\[REDACTED:([A-Z0-9_]+)\]/g; let pos = 0, m;
-  while ((m = re.exec(s))) { node.append(s.slice(pos, m.index), redactedSpan(m[1])); pos = m.index + m[0].length; }
+  const re = new RegExp(MASK_RE); let pos = 0, m;
+  while ((m = re.exec(s))) { node.append(s.slice(pos, m.index), m[1] ? redactedSpan(m[1]) : redactedSpan(m[2], m[0])); pos = m.index + m[0].length; }
   node.append(s.slice(pos));
+}
+function renderLegend(tbody, legend) {
+  tbody.replaceChildren();
+  for (const t of legend || []) {
+    tbody.append(el('tr', {}, el('td', {}, redactedSpan(t.kind, t.token)), el('td', { text: explain(t.kind)[0] }), el('td', { class: 'num', text: String(t.count) })));
+  }
 }
 function renderCounts(node, counts, extraLabel) {
   node.replaceChildren();
@@ -188,8 +203,11 @@ $('#text-clear').onclick = () => { $('#text-in').value = ''; $('#text-out').hidd
 $('#text-go').onclick = e => busy(e.currentTarget, async () => {
   const text = $('#text-in').value;
   if (!text.trim()) { toast('Paste some text first.'); return; }
-  const extra = rules();
-  const res = await api('/api/sanitize', { json: extra.length ? { text, extra_rules: extra } : { text } });
+  const extra = rules(), mode = $('input[name=text-mode]:checked').value;
+  const req = extra.length ? { text, extra_rules: extra } : { text };
+  if (mode === 'pseudonym') req.mode = 'pseudonym';
+  store.set('textMode', mode);
+  const res = await api('/api/sanitize', { json: req });
   // Server offsets are Unicode code points; JS strings are UTF-16, so slice by code points.
   const cps = Array.from(text), before = $('#text-before');
   before.replaceChildren();
@@ -197,12 +215,15 @@ $('#text-go').onclick = e => busy(e.currentTarget, async () => {
   for (const f of res.findings) {
     before.append(cps.slice(pos, f.start).join(''));
     before.append(kindAttrs(el('mark', { class: 'pii', 'data-tip': '', tabindex: '0', text: cps.slice(f.start, f.end).join('') }), f.kind));
+    if (f.token) before.append(el('sup', { class: 'tok', text: f.token }));  // which token this local value became
     pos = f.end;
   }
   before.append(cps.slice(pos).join(''));
   renderSanitized($('#text-after'), res.sanitized);
   $('#text-after').dataset.raw = res.sanitized;
   renderCounts($('#text-counts'), res.counts);
+  $('#text-legend-card').hidden = !(res.legend && res.legend.length);
+  renderLegend($('#text-legend'), res.legend);
   const why = $('#text-why'); why.replaceChildren();
   for (const k of Object.keys(res.counts)) {
     const [t, rule, custom] = explain(k);
@@ -348,6 +369,9 @@ $('#agent-go').onclick = e => busy(e.currentTarget, async () => {
   const mode = $('input[name=mode]:checked').value;
   if (mode === 'claude' && localOnly()) { toast('Local-only mode is on.', true); return; }
   const body = { goal: $('#agent-goal').value.trim(), url: $('#agent-url').value.trim(), mode, auto_approve: $('#agent-approve').checked };
+  const privacy = $('input[name=privacy]:checked').value;
+  if (privacy === 'pseudonym') body.privacy_mode = 'pseudonym';
+  store.set('agentPrivacy', privacy);
   if (!body.goal || !body.url) { toast('Enter a goal and a start URL.'); return; }
   if (mode === 'scripted') {
     try { body.script = JSON.parse($('#agent-script').value || '[]'); if (!Array.isArray(body.script)) throw 0; }
@@ -366,7 +390,17 @@ async function renderReport(r) {
     el('span', { class: 'big', text: `Status: ${r.status}` }),
     el('span', { text: `${r.steps.length} steps · ${r.rejected} rejected` }),
     el('span', { text: `planner: ${r.llm}` }),
+    r.privacy_mode ? el('span', { text: `privacy: ${r.privacy_mode}` }) : null,
     r.reason ? el('span', { class: 'hint', text: r.reason }) : null);
+  if (r.final_answer) {
+    const sent = el('div', { class: 'answer' }, el('span', { class: 'tag tag-egress', text: 'model answer, as sent' }), ' ');
+    const t = el('span', { class: 'mono' }); renderSanitized(t, r.final_answer); sent.append(t);
+    sum.append(sent);
+  }
+  if (r.local_only && r.local_only.final_answer) {  // rehydrated by the server on this device; never part of any payload
+    sum.append(el('div', { class: 'answer' }, el('span', { class: 'tag tag-local', text: 'on this device only, not sent' }), ' ',
+      el('span', { class: 'mono', text: r.local_only.final_answer })));
+  }
   const steps = $('#agent-steps'); steps.replaceChildren();
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   for (const [i, s] of r.steps.entries()) {
@@ -387,6 +421,11 @@ async function renderReport(r) {
     ? `${eg.payloads.length} request${eg.payloads.length === 1 ? '' : 's'} (${(bytes / 1024).toFixed(1)} KB) sent to ${eg.destination}. Every one passed the egress gate; this is exactly what was sent.`
     : `Nothing left this device: the scripted planner runs locally. Below is exactly what Claude would have received (${eg.payloads.length} request${eg.payloads.length === 1 ? '' : 's'}, ${(bytes / 1024).toFixed(1)} KB), already sanitized and egress-checked.`;
   const box = $('#agent-egress'); box.replaceChildren();
+  if (r.pseudonyms && r.pseudonyms.length) {
+    const tb = el('tbody'); renderLegend(tb, r.pseudonyms);
+    box.append(el('p', { class: 'hint', text: 'Pseudonym tokens the model saw (values stay on this device; typing a token needs your approval):' }),
+      el('table', { class: 'legend' }, el('thead', {}, el('tr', {}, el('th', { text: 'Token' }), el('th', { text: 'Kind' }), el('th', { text: 'Occurrences' }))), tb));
+  }
   if (r.secrets_available && r.secrets_available.length) box.append(el('p', { class: 'hint', text: `Vault placeholders the model may use (values stay local): ${r.secrets_available.join(', ')}` }));
   eg.payloads.forEach((p, i) => box.append(el('details', i === eg.payloads.length - 1 ? { open: '' } : {}, el('summary', { text: `Request ${i + 1}` }), jsonBlock(p))));
   if (!eg.payloads.length) box.append(el('p', { class: 'hint', text: 'No payloads were produced.' }));
@@ -442,6 +481,9 @@ $('#rule-form').addEventListener('submit', async e => {
 applyTheme(store.get('theme', 'system'));
 pairFromHash();
 showTab(store.get('tab', 'text'));
+for (const [name, key] of [['text-mode', 'textMode'], ['privacy', 'agentPrivacy']]) {
+  const v = store.get(key, 'redact'), r = $(`input[name="${name}"][value="${v}"]`); if (r) r.checked = true;
+}
 renderRules();
 loadInfo().then(loadPresets);
 addEventListener('hashchange', () => { pairFromHash(); loadInfo(); });

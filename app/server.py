@@ -112,6 +112,7 @@ def redact_spans(text: str, spans) -> str:
 class SanitizeReq(BaseModel):
     text: str = Field(max_length=MAX_TEXT)
     extra_rules: list[Rule] | None = None
+    mode: str = Field(default="redact", pattern="^(redact|pseudonym)$")
 
 
 class SanitizeHtmlReq(BaseModel):
@@ -125,6 +126,7 @@ class GateReq(BaseModel):
 
 class PreviewReq(BaseModel):
     url: str = Field(max_length=2048)
+    privacy_mode: str = Field(default="redact", pattern="^(redact|pseudonym)$")
 
 
 class AgentReq(BaseModel):
@@ -134,6 +136,7 @@ class AgentReq(BaseModel):
     script: list[dict] | None = Field(default=None, max_length=50)
     auto_approve: bool = False
     max_steps: int = Field(default=10, ge=1, le=25)
+    privacy_mode: str = Field(default="redact", pattern="^(redact|pseudonym)$")
 
 
 # ---------------------------------------------------------------- helpers
@@ -315,6 +318,16 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
         counts: dict[str, int] = {}
         for _, _, k in spans:
             counts[k] = counts.get(k, 0) + 1
+        if req.mode == "pseudonym":  # stable tokens ([EMAIL_1]); the token map dies with this request
+            from zenlens.pseudonym import Pseudonymizer
+            ps = Pseudonymizer()
+            try:
+                out = egress_check(ps.pseudonymize(req.text, spans)[0])
+            except Blocked as e:  # fail closed: never return a pseudonymized text with residue
+                return _err(409, f"egress gate blocked the pseudonymized text: {e}")
+            return {"sanitized": out, "mode": "pseudonym", "counts": counts, "legend": ps.legend(),
+                    "findings": [{"start": s, "end": e, "kind": k, "token": ps.token(k, req.text[s:e], count=False)}
+                                 for s, e, k in spans]}
         return {"sanitized": redact_spans(req.text, spans),
                 "findings": [{"start": s, "end": e, "kind": k} for s, e, k in spans], "counts": counts}
 
@@ -380,7 +393,7 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
         target = resolve_target(req.url)
         runner = _runner()
         try:
-            return runner.preview(target)
+            return runner.preview(target, privacy_mode=req.privacy_mode)
         except Blocked as e:
             return _err(409, f"egress gate blocked the view: {e}")
         except Exception as e:
@@ -412,7 +425,7 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
             vault = _demo_vault() if demo else Vault.from_env()  # real sites: ZENLENS_SECRET_<NAME> env vars
             report = runner.run_task(req.goal, target, llm=_Recorder(inner, sent), vault=vault,
                                      approve=True if req.auto_approve else None,
-                                     max_steps=req.max_steps, headless=True)
+                                     max_steps=req.max_steps, headless=True, privacy_mode=req.privacy_mode)
             report["llm"] = req.mode
             report["secrets_available"] = [f"{{{{SECRET:{n}}}}}" for n in vault.names()]  # names only
             # Exactly what the planner received each step (already egress-checked). In scripted mode the
@@ -441,6 +454,8 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
     def manifest():
         return FileResponse(STATIC / "manifest.webmanifest", media_type="application/manifest+json")
 
+    from app import share
+    share.install(app)  # Web Share Target fallback (redirect only; never reads the shared image)
     app.mount("/", StaticFiles(directory=STATIC, html=True), name="static")
     return app
 
@@ -526,8 +541,17 @@ def main(argv=None):
     ap.add_argument("--token", default=os.environ.get("ZENLENS_TOKEN"), help="pairing token (default: random)")
     ap.add_argument("--cert", help="TLS certificate (e.g. from mkcert) so the PWA can install on a phone")
     ap.add_argument("--key", help="TLS private key")
+    ap.add_argument("--https", action="store_true", help="serve TLS with an mkcert cert for localhost + LAN IP (app/certs/)")
     a = ap.parse_args(argv)
     import uvicorn
+
+    from app import share
+    try:
+        a.cert, a.key, tls_msg = share.resolve_tls(https=a.https, cert=a.cert, key=a.key,
+                                                   lan_ip=lan_ip() if a.lan else None)
+    except share.TLSSetupError as e:
+        print(f"\n{e}\n", file=sys.stderr)
+        return 2
 
     app = create_app(lan=a.lan, token=a.token, local_only=a.local_only)
     host = "0.0.0.0" if a.lan else "127.0.0.1"
@@ -536,11 +560,15 @@ def main(argv=None):
     print(f"\nZenLens {VERSION}  (local-only: {'on' if a.local_only else 'off'})")
     print(f"  This computer:  {scheme}://127.0.0.1:{a.port}/")
     print(f"  Pairing token:  {tok}")
+    if tls_msg:
+        print(tls_msg)
     if a.lan:
         url = f"{scheme}://{lan_ip()}:{a.port}/#token={tok}"
         print(f"  Phone (same Wi-Fi): {url}\n  (the token is in the #fragment, so it never reaches server logs)")
         qr = ascii_qr(url)
         print(qr if qr else "  (pip install qrcode to show a QR code)")
+        if a.https:
+            print(share.phone_steps(url, share.mkcert_caroot()))
     else:
         print("  Bound to localhost only. Use --lan to pair a phone.")
     print(flush=True)

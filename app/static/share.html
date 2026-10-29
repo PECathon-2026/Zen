@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ZenLens: redact before you share</title>
+<meta name="description" content="Black out card numbers, phone numbers and other sensitive text in a screenshot before you share it. Runs on your own computer.">
+<meta name="theme-color" content="#0f766e">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="stylesheet" href="/share.css">
+<script src="/share.js" defer></script>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="/" aria-label="Open the ZenLens app">
+    <img src="/icons/icon.svg" alt="" width="24" height="24"><span>ZenLens</span>
+  </a>
+  <span class="badge" title="The image is only sent to the ZenLens server on your own computer">on your computer</span>
+</header>
+
+<main id="main">
+  <h1>Redact before you share</h1>
+
+  <p class="notice" id="notice" role="status" hidden></p>
+
+  <!-- 1. pick (also the path for iPhone, which has no share target) -->
+  <section id="st-pick" class="card" aria-labelledby="h-pick">
+    <h2 id="h-pick">Pick a screenshot</h2>
+    <p class="muted">Card numbers, phone numbers, emails, IDs and codes are found by on-device OCR and blacked out.
+      From Android you can also use <b>Share → ZenLens</b> in your gallery.</p>
+    <label class="btn primary file" id="pick-label">Choose image
+      <input type="file" id="pick" accept="image/*"></label>
+  </section>
+
+  <!-- 2. working -->
+  <section id="st-work" class="card center" aria-live="polite" hidden>
+    <span class="spinner" aria-hidden="true"></span>
+    <p id="work-msg">Finding sensitive text…</p>
+    <p class="muted small">Nothing leaves your network. The original is never stored.</p>
+  </section>
+
+  <!-- 3. result -->
+  <section id="st-done" aria-labelledby="h-done" hidden>
+    <h2 id="h-done" class="sr-only">Redacted image</h2>
+    <p class="summary" id="summary"></p>
+    <ul class="chips" id="chips" aria-label="Redactions by kind"></ul>
+
+    <figure class="frame" id="frame">
+      <img id="out" alt="Redacted image" draggable="false">
+      <figcaption class="peek-label" id="peek-label" hidden>Original (only on this device)</figcaption>
+    </figure>
+    <button type="button" class="btn ghost peek" id="peek" aria-pressed="false">Press and hold to compare with the original</button>
+
+    <label class="check"><input type="checkbox" id="faces"> Also blur faces</label>
+
+    <div class="actions">
+      <button type="button" class="btn primary" id="share">Share redacted</button>
+      <button type="button" class="btn" id="again">Redact another</button>
+    </div>
+    <p class="muted small" id="share-hint"></p>
+  </section>
+
+  <!-- error -->
+  <section id="st-err" class="card err" role="alert" hidden>
+    <h2>Couldn't redact this image</h2>
+    <p id="err-msg"></p>
+    <p class="muted small">Nothing was shared. ZenLens never hands back an unredacted image.</p>
+    <button type="button" class="btn" id="err-again">Try another image</button>
+  </section>
+</main>
+</body>
+</html>

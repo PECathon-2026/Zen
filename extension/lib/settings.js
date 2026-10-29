@@ -63,6 +63,13 @@
     IP: "IPv4 / IPv6 address",
     API_KEY: "API key / cloud credential",
     TOKEN: "Auth token (JWT / bearer / session)",
+    UPI_ID: "UPI ID (name@handle with a known UPI app handle)",
+    IFSC: "IFSC bank branch code",
+    BANK_ACCOUNT: "Bank account number (next to a/c, account no, खाता)",
+    GSTIN: "GSTIN with a valid mod-36 check character",
+    VEHICLE: "Indian vehicle registration plate",
+    VOTER_ID: "Voter ID (EPIC) number",
+    PASSPORT: "Indian passport number",
     SECRET: "Secret value (field marked secret)",
     PASSWORD: "Password (field type or 'password:' text)",
     OTP: "One-time code",
@@ -72,6 +79,7 @@
     FACE: "Camera / face media",
   };
   const KIND_COLORS = {
+    UPI_ID: "#2f9e44", IFSC: "#5f3dc4", BANK_ACCOUNT: "#a61e4d", GSTIN: "#e67700", VEHICLE: "#495057", VOTER_ID: "#1864ab", PASSPORT: "#0b7285",
     CARD: "#d9480f", CVV: "#d9480f", CARD_EXP: "#e8590c", AADHAAR: "#9c36b5", PAN: "#862e9c", EMAIL: "#1971c2",
     PHONE: "#0c8599", IP: "#5c940d", API_KEY: "#c92a2a", TOKEN: "#c2255c", SECRET: "#c92a2a", PASSWORD: "#e03131",
     OTP: "#f08c00", PIN: "#f08c00", NAME: "#495057", ADDRESS: "#2b8a3e", FACE: "#364fc7",

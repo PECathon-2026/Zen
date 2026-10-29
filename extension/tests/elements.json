@@ -139,5 +139,67 @@
   "tag": "select",
   "field_name": "exp-month",
   "name": "Expiration month"
+ },
+ {
+  "tag": "input",
+  "field_name": "upiId"
+ },
+ {
+  "tag": "input",
+  "name": "VPA"
+ },
+ {
+  "tag": "input",
+  "field_name": "ifsc_code"
+ },
+ {
+  "tag": "input",
+  "name": "Account Number"
+ },
+ {
+  "tag": "input",
+  "name": "Khata Sankhya"
+ },
+ {
+  "tag": "input",
+  "field_name": "gstin"
+ },
+ {
+  "tag": "input",
+  "name": "Voter ID"
+ },
+ {
+  "tag": "input",
+  "name": "Passport No"
+ },
+ {
+  "tag": "input",
+  "name": "Vehicle Number"
+ },
+ {
+  "tag": "input",
+  "name": "Mobile No"
+ },
+ {
+  "tag": "input",
+  "name": "Contact Number"
+ },
+ {
+  "tag": "input",
+  "name": "Aapka naam"
+ },
+ {
+  "tag": "input",
+  "name": "Ghar ka pata"
+ },
+ {
+  "tag": "input",
+  "placeholder": "Enter UPI PIN"
+ },
+ {
+  "tag": "div",
+  "id": "gst",
+  "class": "gst-number",
+  "text": "27ABCPE1234F1ZB"
  }
 ]

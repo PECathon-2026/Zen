@@ -46,11 +46,13 @@ def capture_view(page: Page) -> dict:
 def run(goal: str, page: Page, llm: LLM, executor: Executor, max_steps: int = 10,
         canaries: tuple[str, ...] = ()) -> Result:
     canaries = tuple(canaries) + executor.vault.canaries()
+    ps = getattr(executor, "pseudonymizer", None)
     history: list[dict] = []
     for step in range(1, max_steps + 1):
         try:
             view = capture_view(page)  # a live page's sanitized_view may itself raise Blocked
-            egress_check(build_payload(goal, view, history), canaries)
+            # pseudonym values are learnt as pages are seen: re-read them every step
+            egress_check(build_payload(goal, view, history), canaries + (ps.canaries() if ps is not None else ()))
         except Blocked as e:  # fail closed: nothing goes to the model
             log.warning("step %d: egress %s", step, e)
             return Result("blocked", step, history, str(e))
