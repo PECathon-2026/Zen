@@ -57,7 +57,7 @@ def test_local_only_disables_claude_feature():
 
 def test_pwa_shell_served_with_csp(client):
     r = client.get("/")
-    assert r.status_code == 200 and "ZenLens" in r.text
+    assert r.status_code == 200 and "Zen" in r.text
     assert "default-src 'self'" in r.headers["content-security-policy"]
     assert "connect-src 'self'" in r.headers["content-security-policy"]
     assert client.get("/sw.js").headers["content-type"].startswith("text/javascript")
@@ -167,7 +167,7 @@ def test_redact_image_fail_closed_on_ocr_error(client, monkeypatch):
     png = _png()
     r = client.post("/api/redact_image", files={"image": ("a.png", png, "image/png")})
     assert r.status_code == 422 and r.headers["content-type"].startswith("application/json")
-    assert "error" in r.json() and png[:64] not in r.content and "X-ZenLens-Redactions" not in r.headers
+    assert "error" in r.json() and png[:64] not in r.content and "X-Zen-Redactions" not in r.headers
 
 
 def test_redact_image_fail_closed_on_unexpected_error(client, monkeypatch):
@@ -192,7 +192,7 @@ def test_redact_image_contract_with_stub(client, monkeypatch):
     monkeypatch.setattr(ss, "redact_image", fake)
     r = client.post("/api/redact_image", files={"image": ("a.png", _png(), "image/png")}, data={"faces": "true"})
     assert r.status_code == 200 and r.headers["content-type"] == "image/png" and r.content.endswith(b"REDACTED")
-    assert json.loads(r.headers["X-ZenLens-Redactions"]) == [{"box": [1, 2, 3, 4], "kind": "CARD"}]
+    assert json.loads(r.headers["X-Zen-Redactions"]) == [{"box": [1, 2, 3, 4], "kind": "CARD"}]
     assert seen["faces"] is True
 
 
@@ -201,7 +201,7 @@ def test_redact_image_real_ocr(client):
     png = _png()
     r = client.post("/api/redact_image", files={"image": ("a.png", png, "image/png")})
     assert r.status_code == 200 and r.content != png
-    kinds = [b["kind"] for b in json.loads(r.headers["X-ZenLens-Redactions"])]
+    kinds = [b["kind"] for b in json.loads(r.headers["X-Zen-Redactions"])]
     assert "CARD" in kinds
 
 
@@ -209,8 +209,8 @@ def test_redact_image_real_ocr(client):
 def test_lan_requires_token_on_posts(lan):
     assert lan.get("/api/health").status_code == 200  # GETs carry no data
     assert lan.post("/api/sanitize", json={"text": "x"}).status_code == 401
-    assert lan.post("/api/sanitize", json={"text": "x"}, headers={"X-ZenLens-Token": "wrong"}).status_code == 401
-    r = lan.post("/api/sanitize", json={"text": "x"}, headers={"X-ZenLens-Token": "pair-token-123"})
+    assert lan.post("/api/sanitize", json={"text": "x"}, headers={"X-Zen-Token": "wrong"}).status_code == 401
+    r = lan.post("/api/sanitize", json={"text": "x"}, headers={"X-Zen-Token": "pair-token-123"})
     assert r.status_code == 200
     assert lan.post("/api/redact_image", files={"image": ("a.png", b"x", "image/png")}).status_code == 401
 
@@ -223,12 +223,12 @@ def test_localhost_mode_needs_no_token_but_rejects_foreign_host(client):
 
 def test_cors_extension_preflight_and_response(client):
     r = client.options("/api/sanitize", headers={"Origin": EXT, "Access-Control-Request-Method": "POST",
-                                                 "Access-Control-Request-Headers": "content-type,x-zenlens-token"})
+                                                 "Access-Control-Request-Headers": "content-type,x-zen-token"})
     assert r.status_code == 204 and r.headers["access-control-allow-origin"] == EXT
-    assert "x-zenlens-token" in r.headers["access-control-allow-headers"].lower()
+    assert "x-zen-token" in r.headers["access-control-allow-headers"].lower()
     r = client.post("/api/sanitize", json={"text": "x"}, headers={"Origin": EXT})
     assert r.status_code == 200 and r.headers["access-control-allow-origin"] == EXT
-    assert "X-ZenLens-Redactions" in r.headers["access-control-expose-headers"]
+    assert "X-Zen-Redactions" in r.headers["access-control-expose-headers"]
 
 
 def test_cors_refuses_other_origins(client):

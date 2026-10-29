@@ -1,4 +1,4 @@
-/* ZenLens "Redact before you share".
+/* Zen "Redact before you share".
  * Input: an image shared via the Web Share Target (parked by sw.js in the 'zenlens-share-inbox' cache,
  * ?id=...) or picked with the file input. The original lives only in memory on this page: the inbox entry
  * is deleted as soon as it is read, and the only network request carrying it is POST /api/redact_image
@@ -58,7 +58,7 @@ async function takeShared(id) {
     const count = res ? Number(res.headers.get('X-Share-Count') || '1') : 0;
     await inbox.delete('/__share-inbox/' + id);  // deleted before redaction even starts: only in memory now
     await clearInbox(true);
-    if (blob && count > 1) notice(`You shared ${count} images; ZenLens redacts one at a time (the first one).`);
+    if (blob && count > 1) notice(`You shared ${count} images; Zen redacts one at a time (the first one).`);
     return blob;
   } catch {
     await clearInbox(true);
@@ -103,18 +103,18 @@ async function redact() {
     fd.append('faces', $('#faces').checked ? 'true' : 'false');
     const headers = {};
     const tok = store.get('token', '');
-    if (tok) headers['X-ZenLens-Token'] = tok;
+    if (tok) headers['X-Zen-Token'] = tok;
     const res = await fetch('/api/redact_image', { method: 'POST', body: fd, headers, cache: 'no-store',
       credentials: 'same-origin', referrerPolicy: 'no-referrer' });
     if (my !== runId) return;
     if (!res.ok) {
       let msg = `${res.status} ${res.statusText}`;
       try { const j = await res.json(); msg = j.error || msg; } catch { /* not json */ }
-      if (res.status === 401) msg = 'This phone is not paired with ZenLens yet. Open the pairing link (QR code) printed by the server once, then try again.';
+      if (res.status === 401) msg = 'This phone is not paired with Zen yet. Open the pairing link (QR code) printed by the server once, then try again.';
       throw new Error(msg);
     }
     let boxes = [];
-    try { boxes = JSON.parse(res.headers.get('X-ZenLens-Redactions') || '[]'); } catch { /* ignore */ }
+    try { boxes = JSON.parse(res.headers.get('X-Zen-Redactions') || '[]'); } catch { /* ignore */ }
     const out = await res.blob();
     if (my !== runId) return;
     if (out.type !== 'image/png' || (await sniff(out)) !== 'image/png') throw new Error('Unexpected response from the server.');
@@ -126,7 +126,7 @@ async function redact() {
     show('done');
   } catch (e) {
     if (my !== runId) return;
-    fail(e && e.name === 'TypeError' ? 'Could not reach the ZenLens server. Is it running on your computer, and is this phone on the same Wi-Fi?' : (e.message || String(e)));
+    fail(e && e.name === 'TypeError' ? 'Could not reach the Zen server. Is it running on your computer, and is this phone on the same Wi-Fi?' : (e.message || String(e)));
   }
 }
 
@@ -219,7 +219,7 @@ $('#faces').addEventListener('change', () => { if (original) redact(); });
 window.addEventListener('pagehide', () => forget());  // drop the in-memory original and object URLs
 
 const ERRORS = {
-  nosw: 'ZenLens was not ready to receive that share. Open ZenLens once from your home screen, then share again, or pick the image below.',
+  nosw: 'Zen was not ready to receive that share. Open Zen once from your home screen, then share again, or pick the image below.',
   nofile: 'No image arrived with that share. Pick the image below.',
   read: 'The shared image could not be read. Pick it below instead.',
 };

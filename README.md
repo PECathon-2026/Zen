@@ -1,4 +1,4 @@
-# ZenLens: privacy-preserving AI browser agent (PS-004 PrivacyLens, PECathon 2026)
+# Zen: privacy-preserving AI browser agent (PS-004)
 
 An AI agent that works on web pages for you, while sensitive data (cards, Aadhaar, PAN, passwords, OTPs,
 API keys, phones, emails, IPs, faces) never reaches the external model.
@@ -92,7 +92,7 @@ or report.
 ```
 
 The server runs on your own machine; the phone reaches it over Wi-Fi. The token sits in the URL fragment
-(never sent to the server or its logs), is stored by the page, and every POST needs `X-ZenLens-Token`
+(never sent to the server or its logs), is stored by the page, and every POST needs `X-Zen-Token`
 in LAN mode. Flags: `--local-only` (disables Claude mode), `--port`, `--token` / `ZENLENS_TOKEN`,
 `--cert`/`--key` for HTTPS (needed for installing the PWA on a phone; e.g. an mkcert certificate).
 
@@ -112,7 +112,7 @@ web origins are refused (only same-origin and `chrome-extension://`).
 ### Chrome extension
 
 Load it: `chrome://extensions` → Developer mode → **Load unpacked** → pick `extension/`. Reload tabs that
-were already open (or click the ZenLens icon once). Details and permission justifications:
+were already open (or click the Zen icon once). Details and permission justifications:
 [extension/README.md](extension/README.md).
 
 - **Works offline.** `lib/detect.js` is an exact port of `detect.py`: identical spans on all 124 eval

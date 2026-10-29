@@ -1,6 +1,6 @@
 """Redact-before-you-share: Web Share Target plumbing + HTTPS (mkcert) helpers for the PWA.
 
-Flow (Android, installed PWA): Gallery -> Share -> ZenLens. Chrome POSTs the image (multipart) to
+Flow (Android, installed PWA): Gallery -> Share -> Zen. Chrome POSTs the image (multipart) to
 SHARE_PATH; the service worker (static/sw.js) intercepts that POST, stashes the file in Cache Storage
 under a random id and redirects to /share.html?id=... . share.js reads the file, deletes the stash at
 once, sends it only to this server's /api/redact_image and offers the redacted PNG to the share sheet.
@@ -8,7 +8,7 @@ once, sends it only to this server's /api/redact_image and offers the redacted P
 Server side there is deliberately no upload handler: if a share POST ever reaches the server (service
 worker not active yet), `ShareFallback` answers with a redirect WITHOUT reading the body, so the image
 is never parsed, stored, logged or echoed. It runs outside the token guard because Chrome's share
-POST cannot carry X-ZenLens-Token; it never does any work with the request, so nothing is exposed.
+POST cannot carry X-Zen-Token; it never does any work with the request, so nothing is exposed.
 
 HTTPS: Android Chrome only installs a PWA (and only then offers it as a share target) from a trusted
 secure context. `--https` uses mkcert (a local CA you install on the phone) to issue a cert for the LAN
@@ -31,7 +31,7 @@ class ShareFallback:
     """Pure ASGI middleware: any request to SHARE_PATH gets a 303 to /share.html, body unread.
 
     GET (someone opened the URL) -> /share.html ; POST without a service worker -> /share.html?error=nosw
-    so the page can explain "open ZenLens once, then share again"."""
+    so the page can explain "open Zen once, then share again"."""
 
     def __init__(self, app):
         self.app = app
@@ -122,9 +122,9 @@ def phone_steps(url: str, caroot: str | None) -> str:
     2. Settings > Security & privacy > More security settings > Encryption & credentials >
        Install a certificate > CA certificate > pick the file. (Remove it there when you are done.)
     3. Open {url} in Chrome, then menu > Install app (or Add to Home screen).
-    4. In Gallery/Photos: Share > ZenLens > Share redacted.
-  iPhone/iPad: iOS Safari has no Web Share Target, so ZenLens will not appear in the share sheet.
-    Open ZenLens > "Redact a photo" (/share.html) and pick the image; sharing the result still works.
+    4. In Gallery/Photos: Share > Zen > Share redacted.
+  iPhone/iPad: iOS Safari has no Web Share Target, so Zen will not appear in the share sheet.
+    Open Zen > "Redact a photo" (/share.html) and pick the image; sharing the result still works.
     (For https on iOS install the same rootCA via Settings > General > VPN & Device Management, then
     enable it in Settings > General > About > Certificate Trust Settings.)"""
 

@@ -56,7 +56,7 @@ def test_share_js_only_talks_to_local_redact_endpoint():
     assert re.findall(r"fetch\(\s*'([^']+)'", js) == ["/api/redact_image"]
     assert "http://" not in js and "https://" not in js
     assert "inbox.delete('/__share-inbox/' + id)" in js  # shared original removed right after reading
-    assert "X-ZenLens-Token" in js and "store.get('token'" in js  # reuses the main app's pairing token
+    assert "X-Zen-Token" in js and "store.get('token'" in js  # reuses the main app's pairing token
     assert "navigator.share" in js and "download" in js
 
 

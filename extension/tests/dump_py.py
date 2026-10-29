@@ -1,6 +1,6 @@
 """Dump Python detector output so the JS port can be compared span-for-span.
 
-Run from the ZenLens dir:  .venv/bin/python extension/tests/dump_py.py
+Run from the Zen dir:  .venv/bin/python extension/tests/dump_py.py
 Writes extension/tests/py_spans.json (code-point offsets, synthetic eval data only).
 """
 import json

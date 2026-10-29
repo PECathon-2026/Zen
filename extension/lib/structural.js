@@ -6,7 +6,7 @@
  */
 (function (root) {
   "use strict";
-  const PY = (root.ZenLensDetect || (typeof require === "function" ? require("./detect.js") : {}))._py;
+  const PY = (root.ZenDetect || (typeof require === "function" ? require("./detect.js") : {}))._py;
   const { S, NS } = PY;
 
   const NO_STRUCT = new Set(["label", "button", "h1", "h2", "h3", "h4", "h5", "h6", "title", "option", "legend", "th"]);
@@ -142,6 +142,6 @@
   }
 
   const api = { rule, elementKind, keyword, norm, classifyDomElement, labelText, AUTOCOMPLETE, KEYWORDS };
-  root.ZenLensStructural = api;
+  root.ZenStructural = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

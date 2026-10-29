@@ -1,11 +1,11 @@
-/* ZenLens service worker: caches the app shell only. API calls and their data are never cached.
+/* Zen service worker: caches the app shell only. API calls and their data are never cached.
  *
  * Web Share Target ("Redact before you share"): Android Chrome POSTs a shared image to /share-target.
  * We take it here, park it in a private Cache Storage inbox under a random id (on-device only, never
  * sent anywhere) and redirect to /share.html?id=..., which reads it, deletes it straight away and sends
  * it only to this server's /api/redact_image. Shared text/title are ignored on purpose.
  */
-const CACHE = 'zenlens-shell-v2';
+const CACHE = 'zen-shell-v3';
 const INBOX = 'zenlens-share-inbox';
 const SHELL = ['/', '/index.html', '/app.css', '/app.js', '/manifest.webmanifest',
   '/share.html', '/share.css', '/share.js',

@@ -43,7 +43,7 @@ def snaps():
 
 def test_raw_snapshot_is_local_and_complete(snaps):
     s = snaps[0]
-    assert s.title == "ZenLens Capture Fixture"
+    assert s.title == "Zen Capture Fixture"
     assert s.screenshot[:8] == b"\x89PNG\r\n\x1a\n" and "asha.test@example.com" in s.html
     assert all(e.id.startswith("e") and len(e.bbox) == 4 for e in s.elements)
     assert not any(e.value and "sk-test" in e.value for e in s.elements)  # hidden input skipped

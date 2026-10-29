@@ -112,7 +112,7 @@ def claude_eval(scenarios: list[dict]) -> dict:
 
 
 def print_report(r: dict, verbose: bool = False) -> None:
-    print(f"ZenLens inference red-team: {r['scenarios']} scenarios ({r['by_category_counts']})\n")
+    print(f"Zen inference red-team: {r['scenarios']} scenarios ({r['by_category_counts']})\n")
     print(f"  {'category':<12} {'n':>3} | {'plain exact':>11} {'leak':>6} {'bits':>6} | {'min exact':>9} {'leak':>6} {'bits':>6}")
     for cat, m in r["by_category"].items():
         p, q = m["plain"], m["minimized"]
