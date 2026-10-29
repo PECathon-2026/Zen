@@ -238,7 +238,8 @@
   function scanFields(out, covered) {
     for (const el of qsa(FIELD_SEL)) {
       // hidden inputs (csrf tokens, session ids) draw nothing but DOM-reading agents get their value: scan them too
-      if (isOurs(el) || (el.type !== "hidden" && !visible(el))) continue;
+      // display:none / not-yet-laid-out fields draw nothing but DOM readers still get their value: scan them too (rects are empty until shown)
+      if (isOurs(el)) continue;
       let r = null;
       try { r = ST.classifyDomElement(el); } catch (_) { /* ignore */ }
       const value = el.tagName === "SELECT" ? (el.selectedOptions[0] || {}).text || "" : el.value || "";
@@ -438,12 +439,11 @@
       try { state.roots = collectRoots(); } catch (e) { state.roots = [document]; console.debug("[Zen] roots error", e && e.message); }
       // each stage on its own: one failing stage (odd markup on some site) must not hide what the others found
       for (const stage of [scanFields, scanStructuralLeaves, scanMedia, scanText, scanSplit, scanFrames]) {
-        try { stage(out, covered); } catch (e) { console.debug("[Zen] scan stage error", stage.name, e && e.message); try { document.documentElement.setAttribute("data-zen-err", stage.name + ":" + String(e && e.message).slice(0, 80)); } catch (_) { /* TEMP diag */ } }
+        try { stage(out, covered); } catch (e) { console.debug("[Zen] scan stage error", stage.name, e && e.message); }
       }
     } catch (e) { console.debug("[Zen] scan error", e && e.message); }
     state.findings = out.slice(0, MAX_FINDINGS);
     checkFrames();
-    try { document.documentElement.setAttribute("data-zen-dbg", [state.enabled ? 1 : 0, shieldOn() ? 1 : 0, state.findings.length, state.roots.length, state.agent ? 1 : 0, state.settings.shieldMode, document.readyState, qsa(FIELD_SEL).length, (() => { const f = qsa(FIELD_SEL)[0]; if (!f) return "nofield"; let c = null; try { c = ST.classifyDomElement(f); } catch (e) { c = "ERR" + e.message; } return [f.type, visible(f) ? "vis" : "invis", c && c.join ? c.join("/") : c, (f.value || "").length].join(","); })()].join(":")); } catch (_) { /* TEMP diag */ }
     if (shieldOn()) { try { maskFields(); maskAttrs(); applyDom(); ensureWatch(); } catch (e) { console.debug("[Zen] dom redact error", e && e.message); } }
     render(); report();
   }
@@ -669,8 +669,7 @@
   }
 
   // ---------- lifecycle ----------
-  async function init() { try { return await init0(); } catch (e) { try { document.documentElement.setAttribute("data-zen-err", String(e && e.message).slice(0, 80)); } catch (_) { /* TEMP diag */ } } }
-  async function init0() {
+  async function init() {
     const s = await CFG.load();
     state.settings = s;
     try { // agent seen recently anywhere in this browser: start shielded, before the first scan
@@ -683,6 +682,7 @@
     if (shieldOn()) arm(); else { disarm(); restoreDom(); }
     scan();
     disarm(); // first scan is done: covers are up
+    for (const ms of [400, 1500, 4000]) setTimeout(() => scheduleScan(0), ms); // layout / styles / frames settle after the first scan
     if (ZL.onSettings) ZL.onSettings(s);
     startProbe();
   }
