@@ -51,6 +51,11 @@
       <button class="btn ghost" id="text-clear">Clear</button>
       <span class="hint" id="text-rules-hint"></span>
     </div>
+    <fieldset class="seg" id="text-mode">
+      <legend class="label">Privacy mode</legend>
+      <label><input type="radio" name="text-mode" value="redact" checked> <span>Redact <small>([REDACTED:EMAIL])</small></span></label>
+      <label><input type="radio" name="text-mode" value="pseudonym"> <span>Pseudonym <small>([EMAIL_1]: same value, same token)</small></span></label>
+    </fieldset>
   </div>
   <div id="text-out" hidden>
     <div class="counts" id="text-counts" aria-label="Redaction counts"></div>
@@ -64,6 +69,14 @@
           <button class="btn small ghost" id="text-copy">Copy</button></div>
         <div class="mono preview" id="text-after"></div>
       </div>
+    </div>
+    <div class="card" id="text-legend-card" hidden>
+      <h2>Pseudonym legend</h2>
+      <p class="hint">Each token stands for one distinct value. Only the token is sent; the mapping stays on this device and is discarded after this request.</p>
+      <table class="legend">
+        <thead><tr><th scope="col">Token <small>(sent)</small></th><th scope="col">Kind</th><th scope="col">Occurrences</th></tr></thead>
+        <tbody id="text-legend"></tbody>
+      </table>
     </div>
     <div class="card">
       <h2>Why these were redacted</h2>
@@ -88,6 +101,7 @@
     </div>
     <div class="drop" id="img-drop">or drop a PNG/JPEG here</div>
     <p class="hint" id="img-ocr-hint"></p>
+    <p class="hint"><a href="/share.html">Redact a screenshot before sharing it →</a></p>
   </div>
   <div id="img-out" hidden>
     <div class="counts" id="img-counts"></div>
@@ -153,6 +167,11 @@
       <label><input type="radio" name="mode" value="claude" id="mode-claude"> <span>Claude <small>(sanitized data only)</small></span></label>
     </fieldset>
     <p class="hint" id="agent-claude-hint"></p>
+    <fieldset class="seg" id="agent-privacy">
+      <legend class="label">Privacy mode</legend>
+      <label><input type="radio" name="privacy" value="redact" checked> <span>Redact <small>([REDACTED:KIND])</small></span></label>
+      <label><input type="radio" name="privacy" value="pseudonym"> <span>Pseudonym <small>([EMAIL_1], typed back locally)</small></span></label>
+    </fieldset>
     <details id="agent-script-box" open>
       <summary>Demo script (actions the scripted planner replays)</summary>
       <textarea id="agent-script" rows="5" class="mono" spellcheck="false"></textarea>

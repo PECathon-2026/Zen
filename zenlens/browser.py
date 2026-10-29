@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 from .capture import PageSnapshot, Session, sanitized_view, to_url
 from .executor import field_kind, origin
+from .pseudonym import TOKEN
 
 # capture/structural kinds -> executor/vault field kinds (secret kinds only accept matching vault placeholders)
 FIELD_KIND = {"PASSWORD": "password", "PIN": "password", "API_KEY": "password", "TOKEN": "password",
@@ -16,11 +17,11 @@ _REDACTED = re.compile(r"\[REDACTED:([A-Z_]+)\]")
 
 
 def redaction_counts(view: dict) -> dict[str, int]:
-    """kind -> number of [REDACTED:KIND] placeholders in a sanitized view (or any JSON-able dict)."""
+    """kind -> number of [REDACTED:KIND] placeholders (and [KIND_n] pseudonym tokens) in a sanitized view."""
     out: dict[str, int] = {}
     for e in view.get("elements", []):
         for v in (e.get("text"), e.get("value"), e.get("name"), e.get("placeholder")):
-            for k in _REDACTED.findall(v or ""):
+            for k in _REDACTED.findall(v or "") + [m.group(1) for m in TOKEN.finditer(v or "")]:
                 out[k] = out.get(k, 0) + 1
     return dict(sorted(out.items()))
 
@@ -28,10 +29,12 @@ def redaction_counts(view: dict) -> dict[str, int]:
 class PlaywrightPage:
     """Page protocol over capture.Session. `canaries` (vault values) are masked out of any re-captured text/value,
     so a secret the executor filled never re-enters the view. Navigations to origins outside `allowed_origins`
-    are aborted in the browser (backstop for link clicks; the executor already origin-checks navigate)."""
+    are aborted in the browser (backstop for link clicks; the executor already origin-checks navigate).
+    With a `pseudonymizer`, the view carries stable tokens ([EMAIL_1]) instead of [REDACTED:KIND]."""
 
-    def __init__(self, session: Session, allowed_origins=(), canaries: tuple[str, ...] = ()):
+    def __init__(self, session: Session, allowed_origins=(), canaries: tuple[str, ...] = (), pseudonymizer=None):
         self.session, self.canaries = session, tuple(c for c in canaries if c)
+        self.pseudonymizer = pseudonymizer
         self.allowed = {origin(o) or o.lower().rstrip("/") for o in allowed_origins}
         self.snap: PageSnapshot | None = None
         self._view: dict | None = None
@@ -73,7 +76,7 @@ class PlaywrightPage:
         if self.snap is None:
             self.refresh()
         if self._view is None:
-            v = sanitized_view(self._masked(), self.canaries)
+            v = sanitized_view(self._masked(), self.canaries, self.pseudonymizer)
             for e in v["elements"]:
                 e["field_kind"] = FIELD_KIND.get(e.get("sensitive") or "") or field_kind(e)
             self._view = v

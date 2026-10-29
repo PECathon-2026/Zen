@@ -146,7 +146,7 @@ mark.pii {
 [data-k="EMAIL"], [data-k="PHONE"], [data-k="ADDRESS"] { --kc: var(--k-contact); }
 [data-k="PASSWORD"], [data-k="OTP"], [data-k="API_KEY"], [data-k="TOKEN"], [data-k="SECRET"], [data-k="CANARY"] { --kc: var(--k-secret); }
 [data-k="IP"] { --kc: var(--k-net); }
-[data-k="NAME"], [data-k="FACE"] { --kc: var(--k-person); }
+[data-k="NAME"], [data-k="PERSON"], [data-k="FACE"] { --kc: var(--k-person); }
 [data-custom] { --kc: var(--k-custom); }
 
 /* screenshot */
@@ -239,3 +239,12 @@ details textarea { margin-top: 6px; }
   .rule-form { grid-template-columns: 200px 1fr auto; }
   .toast { bottom: 24px; }
 }
+
+/* pseudonym mode */
+.redacted.token { background: var(--kc, var(--k-other)); color: var(--k-ink); box-shadow: none; }
+sup.tok { font-size: 10px; color: var(--muted); margin-left: 2px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+table.legend { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.legend th, table.legend td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+table.legend th { color: var(--muted); font-weight: 600; }
+table.legend td.num { font-variant-numeric: tabular-nums; }
+.verdict .answer { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; word-break: break-word; }

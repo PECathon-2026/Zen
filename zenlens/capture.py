@@ -178,18 +178,19 @@ def sensitive_kind(e: Element) -> str | None:
     return None
 
 
-def _clean(s: str | None) -> str | None:
+def _clean(s: str | None, ps=None) -> str | None:
     if s is None:
         return None
     # trailing ':' dropped so "Password:" next to JSON punctuation cannot look like "password: <value>"
-    return redact(s.rstrip().rstrip(":").rstrip())[0]
+    s = s.rstrip().rstrip(":").rstrip()
+    return ps.pseudonymize(s)[0] if ps is not None else redact(s)[0]
 
 
-def _clean_url(url: str) -> str:
+def _clean_url(url: str, ps=None) -> str:
     u = urlsplit(url)
     if u.scheme == "file":
-        return "file:///" + _clean(Path(u.path).name)  # local paths may contain usernames
-    return _clean(urlunsplit((u.scheme, u.netloc, u.path, "", "")))  # query/fragment often carry tokens
+        return "file:///" + _clean(Path(u.path).name, ps)  # local paths may contain usernames
+    return _clean(urlunsplit((u.scheme, u.netloc, u.path, "", "")), ps)  # query/fragment often carry tokens
 
 
 def _structural_kinds(snap: PageSnapshot) -> dict[str, str]:
@@ -207,24 +208,39 @@ def _structural_kinds(snap: PageSnapshot) -> dict[str, str]:
     return out
 
 
-def sanitized_view(snap: PageSnapshot, canaries: tuple[str, ...] = ()) -> dict:
-    """The ONLY capture output meant to leave the machine. No HTML, no screenshot. Raises gate.Blocked on residue."""
+def sanitized_view(snap: PageSnapshot, canaries: tuple[str, ...] = (), pseudonymizer=None) -> dict:
+    """The ONLY capture output meant to leave the machine. No HTML, no screenshot. Raises gate.Blocked on residue.
+    With a pseudonym.Pseudonymizer, sensitive values become stable tokens ([EMAIL_1]) instead of [REDACTED:KIND],
+    and every real value it has seen is added to the canaries."""
+    ps = pseudonymizer
     forced = _structural_kinds(snap)
+    kinds = {e.id: forced.get(e.id) or sensitive_kind(e) for e in snap.elements}
+
+    def mask(kind, v):  # forced field value/text -> placeholder (already-masked vault values stay masked)
+        if ps is None or "[REDACTED:" in v:
+            return f"[REDACTED:{kind}]"
+        return ps.token(kind, v)
+    if ps is not None:  # register flagged values first, so the same value in free text gets the same token
+        for e in snap.elements:
+            if kinds[e.id]:
+                for v in (e.value, e.text if (e.tag in ("input", "textarea", "select") or e.id in forced) else None):
+                    if v and "[REDACTED:" not in v:
+                        ps.token(kinds[e.id], v, count=False)
     els = []
     for e in snap.elements:
-        kind = forced.get(e.id) or sensitive_kind(e)
+        kind = kinds[e.id]
         if e.value in (None, ""):
             value = e.value
         elif kind:
-            value = f"[REDACTED:{kind}]"
+            value = mask(kind, e.value)
         else:
-            value = _clean(e.value)
-        text = _clean(e.text)
+            value = _clean(e.value, ps)
+        text = _clean(e.text, ps)
         if kind and (e.tag in ("input", "textarea", "select") or e.id in forced):  # structural flags only value-like leaves
-            text = f"[REDACTED:{kind}]" if e.text else e.text
+            text = mask(kind, e.text) if e.text else e.text
         els.append({"id": e.id, "tag": e.tag, "role": e.role, "type": e.type, "autocomplete": e.autocomplete,
-                    "bbox": e.bbox, "sensitive": kind, "field_name": _clean(e.field_name),
-                    "placeholder": _clean(e.placeholder), "name": _clean(e.name), "text": text, "value": value})
-    view = {"url": _clean_url(snap.url), "title": _clean(snap.title), "elements": els}
-    egress_check(json.dumps(view, ensure_ascii=False), canaries)
+                    "bbox": e.bbox, "sensitive": kind, "field_name": _clean(e.field_name, ps),
+                    "placeholder": _clean(e.placeholder, ps), "name": _clean(e.name, ps), "text": text, "value": value})
+    view = {"url": _clean_url(snap.url, ps), "title": _clean(snap.title, ps), "elements": els}
+    egress_check(json.dumps(view, ensure_ascii=False), tuple(canaries) + (ps.canaries() if ps is not None else ()))
     return view

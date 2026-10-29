@@ -1,6 +1,7 @@
 """Local executor: validates every model Action, asks the user for risky ones (default deny), then acts on the page.
 
-Real secret values exist only inside `run()` between vault.resolve() and page.fill(); they are never logged or raised.
+Real secret values exist only inside `run()` between vault.resolve() (or pseudonymizer.resolve_token()) and page.fill();
+they are never logged or raised.
 """
 import re
 from dataclasses import dataclass
@@ -9,6 +10,7 @@ from urllib.parse import urlsplit
 
 from .detect import detect
 from .llm import ACTION_TYPES, Action
+from .pseudonym import CARD_KINDS, TOKEN, TOKEN_FIELDS, PseudonymError, Pseudonymizer, kind_of
 from .vault import PLACEHOLDER, Vault, VaultError, secret_name
 
 
@@ -84,8 +86,8 @@ def describe(a: Action) -> str:
     if a.target:
         parts.append(f"target={_safe(a.target)}")
     if a.text is not None:
-        n = secret_name(a.text)
-        parts.append(f"text={{{{SECRET:{n}}}}}" if n else f"text=<{len(a.text)} chars>")
+        n, t = secret_name(a.text), TOKEN.fullmatch(a.text.strip())
+        parts.append(f"text={{{{SECRET:{n}}}}}" if n else f"text={t.group(0)}" if t else f"text=<{len(a.text)} chars>")
     if a.url is not None:
         parts.append(f"url={origin(a.url) or '<invalid>'}")
     return " ".join(parts)
@@ -99,8 +101,9 @@ class Verdict:
 
 
 class Executor:
-    def __init__(self, page: Page, allowed_origins=(), vault: Vault | None = None, approve: Approve | None = None):
-        self.page, self.vault, self.approve = page, vault or Vault(), approve
+    def __init__(self, page: Page, allowed_origins=(), vault: Vault | None = None, approve: Approve | None = None,
+                 pseudonymizer: Pseudonymizer | None = None):
+        self.page, self.vault, self.approve, self.pseudonymizer = page, vault or Vault(), approve, pseudonymizer
         self.allowed = {origin(o) or o.lower().rstrip("/") for o in allowed_origins}
 
     def check(self, a: Action, view: dict) -> Verdict:
@@ -140,6 +143,8 @@ class Executor:
             if sk != fk:
                 return Verdict(False, f"type: {sk} secret {name} not allowed in {fk} field {a.target}")
             return Verdict(True, approval=f"fill secret {name} ({sk}) into {a.target}")
+        if self.pseudonymizer is not None and TOKEN.search(text):
+            return self._check_token(a, el, fk)
         if "[REDACTED:" in text:
             return Verdict(False, "type: cannot type a redacted value")
         hits = detect(text)
@@ -148,6 +153,25 @@ class Executor:
         if fk in SENSITIVE_FIELDS:
             return Verdict(False, f"type: {fk} field {a.target} requires a vault placeholder")
         return Verdict(True)
+
+    def _check_token(self, a: Action, el: dict, fk: str) -> Verdict:
+        """A pseudonym token is substituted locally like a vault secret: whole text, known, kind-matched, approved."""
+        m = TOKEN.fullmatch(a.text.strip())
+        if not m:
+            return Verdict(False, "type: pseudonym token must be the whole text")
+        try:
+            kind, _ = self.pseudonymizer.resolve_token(m.group(0))
+        except PseudonymError as e:
+            return Verdict(False, f"type: {e}")
+        tok, sens = m.group(0), kind_of(el.get("sensitive") or "")
+        if fk not in TOKEN_FIELDS.get(kind, {"text"}) or (kind in CARD_KINDS and sens in CARD_KINDS and kind != sens):
+            return Verdict(False, f"type: {kind} token {tok} not allowed in {fk} field {a.target}")
+        return Verdict(True, approval=f"fill {tok} ({kind}) into {a.target}")
+
+    def _resolve(self, text: str) -> str:
+        if self.pseudonymizer is not None and TOKEN.fullmatch(text.strip()):
+            return self.pseudonymizer.resolve_token(text)[1]
+        return self.vault.resolve(text)
 
     def _approved(self, a: Action, reason: str) -> bool:
         if self.approve is None:
@@ -167,10 +191,10 @@ class Executor:
             if a.type == "click":
                 self.page.click(a.target)
             elif a.type == "type":
-                self.page.fill(a.target, self.vault.resolve(a.text))
+                self.page.fill(a.target, self._resolve(a.text))
             elif a.type == "navigate":
                 self.page.navigate(a.url)
-        except VaultError as e:
+        except (VaultError, PseudonymError) as e:
             raise Rejected(str(e)) from None
         except Exception as e:  # never chain: the original message could contain the filled value
             raise Rejected(f"{a.type} failed on {a.target or origin(a.url or '')}: {type(e).__name__}") from None
