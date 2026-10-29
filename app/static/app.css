@@ -29,6 +29,9 @@ body {
   padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px);
   overflow-x: hidden;
 }
+/* dot-matrix backdrop, same as the Marketplace hero (radial-gradient dots on a 32px grid) */
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .8;
+  background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 32px 32px; }
 h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 6px; letter-spacing: -.02em; font-weight: 800; }
 h2 { font-size: 1.02rem; margin: 0 0 8px; font-weight: 700; letter-spacing: -.01em; }
 small { color: var(--muted); }
