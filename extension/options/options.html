@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>ZenLens options</title>
+<html lang="en"><head><meta charset="utf-8"><title>Zen options</title>
 <link rel="stylesheet" href="../lib/ui.css"><link rel="stylesheet" href="options.css"></head>
 <body>
 <main>
-<h1><img src="../icons/icon48.png" width="28" height="28" alt=""> ZenLens options</h1>
-<p class="muted">Settings sync with your Chrome profile. ZenLens never stores detected values.</p>
+<h1><img src="../icons/icon48.png" width="28" height="28" alt=""> Zen options</h1>
+<p class="muted">Settings sync with your Chrome profile. Zen never stores detected values.</p>
 
 <fieldset>
   <legend>Local server (optional)</legend>
   <label>Server URL
     <select id="serverUrl"><option>http://localhost:8765</option><option>http://127.0.0.1:8765</option></select></label>
-  <label>Token (X-ZenLens-Token, only needed in LAN mode)<input id="token" type="password" autocomplete="off"></label>
+  <label>Token (X-Zen-Token, only needed in LAN mode)<input id="token" type="password" autocomplete="off"></label>
   <div class="row"><button id="test">Test connection</button><span id="srv" class="muted"></span></div>
   <p class="muted small">The extension may only talk to localhost:8765 (manifest host permission). Without the server everything except OCR works offline.</p>
 </fieldset>

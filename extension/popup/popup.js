@@ -1,5 +1,5 @@
 /* Popup: per-tab summary, mask toggle, sanitized copy, side panel launcher, server status. */
-const CFG = globalThis.ZenLensSettings;
+const CFG = globalThis.ZenSettings;
 const $ = (id) => document.getElementById(id);
 let tab = null;
 
@@ -46,7 +46,7 @@ async function init() {
   CFG.health(settings).then((h) => {
     $("srvdot").className = "dot " + (h.ok ? "on" : "off");
     $("srvtxt").textContent = h.ok ? `server${h.features && h.features.ocr ? " · OCR" : ""}` : "server offline";
-    $("server").title = h.ok ? `ZenLens server ${h.version || ""} at ${CFG.serverBase(settings)}` : "Local server not running — everything still works offline (no OCR).";
+    $("server").title = h.ok ? `Zen server ${h.version || ""} at ${CFG.serverBase(settings)}` : "Local server not running — everything still works offline (no OCR).";
   });
   const s = tab && /^(https?|file):/.test(tab.url || "") ? await ensureContent() : null;
   if (!s) {

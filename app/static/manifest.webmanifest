@@ -1,6 +1,6 @@
 {
-  "name": "ZenLens privacy preview",
-  "short_name": "ZenLens",
+  "name": "Zen privacy preview",
+  "short_name": "Zen",
   "description": "See exactly what is redacted before anything reaches an AI model. Runs on your own computer.",
   "start_url": "/",
   "scope": "/",

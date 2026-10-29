@@ -1,6 +1,6 @@
 // Parity tests: JS port (extension/lib/detect.js, structural.js) vs Python (zenlens/).
 // Run: node --test extension/tests/
-// Regenerate Python reference spans: .venv/bin/python extension/tests/dump_py.py  (from the ZenLens dir)
+// Regenerate Python reference spans: .venv/bin/python extension/tests/dump_py.py  (from the Zen dir)
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";

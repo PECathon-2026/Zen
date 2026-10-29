@@ -1,4 +1,4 @@
-# ZenLens: PS-004 PrivacyLens (PECathon 2026)
+# Zen: PS-004 PrivacyLens (PECathon 2026)
 
 Goal: AI agent that interacts with web interfaces while sensitive data never reaches an external model.
 Core rule: compute what is sensitive locally; reason globally only on sanitized data.

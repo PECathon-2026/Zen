@@ -168,7 +168,7 @@ def _row(name, m):
 def print_report(r: dict, cases: list[dict], verbose: bool = False) -> None:
     tags = {c["id"]: set(c["tags"]) for c in cases}
     hdr = f"  {'':<14} {'TP':>4} {'FN':>4} {'FP':>4} {'recall':>7} {'precision':>9}"
-    print(f"ZenLens text-detector eval: {r['cases']} cases\n")
+    print(f"Zen text-detector eval: {r['cases']} cases\n")
     print("Per kind (non-adversarial)\n" + hdr)
     for k, m in r["by_kind"].items():
         print(_row(k, m))

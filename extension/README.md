@@ -1,13 +1,13 @@
-# ZenLens Chrome extension (Manifest V3)
+# Zen Chrome extension (Manifest V3)
 
-ZenLens in your own browser. It finds sensitive data on the pages you visit, can mask it on screen, and checks what you paste or send into AI chat sites. All detection runs inside the extension. The optional local ZenLens server (`http://localhost:8765`) is used only for screenshot OCR.
+Zen in your own browser. It finds sensitive data on the pages you visit, can mask it on screen, and checks what you paste or send into AI chat sites. All detection runs inside the extension. The optional local Zen server (`http://localhost:8765`) is used only for screenshot OCR.
 
 ## Install
 
 1. Open `chrome://extensions`.
 2. Turn on **Developer mode** (top right).
 3. Click **Load unpacked** and choose this `extension/` folder.
-4. Pin ZenLens from the puzzle-piece menu. Tabs that were already open need a reload, or one click on the ZenLens icon, which injects the scripts into that tab.
+4. Pin Zen from the puzzle-piece menu. Tabs that were already open need a reload, or one click on the Zen icon, which injects the scripts into that tab.
 
 Optional: start the local server (`.venv/bin/python -m app.server`). The popup's status dot turns green, and screenshot redaction gets an extra OCR pass. If you run the server in LAN mode, enter its token under **Options**.
 
@@ -35,7 +35,7 @@ Optional: start the local server (`.venv/bin/python -m app.server`). The popup's
 | `scripting` | Injects the content scripts on demand (see `activeTab`). |
 | `sidePanel` | The Privacy preview panel. |
 | `contextMenus` | "Redact selection & copy". |
-| host `http://localhost:8765/*`, `http://127.0.0.1:8765/*` | The optional local ZenLens server, and nothing else. The extension CSP also sets `connect-src` to these two origins. |
+| host `http://localhost:8765/*`, `http://127.0.0.1:8765/*` | The optional local Zen server, and nothing else. The extension CSP also sets `connect-src` to these two origins. |
 | content scripts on `<all_urls>` | Sensitive data can be on any page (banking, HR, cloud consoles), and the paste guard has to be in place *before* you paste. That is why the scripts load on every page instead of on request. They do no network I/O. Use the deny list, or allow-list mode, to limit where they run. |
 
 ## Privacy guarantees
@@ -61,7 +61,7 @@ Optional: start the local server (`.venv/bin/python -m app.server`). The popup's
 
 ```bash
 node --test extension/tests/                              # parity + unit tests (Node 18+; tested on 24)
-.venv/bin/python extension/tests/dump_py.py               # refresh Python reference spans (run from ZenLens/)
+.venv/bin/python extension/tests/dump_py.py               # refresh Python reference spans (run from Zen/)
 node extension/tools/make_icons.mjs                       # regenerate icons
 ```
 

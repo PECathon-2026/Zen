@@ -1,15 +1,15 @@
 /*
- * ZenLens paste/submit guard for AI chat sites. Intercepts paste and Enter/send in the prompt box,
+ * Zen paste/submit guard for AI chat sites. Intercepts paste and Enter/send in the prompt box,
  * detects PII locally, and asks: Send sanitized (default) / Send anyway / Cancel.
  * It only edits the prompt box the user is typing in, at the user's choice. It never transmits
  * anything itself — the site's own UI sends whatever ends up in the box.
  */
 (function () {
   "use strict";
-  const ZL = globalThis.__ZenLensContent;
+  const ZL = globalThis.__ZenContent;
   if (!ZL || ZL.guardInstalled) return;
   ZL.guardInstalled = true;
-  const Z = globalThis.ZenLensDetect, CFG = globalThis.ZenLensSettings;
+  const Z = globalThis.ZenDetect, CFG = globalThis.ZenSettings;
 
   const SEND_SEL = [
     'button[data-testid="send-button"]', 'button[data-testid*="send" i]', 'button[aria-label*="send" i]',
@@ -125,10 +125,10 @@
       const btn = (a, label, cls) => h("button", cls ? { "data-a": a, class: cls } : { "data-a": a }, label);
       sr.appendChild(h("div", { class: "bg", role: "dialog", "aria-modal": "true", "aria-labelledby": "t" },
         h("div", { class: "d" },
-          h("h2", { id: "t" }, h("span", { class: "dot" }), "ZenLens found sensitive data"),
+          h("h2", { id: "t" }, h("span", { class: "dot" }), "Zen found sensitive data"),
           h("p", { class: "k" }), h("pre"),
           h("div", { class: "r" }, btn("cancel", "Cancel"), btn("anyway", `${verb} anyway`), btn("sanitized", `${verb} sanitized`, "p")),
-          h("div", { class: "n" }, "Detected locally. ZenLens never sends anything; the site sends what is in the box."))));
+          h("div", { class: "n" }, "Detected locally. Zen never sends anything; the site sends what is in the box."))));
       sr.querySelector(".k").textContent = `${summarise(hits)} in your ${mode === "paste" ? "paste" : "message"}. Preview of the sanitized version:`;
       sr.querySelector("pre").textContent = sanitized.length > 1200 ? sanitized.slice(0, 1200) + "…" : sanitized;
       const done = (a) => { dialogOpen = false; host.remove(); removeEventListener("keydown", onKey, true); resolve(a); };
@@ -177,7 +177,7 @@
       await new Promise((r) => setTimeout(r, 30));
       const left = Z.detectAll(boxText(box), ZL.state.customRules);
       if (left.length) { // editor did not take the replacement: fail closed, do not send
-        ZL.ui.toast && ZL.ui.toast("ZenLens: could not sanitize this editor; message NOT sent. Please edit it manually.");
+        ZL.ui.toast && ZL.ui.toast("Zen: could not sanitize this editor; message NOT sent. Please edit it manually.");
         return;
       }
     }

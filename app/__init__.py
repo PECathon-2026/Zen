@@ -1,1 +1,1 @@
-"""ZenLens local app: FastAPI server + PWA. Runs on the user's own machine."""
+"""Zen local app: FastAPI server + PWA. Runs on the user's own machine."""

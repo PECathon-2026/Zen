@@ -38,7 +38,7 @@
   }
   function serverHeaders(settings, extra) {
     const h = { ...(extra || {}) };
-    if (settings.token) h["X-ZenLens-Token"] = settings.token;
+    if (settings.token) h["X-Zen-Token"] = settings.token;
     return h;
   }
   /** Health check with timeout. Resolves {ok:false} offline — never throws. */
@@ -79,6 +79,6 @@
   const kindColor = (k) => KIND_COLORS[k] || "#7048e8";
 
   const api = { DEFAULTS, ALLOWED_SERVERS, load, save, hostMatches, siteEnabled, isAiSite, serverBase, serverHeaders, health, KIND_INFO, kindColor };
-  root.ZenLensSettings = api;
+  root.ZenSettings = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

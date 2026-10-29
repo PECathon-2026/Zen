@@ -1,4 +1,4 @@
-"""ZenLens narrated end-to-end demo (synthetic data only).
+"""Zen narrated end-to-end demo (synthetic data only).
 
   .venv/bin/python demo/run_demo.py --yes            # auto-approve, scripted model
   .venv/bin/python demo/run_demo.py                  # approve interactively at the terminal
@@ -105,7 +105,7 @@ def main():
         sent.append(m)
         return m
 
-    say(f"{B}ZenLens demo{X}: compute what is sensitive locally; reason globally only on sanitized data.")
+    say(f"{B}Zen demo{X}: compute what is sensitive locally; reason globally only on sanitized data.")
     say(f"test pages served at {base}  |  vault secrets: {', '.join(VAULT.names())} (values never shown)")
 
     scene(1, "Detect + sanitize (checkout page, local capture)")

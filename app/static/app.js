@@ -1,4 +1,4 @@
-/* ZenLens PWA. Talks only to its own origin (CSP connect-src 'self'). No third-party code. */
+/* Zen PWA. Talks only to its own origin (CSP connect-src 'self'). No third-party code. */
 'use strict';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -46,7 +46,7 @@ function kindAttrs(el, kind) {
 async function api(path, { json, form, raw } = {}) {
   const headers = {};
   const tok = store.get('token', '');
-  if (tok) headers['X-ZenLens-Token'] = tok;
+  if (tok) headers['X-Zen-Token'] = tok;
   let body;
   if (json !== undefined) { headers['Content-Type'] = 'application/json'; body = JSON.stringify(json); }
   if (form) body = form;
@@ -94,7 +94,7 @@ function pairFromHash() {
   if (m) {
     store.set('token', m[1]);
     history.replaceState(null, '', location.pathname + location.search);  // token never lingers in the URL bar
-    toast('Paired with this ZenLens server.');
+    toast('Paired with this Zen server.');
   }
 }
 
@@ -234,7 +234,7 @@ async function redactFile(file) {
     if ($('#img-faces').checked) fd.append('faces', 'true');
     const res = await api('/api/redact_image', { form: fd, raw: true });
     let boxes = [];
-    try { boxes = JSON.parse(res.headers.get('X-ZenLens-Redactions') || '[]'); } catch { /* ignore */ }
+    try { boxes = JSON.parse(res.headers.get('X-Zen-Redactions') || '[]'); } catch { /* ignore */ }
     const blob = await res.blob();
     if (beforeURL) URL.revokeObjectURL(beforeURL); if (afterURL) URL.revokeObjectURL(afterURL);
     beforeURL = URL.createObjectURL(file);   // original stays in this browser; never re-uploaded or stored

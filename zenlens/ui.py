@@ -119,7 +119,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 def main():
     srv = http.server.ThreadingHTTPServer(("localhost", PORT), Handler)
-    print(f"ZenLens UI on {ORIGIN}", file=sys.stderr)
+    print(f"Zen UI on {ORIGIN}", file=sys.stderr)
     srv.serve_forever()
 
 

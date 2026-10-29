@@ -1,4 +1,4 @@
-/* ZenLens service worker: caches the app shell only. API calls and their data are never cached. */
+/* Zen service worker: caches the app shell only. API calls and their data are never cached. */
 const CACHE = 'zenlens-shell-v1';
 const SHELL = ['/', '/index.html', '/app.css', '/app.js', '/manifest.webmanifest',
   '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
