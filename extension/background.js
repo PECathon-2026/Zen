@@ -109,6 +109,12 @@ async function analyzeImage(msg) {
     blob = await r.blob();
   }
   if (blob.size > 12e6 || !/^image\//.test(blob.type || "image/")) throw new Error("not analysable");
+  // Vector images (logos, decorative backgrounds) hold no photographed faces and createImageBitmap cannot decode them in a worker
+  if (/svg/.test(blob.type) || /\.svg(\?|$)/i.test(msg.src || "")) {
+    const res = { nw: 1, nh: 1, boxes: [], ocrUp: false };
+    analysisCache.set(key, { t: Date.now(), res });
+    return res;
+  }
   const bmp = await createImageBitmap(blob), nw = bmp.width, nh = bmp.height;
   const boxes = detectFaces(bmp);
   const srv = await serverBoxes(blob, nw, nh);

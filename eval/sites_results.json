@@ -4,7 +4,7 @@
   "baseline": {
    "url": "https://example.com",
    "ok": true,
-   "dcl_ms": 542,
+   "dcl_ms": 4228,
    "final_url": "https://example.com/",
    "text_len": 917,
    "shot_std": 11.7,
@@ -13,7 +13,7 @@
   "shielded": {
    "url": "https://example.com",
    "ok": true,
-   "dcl_ms": 5331,
+   "dcl_ms": 7404,
    "final_url": "https://example.com/",
    "text_len": 917,
    "shot_std": 11.7,
@@ -21,15 +21,15 @@
   },
   "ext": {
    "kinds": {},
-   "scan_ms": 0,
+   "scan_ms": 1,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 65
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
@@ -37,16 +37,16 @@
   "baseline": {
    "url": "https://en.wikipedia.org/wiki/Privacy",
    "ok": true,
-   "dcl_ms": 1603,
+   "dcl_ms": 8214,
    "final_url": "https://en.wikipedia.org/wiki/Privacy",
-   "text_len": 101473,
-   "shot_std": 46.2,
+   "text_len": 105728,
+   "shot_std": 21.9,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://en.wikipedia.org/wiki/Privacy",
    "ok": true,
-   "dcl_ms": 5834,
+   "dcl_ms": 6393,
    "final_url": "https://en.wikipedia.org/wiki/Privacy",
    "text_len": 105720,
    "shot_std": 56.6,
@@ -55,10 +55,11 @@
   "ext": {
    "kinds": {
     "FACE": 2,
+    "IMAGE": 1,
     "IP": 1,
     "CARD": 4
    },
-   "scan_ms": 185,
+   "scan_ms": 174,
    "shield": "on",
    "enabled": true
   },
@@ -74,24 +75,24 @@
   "baseline": {
    "url": "https://news.ycombinator.com",
    "ok": true,
-   "dcl_ms": 1898,
+   "dcl_ms": 4646,
    "final_url": "https://news.ycombinator.com/",
-   "text_len": 4252,
+   "text_len": 4205,
    "shot_std": 25.0,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://news.ycombinator.com",
    "ok": true,
-   "dcl_ms": 5253,
+   "dcl_ms": 7720,
    "final_url": "https://news.ycombinator.com/",
-   "text_len": 4252,
+   "text_len": 4205,
    "shot_std": 25.0,
    "page_errors": 0
   },
   "ext": {
    "kinds": {},
-   "scan_ms": 5,
+   "scan_ms": 4,
    "shield": "on",
    "enabled": true
   },
@@ -99,40 +100,39 @@
    "text_leak": false,
    "value_leak": false,
    "ocr_leak": false,
-   "ocr_len": 173
+   "ocr_len": 165
   }
  },
  {
   "url": "https://www.bbc.com/news",
   "baseline": {
    "url": "https://www.bbc.com/news",
-   "ok": true,
-   "dcl_ms": 6346,
-   "final_url": "https://www.bbc.com/news",
-   "text_len": 8269,
-   "shot_std": 71.5,
+   "ok": false,
+   "error": "TimeoutError",
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.bbc.com/news",
    "ok": true,
-   "dcl_ms": 12370,
+   "dcl_ms": 13510,
    "final_url": "https://www.bbc.com/news",
-   "text_len": 8286,
-   "shot_std": 72.2,
+   "text_len": 8287,
+   "shot_std": 76.1,
    "page_errors": 0
   },
   "ext": {
-   "kinds": {},
-   "scan_ms": 0,
+   "kinds": {
+    "FACE": 26
+   },
+   "scan_ms": 12,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 109
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 90
   }
  },
  {
@@ -140,16 +140,16 @@
   "baseline": {
    "url": "https://www.python.org",
    "ok": true,
-   "dcl_ms": 3456,
+   "dcl_ms": 7087,
    "final_url": "https://www.python.org/",
-   "text_len": 4049,
-   "shot_std": 74.4,
+   "text_len": 4021,
+   "shot_std": 74.3,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.python.org",
    "ok": true,
-   "dcl_ms": 2046,
+   "dcl_ms": 7307,
    "final_url": "https://www.python.org/",
    "text_len": 4049,
    "shot_std": 74.3,
@@ -159,7 +159,7 @@
    "kinds": {
     "FACE": 1
    },
-   "scan_ms": 5,
+   "scan_ms": 7,
    "shield": "on",
    "enabled": true
   },
@@ -175,19 +175,55 @@
   "baseline": {
    "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input",
    "ok": true,
-   "dcl_ms": 2267,
+   "dcl_ms": 7130,
    "final_url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input",
-   "text_len": 56144,
-   "shot_std": 26.8,
+   "text_len": 58597,
+   "shot_std": 22.7,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input",
    "ok": true,
-   "dcl_ms": 2190,
+   "dcl_ms": 4289,
    "final_url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input",
    "text_len": 56144,
-   "shot_std": 26.7,
+   "shot_std": 23.2,
+   "page_errors": 0
+  },
+  "ext": {
+   "kinds": {
+    "TOKEN": 179,
+    "FACE": 2
+   },
+   "scan_ms": 46,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 73
+  }
+ },
+ {
+  "url": "https://stackoverflow.com/questions",
+  "baseline": {
+   "url": "https://stackoverflow.com/questions",
+   "ok": true,
+   "dcl_ms": 3000,
+   "final_url": "https://stackoverflow.com/questions?__cf_chl_rt_tk=u0FkY8i3SEGrv1Xq6UGsirGUWK5k0oHL2CPms3Swgfo-17933",
+   "text_len": 0,
+   "shot_std": 0.0,
+   "page_errors": 0
+  },
+  "shielded": {
+   "url": "https://stackoverflow.com/questions",
+   "ok": true,
+   "dcl_ms": 3681,
+   "final_url": "https://stackoverflow.com/questions",
+   "text_len": 0,
+   "shot_std": 0.0,
    "page_errors": 0
   },
   "ext": {
@@ -197,39 +233,10 @@
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 93
-  }
- },
- {
-  "url": "https://stackoverflow.com/questions",
-  "baseline": {
-   "url": "https://stackoverflow.com/questions",
-   "ok": true,
-   "dcl_ms": 2534,
-   "final_url": "https://stackoverflow.com/questions?__cf_chl_tk=nDMqP1lH1yFU70vpcA1ekcbAsND9WlCdHAo9i7VzgnM-17933127",
-   "error": "Error",
-   "page_errors": 0
-  },
-  "shielded": {
-   "url": "https://stackoverflow.com/questions",
-   "ok": true,
-   "dcl_ms": 896,
-   "final_url": "https://stackoverflow.com/questions",
-   "text_len": 0,
-   "shot_std": 0.0,
-   "page_errors": 0
-  },
-  "ext": {
-   "kinds": {},
-   "scan_ms": 0,
-   "shield": "auto",
-   "enabled": false
-  },
-  "canary": {
-   "error": "Error"
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
@@ -237,7 +244,7 @@
   "baseline": {
    "url": "https://www.reddit.com",
    "ok": true,
-   "dcl_ms": 3365,
+   "dcl_ms": 5668,
    "final_url": "https://www.reddit.com/",
    "text_len": 240,
    "shot_std": 10.0,
@@ -246,7 +253,7 @@
   "shielded": {
    "url": "https://www.reddit.com",
    "ok": true,
-   "dcl_ms": 2768,
+   "dcl_ms": 4011,
    "final_url": "https://www.reddit.com/",
    "text_len": 240,
    "shot_std": 10.0,
@@ -259,10 +266,10 @@
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 65
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
@@ -270,32 +277,37 @@
   "baseline": {
    "url": "https://github.com/login",
    "ok": true,
-   "dcl_ms": 7034,
+   "dcl_ms": 8882,
    "final_url": "https://github.com/login",
-   "text_len": 282,
-   "shot_std": 20.0,
+   "text_len": 214,
+   "shot_std": 20.8,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://github.com/login",
    "ok": true,
-   "dcl_ms": 7162,
+   "dcl_ms": 7343,
    "final_url": "https://github.com/login",
    "text_len": 214,
-   "shot_std": 19.6,
+   "shot_std": 34.6,
    "page_errors": 0
   },
   "ext": {
-   "kinds": {},
-   "scan_ms": 2,
+   "kinds": {
+    "TOKEN": 1,
+    "EMAIL": 1,
+    "PASSWORD": 1,
+    "SECRET": 1
+   },
+   "scan_ms": 5,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 78
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 58
   }
  },
  {
@@ -303,16 +315,16 @@
   "baseline": {
    "url": "https://accounts.google.com/signin",
    "ok": true,
-   "dcl_ms": 1710,
+   "dcl_ms": 2759,
    "final_url": "https://accounts.google.com/v3/signin/identifier?flowName=WebLiteSignIn&flowEntry=ServiceLogin&dsh=S",
    "text_len": 1038,
-   "shot_std": 12.5,
+   "shot_std": 12.4,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://accounts.google.com/signin",
    "ok": true,
-   "dcl_ms": 1645,
+   "dcl_ms": 4024,
    "final_url": "https://accounts.google.com/v3/signin/identifier?flowName=WebLiteSignIn&flowEntry=ServiceLogin&dsh=S",
    "text_len": 1038,
    "shot_std": 27.5,
@@ -322,7 +334,7 @@
    "kinds": {
     "EMAIL": 1
    },
-   "scan_ms": 3,
+   "scan_ms": 2,
    "shield": "on",
    "enabled": true
   },
@@ -335,7 +347,7 @@
   "baseline": {
    "url": "https://www.amazon.in/ap/signin",
    "ok": true,
-   "dcl_ms": 2259,
+   "dcl_ms": 3775,
    "final_url": "https://www.amazon.in/ap/signin",
    "text_len": 130,
    "shot_std": 12.6,
@@ -344,7 +356,7 @@
   "shielded": {
    "url": "https://www.amazon.in/ap/signin",
    "ok": true,
-   "dcl_ms": 2360,
+   "dcl_ms": 734,
    "final_url": "https://www.amazon.in/ap/signin",
    "text_len": 130,
    "shot_std": 12.6,
@@ -368,7 +380,7 @@
   "baseline": {
    "url": "https://login.microsoftonline.com",
    "ok": true,
-   "dcl_ms": 24815,
+   "dcl_ms": 11006,
    "final_url": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=4765445b-32c6-49b0-83e6-1d9",
    "text_len": 0,
    "shot_std": 0.0,
@@ -377,19 +389,25 @@
   "shielded": {
    "url": "https://login.microsoftonline.com",
    "ok": true,
-   "dcl_ms": 21321,
+   "dcl_ms": 5382,
    "final_url": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=4765445b-32c6-49b0-83e6-1d9",
-   "error": "Error",
+   "text_len": 0,
+   "shot_std": 0.0,
    "page_errors": 0
   },
   "ext": {
-   "kinds": {},
-   "scan_ms": 0,
+   "kinds": {
+    "TOKEN": 1
+   },
+   "scan_ms": 1,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "error": "Error"
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
@@ -397,16 +415,16 @@
   "baseline": {
    "url": "https://www.linkedin.com/login",
    "ok": true,
-   "dcl_ms": 6708,
+   "dcl_ms": 3465,
    "final_url": "https://www.linkedin.com/login",
    "text_len": 689,
-   "shot_std": 14.9,
+   "shot_std": 27.9,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.linkedin.com/login",
    "ok": true,
-   "dcl_ms": 8536,
+   "dcl_ms": 2246,
    "final_url": "https://www.linkedin.com/login",
    "text_len": 689,
    "shot_std": 27.9,
@@ -430,7 +448,7 @@
   "baseline": {
    "url": "https://www.paypal.com/signin",
    "ok": true,
-   "dcl_ms": 8441,
+   "dcl_ms": 3760,
    "final_url": "https://www.paypal.com/signin",
    "text_len": 0,
    "shot_std": 0.0,
@@ -438,9 +456,24 @@
   },
   "shielded": {
    "url": "https://www.paypal.com/signin",
-   "ok": false,
-   "error": "Error",
+   "ok": true,
+   "dcl_ms": 5470,
+   "final_url": "https://www.paypal.com/signin",
+   "text_len": 0,
+   "shot_std": 0.0,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {},
+   "scan_ms": 0,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
@@ -448,32 +481,36 @@
   "baseline": {
    "url": "https://www.facebook.com/login",
    "ok": true,
-   "dcl_ms": 14612,
+   "dcl_ms": 7742,
    "final_url": "https://www.facebook.com/login",
    "text_len": 419,
-   "shot_std": 30.6,
+   "shot_std": 31.0,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.facebook.com/login",
    "ok": true,
-   "dcl_ms": 17309,
+   "dcl_ms": 9425,
    "final_url": "https://www.facebook.com/login",
    "text_len": 419,
-   "shot_std": 30.6,
+   "shot_std": 59.8,
    "page_errors": 0
   },
   "ext": {
-   "kinds": {},
-   "scan_ms": 0,
+   "kinds": {
+    "EMAIL": 1,
+    "PASSWORD": 1,
+    "FACE": 2
+   },
+   "scan_ms": 3,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 65
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
@@ -481,17 +518,35 @@
   "baseline": {
    "url": "https://www.netflix.com/login",
    "ok": true,
-   "dcl_ms": 13414,
+   "dcl_ms": 3042,
    "final_url": "https://www.netflix.com/gb/login",
    "text_len": 344,
-   "shot_std": 15.7,
+   "shot_std": 16.6,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.netflix.com/login",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 2393,
+   "final_url": "https://www.netflix.com/gb/login",
+   "text_len": 344,
+   "shot_std": 20.0,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {
+    "EMAIL": 1,
+    "PASSWORD": 1
+   },
+   "scan_ms": 3,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
@@ -499,32 +554,35 @@
   "baseline": {
    "url": "https://login.live.com",
    "ok": true,
-   "dcl_ms": 14876,
+   "dcl_ms": 5169,
    "final_url": "https://login.live.com/",
    "text_len": 231,
-   "shot_std": 18.8,
+   "shot_std": 19.2,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://login.live.com",
    "ok": true,
-   "dcl_ms": 9866,
+   "dcl_ms": 4162,
    "final_url": "https://login.live.com/",
    "text_len": 231,
-   "shot_std": 18.8,
+   "shot_std": 1.3,
    "page_errors": 0
   },
   "ext": {
-   "kinds": {},
-   "scan_ms": 0,
+   "kinds": {
+    "EMAIL": 1,
+    "IMAGE": 1
+   },
+   "scan_ms": 2,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 65
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 0
   }
  },
  {
@@ -532,32 +590,34 @@
   "baseline": {
    "url": "https://www.w3schools.com/html/html_forms.asp",
    "ok": true,
-   "dcl_ms": 8834,
+   "dcl_ms": 5051,
    "final_url": "https://www.w3schools.com/html/html_forms.asp",
    "text_len": 8649,
-   "shot_std": 58.2,
+   "shot_std": 58.8,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.w3schools.com/html/html_forms.asp",
    "ok": true,
-   "dcl_ms": 8026,
+   "dcl_ms": 2871,
    "final_url": "https://www.w3schools.com/html/html_forms.asp",
-   "text_len": 8649,
-   "shot_std": 58.1,
+   "text_len": 8659,
+   "shot_std": 55.4,
    "page_errors": 0
   },
   "ext": {
-   "kinds": {},
-   "scan_ms": 1,
+   "kinds": {
+    "FACE": 2
+   },
+   "scan_ms": 19,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 81
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 62
   }
  },
  {
@@ -565,7 +625,7 @@
   "baseline": {
    "url": "https://www.saucedemo.com",
    "ok": true,
-   "dcl_ms": 4479,
+   "dcl_ms": 981,
    "final_url": "https://www.saucedemo.com/",
    "text_len": 161,
    "shot_std": 86.6,
@@ -574,7 +634,7 @@
   "shielded": {
    "url": "https://www.saucedemo.com",
    "ok": true,
-   "dcl_ms": 7026,
+   "dcl_ms": 2695,
    "final_url": "https://www.saucedemo.com/",
    "text_len": 161,
    "shot_std": 87.4,
@@ -600,46 +660,54 @@
   "baseline": {
    "url": "https://demoqa.com/text-box",
    "ok": true,
-   "dcl_ms": 14899,
+   "dcl_ms": 5927,
    "final_url": "https://demoqa.com/text-box",
    "text_len": 325,
-   "shot_std": 26.0,
+   "shot_std": 27.1,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://demoqa.com/text-box",
    "ok": true,
-   "dcl_ms": 6021,
+   "dcl_ms": 6090,
    "final_url": "https://demoqa.com/text-box",
    "text_len": 325,
-   "shot_std": 26.0,
+   "shot_std": 71.8,
    "page_errors": 0
   },
   "ext": {
-   "kinds": {},
-   "scan_ms": 1,
+   "kinds": {
+    "NAME": 1,
+    "EMAIL": 1,
+    "ADDRESS": 2,
+    "IMAGE": 1
+   },
+   "scan_ms": 3,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 65
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 49
   }
  },
  {
   "url": "https://the-internet.herokuapp.com/login",
   "baseline": {
    "url": "https://the-internet.herokuapp.com/login",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 8234,
+   "final_url": "https://the-internet.herokuapp.com/login",
+   "text_len": 262,
+   "shot_std": 62.1,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://the-internet.herokuapp.com/login",
    "ok": true,
-   "dcl_ms": 24370,
+   "dcl_ms": 9260,
    "final_url": "https://the-internet.herokuapp.com/login",
    "text_len": 262,
    "shot_std": 66.2,
@@ -666,46 +734,52 @@
   "baseline": {
    "url": "https://practicetestautomation.com/practice-test-login",
    "ok": true,
-   "dcl_ms": 10599,
+   "dcl_ms": 3946,
    "final_url": "https://practicetestautomation.com/practice-test-login/",
    "text_len": 1378,
-   "shot_std": 60.3,
+   "shot_std": 60.6,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://practicetestautomation.com/practice-test-login",
    "ok": true,
-   "dcl_ms": 12612,
+   "dcl_ms": 6704,
    "final_url": "https://practicetestautomation.com/practice-test-login/",
-   "text_len": 1378,
-   "shot_std": 60.3,
+   "text_len": 1389,
+   "shot_std": 70.5,
    "page_errors": 0
   },
   "ext": {
-   "kinds": {},
-   "scan_ms": 2,
+   "kinds": {
+    "PASSWORD": 2,
+    "FACE": 1
+   },
+   "scan_ms": 3,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 65
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 25
   }
  },
  {
   "url": "https://www.selenium.dev/selenium/web/web-form.html",
   "baseline": {
    "url": "https://www.selenium.dev/selenium/web/web-form.html",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 6534,
+   "final_url": "https://www.selenium.dev/selenium/web/web-form.html",
+   "text_len": 286,
+   "shot_std": 13.9,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.selenium.dev/selenium/web/web-form.html",
    "ok": true,
-   "dcl_ms": 8549,
+   "dcl_ms": 3797,
    "final_url": "https://www.selenium.dev/selenium/web/web-form.html",
    "text_len": 286,
    "shot_std": 23.7,
@@ -715,7 +789,7 @@
    "kinds": {
     "PASSWORD": 1
    },
-   "scan_ms": 1,
+   "scan_ms": 2,
    "shield": "on",
    "enabled": true
   },
@@ -731,7 +805,7 @@
   "baseline": {
    "url": "https://httpbin.org/forms/post",
    "ok": true,
-   "dcl_ms": 2980,
+   "dcl_ms": 2809,
    "final_url": "https://httpbin.org/forms/post",
    "text_len": 207,
    "shot_std": 10.1,
@@ -740,7 +814,7 @@
   "shielded": {
    "url": "https://httpbin.org/forms/post",
    "ok": true,
-   "dcl_ms": 7377,
+   "dcl_ms": 7137,
    "final_url": "https://httpbin.org/forms/post",
    "text_len": 207,
    "shot_std": 16.3,
@@ -751,7 +825,7 @@
     "PHONE": 1,
     "EMAIL": 1
    },
-   "scan_ms": 1,
+   "scan_ms": 0,
    "shield": "on",
    "enabled": true
   },
@@ -767,7 +841,7 @@
   "baseline": {
    "url": "https://pypi.org/account/login",
    "ok": true,
-   "dcl_ms": 4983,
+   "dcl_ms": 10589,
    "final_url": "https://pypi.org/account/login/",
    "text_len": 1241,
    "shot_std": 78.8,
@@ -775,27 +849,9 @@
   },
   "shielded": {
    "url": "https://pypi.org/account/login",
-   "ok": true,
-   "dcl_ms": 6054,
-   "final_url": "https://pypi.org/account/login/",
-   "text_len": 1250,
-   "shot_std": 78.5,
-   "page_errors": 1
-  },
-  "ext": {
-   "kinds": {
-    "TOKEN": 1,
-    "PASSWORD": 9
-   },
-   "scan_ms": 2,
-   "shield": "on",
-   "enabled": true
-  },
-  "canary": {
-   "text_leak": false,
-   "value_leak": false,
-   "ocr_leak": false,
-   "ocr_len": 20
+   "ok": false,
+   "error": "TimeoutError",
+   "page_errors": 0
   }
  },
  {
@@ -803,16 +859,16 @@
   "baseline": {
    "url": "https://www.npmjs.com/login",
    "ok": true,
-   "dcl_ms": 14691,
-   "final_url": "https://www.npmjs.com/login?__cf_chl_rt_tk=9UQ0yX4yY3a5CqcAvIeBChA9m4eWh0nbBpvPkNKdXZ8-1793312840-1.",
-   "text_len": 0,
-   "shot_std": 0.0,
+   "dcl_ms": 2734,
+   "final_url": "https://www.npmjs.com/login",
+   "text_len": 261,
+   "shot_std": 12.8,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.npmjs.com/login",
    "ok": true,
-   "dcl_ms": 14212,
+   "dcl_ms": 1811,
    "final_url": "https://www.npmjs.com/login",
    "text_len": 261,
    "shot_std": 12.8,
@@ -835,11 +891,8 @@
   "url": "https://dashboard.stripe.com/login",
   "baseline": {
    "url": "https://dashboard.stripe.com/login",
-   "ok": true,
-   "dcl_ms": 22643,
-   "final_url": "https://dashboard.stripe.com/login",
-   "text_len": 214,
-   "shot_std": 6.2,
+   "ok": false,
+   "error": "TimeoutError",
    "page_errors": 0
   },
   "shielded": {
@@ -853,33 +906,62 @@
   "url": "https://vercel.com/login",
   "baseline": {
    "url": "https://vercel.com/login",
-   "ok": true,
-   "dcl_ms": 10923,
-   "final_url": "https://vercel.com/login",
-   "text_len": 244,
-   "shot_std": 25.6,
+   "ok": false,
+   "error": "TimeoutError",
    "page_errors": 0
   },
   "shielded": {
    "url": "https://vercel.com/login",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 9611,
+   "final_url": "https://vercel.com/login",
+   "text_len": 244,
+   "shot_std": 32.0,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {
+    "EMAIL": 1
+   },
+   "scan_ms": 3,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
   "url": "https://www.youtube.com",
   "baseline": {
    "url": "https://www.youtube.com",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 6201,
+   "final_url": "https://www.youtube.com/",
+   "text_len": 159,
+   "shot_std": 9.0,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.youtube.com",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 6599,
+   "final_url": "https://www.youtube.com/",
+   "text_len": 0,
+   "shot_std": 23.9,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {},
+   "scan_ms": 5,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "error": "Error"
   }
  },
  {
@@ -887,7 +969,7 @@
   "baseline": {
    "url": "https://www.google.com",
    "ok": true,
-   "dcl_ms": 4617,
+   "dcl_ms": 2176,
    "final_url": "https://www.google.com/",
    "text_len": 179,
    "shot_std": 19.1,
@@ -896,7 +978,7 @@
   "shielded": {
    "url": "https://www.google.com",
    "ok": true,
-   "dcl_ms": 2741,
+   "dcl_ms": 11457,
    "final_url": "https://www.google.com/",
    "text_len": 179,
    "shot_std": 19.1,
@@ -904,30 +986,52 @@
   },
   "ext": {
    "kinds": {},
-   "scan_ms": 0,
+   "scan_ms": 4,
    "shield": "on",
    "enabled": true
   },
   "canary": {
-   "text_leak": true,
-   "value_leak": true,
-   "ocr_leak": true,
-   "ocr_len": 49
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
   "url": "https://www.instagram.com",
   "baseline": {
    "url": "https://www.instagram.com",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 12048,
+   "final_url": "https://www.instagram.com/",
+   "text_len": 0,
+   "shot_std": 46.1,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.instagram.com",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 13580,
+   "final_url": "https://www.instagram.com/",
+   "text_len": 0,
+   "shot_std": 78.4,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {
+    "EMAIL": 1,
+    "PASSWORD": 1,
+    "IMAGE": 1
+   },
+   "scan_ms": 4,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
@@ -941,7 +1045,7 @@
   "shielded": {
    "url": "https://www.flipkart.com",
    "ok": false,
-   "error": "Error",
+   "error": "TimeoutError",
    "page_errors": 0
   }
  },
@@ -950,13 +1054,13 @@
   "baseline": {
    "url": "https://www.myntra.com",
    "ok": false,
-   "error": "TimeoutError",
+   "error": "Error",
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.myntra.com",
    "ok": false,
-   "error": "TimeoutError",
+   "error": "Error",
    "page_errors": 0
   }
  },
@@ -979,30 +1083,68 @@
   "url": "https://www.hdfcbank.com",
   "baseline": {
    "url": "https://www.hdfcbank.com",
-   "ok": false,
-   "error": "Error",
+   "ok": true,
+   "dcl_ms": 7668,
+   "final_url": "https://www.hdfc.bank.in/",
+   "text_len": 513,
+   "shot_std": 15.8,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.hdfcbank.com",
-   "ok": false,
-   "error": "Error",
+   "ok": true,
+   "dcl_ms": 899,
+   "final_url": "https://www.hdfc.bank.in/",
+   "text_len": 513,
+   "shot_std": 15.9,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {},
+   "scan_ms": 1,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 72
   }
  },
  {
   "url": "https://onlinesbi.sbi",
   "baseline": {
    "url": "https://onlinesbi.sbi",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 4313,
+   "final_url": "https://onlinesbi.sbi.bank.in/",
+   "text_len": 2100,
+   "shot_std": 46.8,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://onlinesbi.sbi",
-   "ok": false,
-   "error": "Error",
+   "ok": true,
+   "dcl_ms": 4533,
+   "final_url": "https://onlinesbi.sbi.bank.in/",
+   "text_len": 2100,
+   "shot_std": 55.2,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {
+    "FACE": 1
+   },
+   "scan_ms": 12,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 118
   }
  },
  {
@@ -1025,7 +1167,7 @@
   "baseline": {
    "url": "https://web.whatsapp.com",
    "ok": true,
-   "dcl_ms": 5157,
+   "dcl_ms": 6933,
    "final_url": "https://web.whatsapp.com/",
    "text_len": 147,
    "shot_std": 21.3,
@@ -1033,39 +1175,92 @@
   },
   "shielded": {
    "url": "https://web.whatsapp.com",
-   "ok": false,
-   "error": "TimeoutError",
+   "ok": true,
+   "dcl_ms": 5446,
+   "final_url": "https://web.whatsapp.com/",
+   "text_len": 147,
+   "shot_std": 21.3,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {},
+   "scan_ms": 2,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
   "url": "https://www.notion.so/login",
   "baseline": {
    "url": "https://www.notion.so/login",
-   "ok": false,
-   "error": "Error",
+   "ok": true,
+   "dcl_ms": 7739,
+   "final_url": "https://app.notion.com/login",
+   "text_len": 0,
+   "shot_std": 0.5,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://www.notion.so/login",
-   "ok": false,
-   "error": "Error",
+   "ok": true,
+   "dcl_ms": 6402,
+   "final_url": "https://app.notion.com/login",
+   "text_len": 0,
+   "shot_std": 0.5,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {},
+   "scan_ms": 3,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 45
   }
  },
  {
   "url": "https://slack.com/signin",
   "baseline": {
    "url": "https://slack.com/signin",
-   "ok": false,
-   "error": "Error",
+   "ok": true,
+   "dcl_ms": 13640,
+   "final_url": "https://slack.com/signin#/signin",
+   "text_len": 252,
+   "shot_std": 30.7,
    "page_errors": 0
   },
   "shielded": {
    "url": "https://slack.com/signin",
-   "ok": false,
-   "error": "Error",
+   "ok": true,
+   "dcl_ms": 5914,
+   "final_url": "https://slack.com/signin#/signin",
+   "text_len": 252,
+   "shot_std": 38.2,
    "page_errors": 0
+  },
+  "ext": {
+   "kinds": {
+    "EMAIL": 1
+   },
+   "scan_ms": 7,
+   "shield": "on",
+   "enabled": true
+  },
+  "canary": {
+   "text_leak": false,
+   "value_leak": false,
+   "ocr_leak": false,
+   "ocr_len": 51
   }
  }
 ]

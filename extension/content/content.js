@@ -256,6 +256,8 @@
     for (const el of qsa(HINT_SEL)) {
       if (++n > MAX_ELEMS) break;
       if (el.matches(FIELD_SEL) || isOurs(el) || SKIP_TAGS.has(el.tagName)) continue;
+      // syntax highlighters (Prism/hljs) put class="token ..." on every code span: that is not an auth token
+      if (el.classList && el.classList.contains("token") && el.closest("code,pre")) continue;
       let r = null;
       try { r = ST.classifyDomElement(el); } catch (_) { /* ignore */ }
       if (r && visible(el)) {
@@ -441,6 +443,7 @@
     } catch (e) { console.debug("[Zen] scan error", e && e.message); }
     state.findings = out.slice(0, MAX_FINDINGS);
     checkFrames();
+    try { document.documentElement.setAttribute("data-zen-dbg", [state.enabled ? 1 : 0, shieldOn() ? 1 : 0, state.findings.length, state.roots.length, state.agent ? 1 : 0, state.settings.shieldMode].join(":")); } catch (_) { /* TEMP diag */ }
     if (shieldOn()) { try { maskFields(); maskAttrs(); applyDom(); ensureWatch(); } catch (e) { console.debug("[Zen] dom redact error", e && e.message); } }
     render(); report();
   }
@@ -666,7 +669,8 @@
   }
 
   // ---------- lifecycle ----------
-  async function init() {
+  async function init() { try { return await init0(); } catch (e) { try { document.documentElement.setAttribute("data-zen-err", String(e && e.message).slice(0, 80)); } catch (_) { /* TEMP diag */ } } }
+  async function init0() {
     const s = await CFG.load();
     state.settings = s;
     try { // agent seen recently anywhere in this browser: start shielded, before the first scan
