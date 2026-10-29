@@ -1,12 +1,13 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Zen</title>
-<link rel="stylesheet" href="../lib/ui.css"><link rel="stylesheet" href="popup.css"></head>
+<script src="../lib/theme.js"></script><link rel="stylesheet" href="../lib/ui.css"><link rel="stylesheet" href="popup.css"></head>
 <body>
 <header>
   <img src="../icons/icon32.png" width="20" height="20" alt="">
-  <strong>Zen</strong>
+  <strong class="brand">Zen</strong>
   <span class="pill" title="All detection runs inside your browser. Nothing is sent anywhere.">Local-only</span>
   <span class="grow"></span>
+  <button class="iconbtn" id="theme" type="button" aria-label="Switch colour theme"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
   <span class="pill" id="server" title="Optional local Zen server (OCR)"><span class="dot" id="srvdot"></span><span id="srvtxt">server…</span></span>
 </header>
 <main>

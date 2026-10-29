@@ -2,6 +2,9 @@
 
 const MENU_ID = "zenlens-redact-copy";
 const STICKY_MS = 10 * 60 * 1000;
+// Content scripts read the "agent seen" timestamp straight from session storage at document_start (no service-worker wake-up
+// needed), so a page that loads between two agent actions is covered from its first scan.
+chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" }).catch(() => {});
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({ id: MENU_ID, title: "Redact selection & copy", contexts: ["selection"] });
@@ -35,10 +38,11 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   // STICKY_MS (kept in storage.session so it survives service-worker restarts).
   if (msg && msg.type === "zl:probe" && sender.tab && sender.tab.id != null) {
     const id = sender.tab.id, now = Date.now();
-    Promise.all([chrome.debugger.getTargets(), chrome.storage.session.get({ agentSeen: {} })]).then(async ([ts, got]) => {
+    Promise.all([chrome.debugger.getTargets(), chrome.storage.session.get({ agentSeen: {}, agentAt: 0 })]).then(async ([ts, got]) => {
       const seen = got.agentSeen || {};
-      if (ts.some((t) => t.tabId === id && t.attached)) { seen[id] = now; await chrome.storage.session.set({ agentSeen: seen }); }
-      reply({ agent: now - (seen[id] || 0) < STICKY_MS });
+      let at = got.agentAt || 0;
+      if (ts.some((t) => t.tabId === id && t.attached)) { seen[id] = now; at = now; await chrome.storage.session.set({ agentSeen: seen, agentAt: now }); }
+      reply({ agent: now - Math.max(seen[id] || 0, at) < STICKY_MS });
     }).catch(() => reply({ agent: false }));
     return true;
   }

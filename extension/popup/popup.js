@@ -83,6 +83,10 @@ $("preview").addEventListener("click", async () => {
     window.close();
   } catch (e) { setStatus("Side panel unavailable: " + (e && e.message)); }
 });
+$("theme").addEventListener("click", async () => {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  ZenTheme.apply(next); await CFG.save({ theme: next });
+});
 $("options").addEventListener("click", (e) => { e.preventDefault(); chrome.runtime.openOptionsPage(); });
 
 init();

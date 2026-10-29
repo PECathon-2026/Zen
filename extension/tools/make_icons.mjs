@@ -23,7 +23,7 @@ function png(size, rgba) {
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("IDAT", deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]);
 }
 
-// Shape in unit coords [0,1]: rounded purple tile, white lens ring + handle, redaction bar inside lens.
+// Shape in unit coords [0,1]: rounded terracotta tile, white lens ring + handle, cream redaction bar inside lens.
 function sample(x, y) {
   const r = 0.22, inTile = (() => { const dx = Math.max(Math.abs(x - 0.5) - (0.5 - r), 0), dy = Math.max(Math.abs(y - 0.5) - (0.5 - r), 0); return dx * dx + dy * dy <= r * r; })();
   if (!inTile) return null;
@@ -34,9 +34,9 @@ function sample(x, y) {
   const handle = t > 0.19 && t < 0.36 && hd < 0.065;
   const bar = Math.abs(y - cy) < 0.055 && Math.abs(x - cx) < 0.13;
   if (ring || handle) return [255, 255, 255, 255];
-  if (bar) return [255, 212, 59, 255];
+  if (bar) return [255, 219, 209, 255];
   const g = y; // vertical gradient
-  return [Math.round(112 - 30 * g), Math.round(72 - 20 * g), Math.round(232 - 40 * g), 255];
+  return [Math.round(196 - 30 * g), Math.round(76 - 16 * g), Math.round(36 - 10 * g), 255];
 }
 for (const size of [16, 32, 48, 128]) {
   const S = 4, buf = Buffer.alloc(size * size * 4);

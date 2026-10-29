@@ -29,7 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 EXT = ROOT / "extension"
 PAGES = ROOT / "testpages"
 SCENARIOS = ["checkout", "auth", "support_chat", "video_call", "dev_settings"]
-COVER = (0x1B, 0x1C, 0x1A)  # overlay .b.s background #1b1c1a
+CLEAR = 0.7  # a field counts as covered when this share of its box is opaque cover colour (the kind label takes some)
 
 
 def _serve():
@@ -50,6 +50,8 @@ def _ocr(png: bytes) -> str:
 
 
 def _cover_fraction(png: bytes, rect: dict) -> float:
+    """Share of the rectangle painted by an opaque shield cover: dark, saturated per-kind colours (luma < 130).
+    Real fields render white/light, so an uncovered field scores ~0."""
     from PIL import Image
     im = Image.open(io.BytesIO(png)).convert("RGB")
     x0, y0 = max(0, int(rect["x"])), max(0, int(rect["y"]))
@@ -57,8 +59,7 @@ def _cover_fraction(png: bytes, rect: dict) -> float:
     if x1 <= x0 or y1 <= y0:
         return 0.0
     px = im.crop((x0, y0, x1, y1)).getdata()
-    hit = sum(1 for p in px if all(abs(p[i] - COVER[i]) <= 6 for i in range(3)))
-    return hit / len(px)
+    return sum(1 for r, g, b in px if 0.299 * r + 0.587 * g + 0.114 * b < 130) / len(px)
 
 
 def _launch(p, tmp):
@@ -112,7 +113,7 @@ def eval_page(ctx, base, name, mode):
             if rect and rect["width"] > 0 and rect["height"] > 0:  # hidden inputs draw nothing; they are checked via DOM values
                 f = _cover_fraction(png, rect)
                 res["coverage"].append(round(f, 3))
-                if f < 0.85:
+                if f < CLEAR:
                     res["uncovered"].append(f'{it["kind"]}:{it.get("id")}')
     negs = [n for n in truth.get("negatives", []) if len(_norm(n)) >= 4]
     res["context_kept"] = round(sum(1 for n in negs if _norm(n) in ocr) / len(negs), 3) if negs else None

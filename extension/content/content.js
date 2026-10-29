@@ -17,8 +17,9 @@
     settings: { ...CFG.DEFAULTS }, customRules: [], enabled: false, mask: false,
     findings: [],   // {kind, reason, el?:Element, range?:Range, field?:bool}  — no values kept
     host: null, layer: null, rescanTimer: 0, rafPending: false, lastScan: 0,
-    agent: false, probeTimer: 0, armSheet: null, domRedacted: [], masked: new Map(),  // Agent Shield
+    agent: false, probeTimer: 0, armSheet: null, domRedacted: [], masked: new Map(), attrMasked: [], roots: [], observed: new WeakSet(), watching: false, sig: "",  // Agent Shield
   };
+  const STICKY_MS = 10 * 60 * 1000;
   const SHIELD_MIN_GAP = 40; // ms between rescans while the shield is up (normal mode: 600)
   /** Agent Shield is up when forced on, or in auto mode when an automation signal is present. */
   function shieldOn() {
@@ -47,8 +48,10 @@
       .b{position:fixed;box-sizing:border-box;border:2px solid var(--c);border-radius:3px;pointer-events:none}
       .b.m{background:color-mix(in srgb,var(--c) 18%,#111);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .b.m.f{background:transparent;backdrop-filter:none;border-style:dashed}
-      .b.s{border:0;border-radius:2px;background:#1b1c1a;color:#fbf9f5;display:flex;align-items:center;justify-content:center;
-           overflow:hidden;font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;white-space:nowrap}
+      /* shield: opaque per-kind colour (nothing shows through), kind label inside; .p = soft highlight on text already replaced */
+      .b.s{border:2px solid var(--c);border-radius:3px;background:color-mix(in srgb,var(--c) 72%,#14110f);color:#fff;display:flex;
+           align-items:center;justify-content:center;overflow:hidden;font:700 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;white-space:nowrap}
+      .b.p{border:1.5px solid var(--c);border-radius:3px;background:color-mix(in srgb,var(--c) 16%,transparent)}
       .t{position:absolute;right:-2px;top:-15px;font:600 9px/13px system-ui,sans-serif;color:#fff;background:var(--c);
          padding:0 4px;border-radius:3px 3px 0 3px;white-space:nowrap;letter-spacing:.02em}
       .b.low .t{top:auto;bottom:-15px}
@@ -109,17 +112,26 @@
           if (!byNode.has(n)) byNode.set(n, []);
           byNode.get(n).push({ s: f.range.startOffset, e: f.range.endOffset, k: f.kind }); f.done = true;
         }
-      } else if (f.el && !f.field && f.el.childElementCount === 0 && !f.el.isContentEditable &&
+      } else if (f.el && !f.field && !f.media && !f.el.isContentEditable && (f.split || f.el.childElementCount === 0) &&
                  !["IMG", "VIDEO", "CANVAS", "A"].includes(f.el.tagName) && /\S{3}/.test(f.el.textContent || "")) leaves.push(f);
     }
     for (const [node, spans] of byNode) {
-      const orig = node.data; let out = orig;
-      for (const sp of spans.sort((a, b) => b.s - a.s)) out = out.slice(0, sp.s) + `[REDACTED:${sp.k}]` + out.slice(sp.e);
-      node.data = out; state.domRedacted.push({ node, orig, kinds: spans.map((x) => x.k) });
+      const orig = node.data; spans.sort((x, y) => x.s - y.s);
+      let out = "", pos = 0; const marks = [];
+      for (const sp of spans) {
+        out += orig.slice(pos, sp.s);
+        const ph = `[REDACTED:${sp.k}]`; marks.push({ s: out.length, e: out.length + ph.length, k: sp.k });
+        out += ph; pos = sp.e;
+      }
+      node.data = out + orig.slice(pos);
+      state.domRedacted.push({ node, orig, kinds: marks.map((m) => m.k), marks: marks.map((m) => {
+        const range = document.createRange(); range.setStart(node, m.s); range.setEnd(node, m.e); return { kind: m.k, range };
+      }) });
     }
     for (const f of leaves) {
-      const orig = f.el.textContent; f.el.textContent = `[REDACTED:${f.kind}]`; f.done = true;
-      state.domRedacted.push({ el: f.el, orig, kinds: [f.kind] });
+      const orig = f.split ? f.el.innerHTML : f.el.textContent;
+      f.el.textContent = `[REDACTED:${f.kind}]`; f.done = true;
+      state.domRedacted.push({ el: f.el, orig, html: f.split ? orig : null, kinds: [f.kind], marks: [{ kind: f.kind, el: f.el }] });
     }
     state.findings = state.findings.filter((f) => !f.done);
     mo.takeRecords(); // our own writes must not trigger a rescan
@@ -161,15 +173,65 @@
     for (const r of state.domRedacted) {
       try {
         if (r.node && r.node.isConnected && r.node.data.includes("[REDACTED:")) r.node.data = r.orig;
-        else if (r.el && r.el.isConnected && r.el.textContent.startsWith("[REDACTED:")) r.el.textContent = r.orig;
+        else if (r.el && r.el.isConnected && r.el.textContent.startsWith("[REDACTED:")) { if (r.html != null) r.el.innerHTML = r.html; else r.el.textContent = r.orig; }
       } catch (_) { /* node gone */ }
     }
-    state.domRedacted = []; mo.takeRecords();
+    state.domRedacted = [];
+    for (const m of state.attrMasked) { try { if (m.el.isConnected) m.el.setAttribute(m.a, m.orig); } catch (_) { /* ignore */ } }
+    state.attrMasked = []; mo.takeRecords();
   }
+  /** alt / title / aria-label / placeholder / href are read by DOM and accessibility-tree tools: mask PII in them too. */
+  const ATTRS = ["alt", "title", "aria-label", "placeholder", "href"];
+  function maskAttrs() {
+    if (!state.settings.domRedact || state.attrMasked.length > MAX_DOM_EDITS) return;
+    const faces = new Set(state.findings.filter((f) => f.media).map((f) => f.el));
+    for (const el of qsa("[alt],[title],[aria-label],[placeholder],a[href]")) {
+      if (isOurs(el)) continue;
+      for (const a of ATTRS) {
+        const v = el.getAttribute(a);
+        if (!v || v.startsWith("[REDACTED") || v.includes("[REDACTED:")) continue;
+        let probe = v, nv = null;
+        if (a === "href") { if (!/^(mailto:|tel:|https?:)/i.test(v)) continue; try { probe = decodeURIComponent(v); } catch (_) { /* raw */ } }
+        if (faces.has(el) && (a === "alt" || a === "title" || a === "aria-label")) nv = "[REDACTED:FACE]";
+        else { const hits = Z.detectAll(probe, state.customRules); if (hits.length) nv = Z.redactSpans(probe, hits); }
+        if (nv != null && nv !== v) { state.attrMasked.push({ el, a, orig: v }); el.setAttribute(a, nv); }
+      }
+    }
+    mo.takeRecords();
+  }
+  // ---------- keep covers glued to animated / transitioning content ----------
+  const allDrawn = () => state.findings.concat(state.domRedacted.flatMap((r) => (r.marks || []).map((m) => ({ ...m, placeholder: true }))));
+  function sigOf() {
+    let sg = scrollX + "," + scrollY + ";";
+    for (const f of allDrawn()) for (const r of rectsOf(f)) sg += (r.left | 0) + "," + (r.top | 0) + "," + (r.width | 0) + "," + (r.height | 0) + ";";
+    return sg;
+  }
+  function watch() {
+    if (!state.enabled || !shieldOn()) { state.watching = false; return; }
+    const sg = sigOf();
+    if (sg !== state.sig) { state.sig = sg; paint(); }
+    requestAnimationFrame(watch);
+  }
+  function ensureWatch() { if (!state.watching && shieldOn()) { state.watching = true; requestAnimationFrame(watch); } }
+
+  // ---------- open shadow roots ----------
+  /** The document plus every open shadow root (web components hide text and fields from document.querySelectorAll). */
+  function collectRoots() {
+    const rs = [document], q = [document]; let n = 0;
+    while (q.length && n < 8000) {
+      const r = q.shift();
+      for (const el of r.querySelectorAll("*")) {
+        n++;
+        if (el.shadowRoot && !isOurs(el)) { rs.push(el.shadowRoot); q.push(el.shadowRoot); observeRoot(el.shadowRoot); }
+      }
+    }
+    return rs;
+  }
+  const qsa = (sel) => state.roots.flatMap((r) => Array.from(r.querySelectorAll(sel)));
 
   // ---------- scanning ----------
   function scanFields(out, covered) {
-    for (const el of document.querySelectorAll(FIELD_SEL)) {
+    for (const el of qsa(FIELD_SEL)) {
       // hidden inputs (csrf tokens, session ids) draw nothing but DOM-reading agents get their value: scan them too
       if (isOurs(el) || (el.type !== "hidden" && !visible(el))) continue;
       let r = null;
@@ -186,7 +248,7 @@
   }
   function scanStructuralLeaves(out, covered) {
     let n = 0;
-    for (const el of document.body.querySelectorAll(HINT_SEL)) {
+    for (const el of qsa(HINT_SEL)) {
       if (++n > MAX_ELEMS) break;
       if (el.matches(FIELD_SEL) || isOurs(el) || SKIP_TAGS.has(el.tagName)) continue;
       let r = null;
@@ -199,7 +261,7 @@
       }
     }
     // Links whose href carries PII/secrets (tel:, mailto:, ?token=...) even though the label looks harmless.
-    for (const a of document.body.querySelectorAll("a[href]")) {
+    for (const a of qsa("a[href]")) {
       if (covered.has(a) || isOurs(a)) continue;
       let href = a.getAttribute("href") || "";
       try { href = decodeURIComponent(href); } catch (_) { /* keep raw */ }
@@ -212,7 +274,10 @@
     return false;
   }
   function scanText(out, covered) {
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    for (const root of state.roots) { if (scanTextIn(root === document ? document.body : root, out, covered)) return; }
+  }
+  function scanTextIn(top, out, covered) {
+    const walker = document.createTreeWalker(top, NodeFilter.SHOW_TEXT, {
       acceptNode(n) {
         const p = n.parentElement;
         if (!p || SKIP_TAGS.has(p.tagName) || isOurs(p)) return NodeFilter.FILTER_REJECT;
@@ -230,8 +295,59 @@
         const range = document.createRange();
         range.setStart(node, h.start); range.setEnd(node, h.end);
         out.push({ kind: h.kind, reason: `text:${h.kind}`, range });
-        if (out.length >= MAX_FINDINGS) return;
+        if (out.length >= MAX_FINDINGS) return true;
       }
+    }
+  }
+  // ---------- faces / media ----------
+  const FACE_HINT = /avatar|profile|face|selfie|portrait|headshot|participant|speaker|attendee|member|gravatar|pfp|user[-_ ]?(photo|pic|img|image)|webcam|camera|self[-_ ]?view|video[-_ ]?tile|people|person/i;
+  const hintText = (el) => [el.getAttribute("alt"), el.getAttribute("title"), el.id, typeof el.className === "string" ? el.className : "",
+    el.getAttribute("aria-label"), (el.getAttribute("src") || "").slice(0, 200), el.parentElement && el.parentElement.id,
+    el.parentElement && typeof el.parentElement.className === "string" ? el.parentElement.className : ""].filter(Boolean).join(" ");
+  /** Video-call tiles, webcam previews, avatars and profile photos: covered whole (a screenshot shows faces, not text). */
+  function scanMedia(out, covered) {
+    for (const el of qsa("video,img,canvas")) {
+      if (isOurs(el) || covered.has(el)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 24 || r.height < 24 || !visible(el)) continue;
+      let face = false;
+      if (el.tagName === "VIDEO") face = (typeof MediaStream !== "undefined" && el.srcObject instanceof MediaStream) || FACE_HINT.test(hintText(el));
+      else if (el.tagName === "CANVAS") face = FACE_HINT.test(hintText(el));
+      else {
+        face = FACE_HINT.test(hintText(el));
+        if (!face) { // round, roughly square, avatar-sized picture
+          const cs = getComputedStyle(el), rad = cs.borderTopLeftRadius || "0", br = parseFloat(rad) || 0;
+          const round = rad.includes("%") ? br >= 40 : br >= Math.min(r.width, r.height) * 0.4;
+          face = round && r.width <= 640 && Math.abs(r.width - r.height) <= 0.25 * Math.max(r.width, r.height);
+        }
+      }
+      if (face) { out.push({ kind: "FACE", reason: "media:" + el.tagName.toLowerCase(), el, media: true }); covered.add(el); }
+    }
+    for (const el of qsa("[class*=avatar i],[class*=profile-pic i],[class*=participant i],[class*=userpic i],[id*=avatar i]")) {
+      if (isOurs(el) || covered.has(el) || !visible(el)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 24 || r.height < 24 || insideCovered(el.firstChild || el, covered)) continue;
+      if (/url\(/.test(getComputedStyle(el).backgroundImage || "")) { out.push({ kind: "FACE", reason: "media:bg", el, media: true }); covered.add(el); }
+    }
+  }
+  // ---------- text split over several elements ----------
+  const INLINE_TAGS = new Set(["SPAN", "B", "I", "EM", "STRONG", "A", "CODE", "SMALL", "MARK", "U", "SUB", "SUP", "FONT", "BR", "WBR"]);
+  function spansNodes(el, h) {
+    const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let pos = 0, n, one = false;
+    while ((n = w.nextNode())) { if (h.start >= pos && h.end <= pos + n.data.length) one = true; pos += n.data.length; }
+    return !one;
+  }
+  /** "4111 <b>1111</b> 1111 1111": no single text node holds the value, but the element's text does. */
+  function scanSplit(out, covered) {
+    for (const el of qsa("p,div,li,td,th,dd,dt,label,h1,h2,h3,h4,h5,h6,span,a,pre")) {
+      if (isOurs(el) || covered.has(el) || SKIP_TAGS.has(el.tagName)) continue;
+      const kids = el.children.length;
+      if (kids < 1 || kids > 14) continue;
+      const t = el.textContent || "";
+      if (t.length < 8 || t.length > 400 || ![...el.children].every((c) => INLINE_TAGS.has(c.tagName))) continue;
+      const hits = Z.detectAll(t, state.customRules);
+      if (!hits.length || !hits.some((h) => spansNodes(el, h)) || !visible(el) || insideCovered(el.firstChild || el, covered)) continue;
+      out.push({ kind: hits[0].kind, reason: `split:${hits[0].kind}`, el, split: true }); covered.add(el);
     }
   }
   function scan() {
@@ -240,12 +356,15 @@
     if (!shieldOn() && state.domRedacted.length) restoreDom();
     const out = [], covered = new Set();
     try {
+      state.roots = collectRoots();
       scanFields(out, covered);
       scanStructuralLeaves(out, covered);
+      scanMedia(out, covered);
       scanText(out, covered);
+      scanSplit(out, covered);
     } catch (e) { console.debug("[Zen] scan error", e && e.message); }
     state.findings = out.slice(0, MAX_FINDINGS);
-    if (shieldOn()) { try { maskFields(); applyDom(); } catch (e) { console.debug("[Zen] dom redact error", e && e.message); } }
+    if (shieldOn()) { try { maskFields(); maskAttrs(); applyDom(); ensureWatch(); } catch (e) { console.debug("[Zen] dom redact error", e && e.message); } }
     render(); report();
   }
   /** Throttled rescan: at most once per 600ms, trailing. */
@@ -272,12 +391,13 @@
   function paint() {
     {
       const sh = shieldOn();
-      const show = state.enabled && (sh || state.settings.highlight || state.mask) && state.findings.length;
+      const drawn = sh ? allDrawn() : state.findings;
+      const show = state.enabled && (sh || state.settings.highlight || state.mask) && drawn.length;
       if (!show) { if (state.layer) state.layer.textContent = ""; if (state.docLayer) state.docLayer.textContent = ""; return; }
       ensureOverlay();
       const frag = document.createDocumentFragment(), docFrag = document.createDocumentFragment();
       const vw = innerWidth, vh = innerHeight, active = document.activeElement, sx = scrollX, sy = scrollY;
-      for (const f of state.findings) {
+      for (const f of drawn) {
         const rs = rectsOf(f);
         if (!rs.length) continue;
         const host = f.el || (f.range && f.range.startContainer.parentElement);
@@ -287,10 +407,10 @@
           if (pin ? (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw)
                   : (r.bottom < -2 * vh || r.top > 3 * vh || r.right < -2 * vw || r.left > 3 * vw)) return;
           const d = document.createElement("div");
-          d.className = "b" + (sh ? " s" : state.mask ? " m" : "") + (!sh && state.mask && f.el && f.el === active ? " f" : "") + (r.top < 16 ? " low" : "");
+          d.className = "b" + (sh ? (f.placeholder ? " p" : " s") : state.mask ? " m" : "") + (!sh && state.mask && f.el && f.el === active ? " f" : "") + (r.top < 16 ? " low" : "");
           const out = pin ? frag : docFrag, ox = pin ? 0 : sx, oy = pin ? 0 : sy;
           d.style.cssText = `--c:${CFG.kindColor(f.kind)};left:${r.left + ox - 2}px;top:${r.top + oy - 2}px;width:${r.width + 4}px;height:${r.height + 4}px`;
-          if (sh) { if (r.width >= 44 && r.height >= 12) d.textContent = f.kind; out.appendChild(d); return; }
+          if (sh) { if (!f.placeholder && r.width >= 44 && r.height >= 12) d.textContent = f.kind; out.appendChild(d); return; }
           if (!state.settings.highlight) d.style.borderColor = "transparent";
           if (i === 0 && state.settings.highlight) {
             const t = document.createElement("span"); t.className = "t"; t.textContent = f.kind; d.appendChild(t);
@@ -404,6 +524,10 @@
   async function init() {
     const s = await CFG.load();
     state.settings = s;
+    try { // agent seen recently anywhere in this browser: start shielded, before the first scan
+      const g = await chrome.storage.session.get({ agentAt: 0 });
+      if (Date.now() - g.agentAt < STICKY_MS) state.agent = true;
+    } catch (_) { /* session storage not exposed to content scripts: the probe below still catches it */ }
     state.customRules = Z.compileCustomRules(s.customRules).rules;
     state.enabled = CFG.siteEnabled(s, location.hostname);
     state.mask = !!s.maskByDefault; // the popup toggle is saved in settings, so it survives reloads and applies to every tab
@@ -435,8 +559,10 @@
     if (!state.enabled) return;
     for (const m of muts) if (!isOurs(m.target)) { if (shieldOn()) render(); scheduleScan(); return; }
   });
+  const MO_OPTS = { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["value", "type", "autocomplete", "class", "hidden", "style", "src"] };
+  function observeRoot(sr) { if (!state.observed.has(sr)) { state.observed.add(sr); try { mo.observe(sr, MO_OPTS); } catch (_) { /* ignore */ } } }
   function start() {
-    mo.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["value", "type", "autocomplete", "class", "hidden", "style"] });
+    mo.observe(document.documentElement, MO_OPTS);
     addEventListener("input", (e) => { if (!isOurs(e.target)) scheduleScan(400); }, true); // shield: 40 ms
     addEventListener("change", () => scheduleScan(200), true);
     addEventListener("scroll", render, { capture: true, passive: true });
