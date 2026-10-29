@@ -208,10 +208,40 @@ def adversarial(ctx, base):
     return {"items": len(truth["items"]), "protected": sum(res.values()), "failed": bad}
 
 
+def copy_guard(p, base):
+    """Select + copy covered content (field, then whole page): the clipboard must never hold the real values."""
+    import tempfile as _t
+    out = {}
+    for label, patch in (("baseline", {"shieldMode": "off", "maskByDefault": False, "highlight": False}), ("mask", {"shieldMode": "off", "maskByDefault": True}), ("shield", {"shieldMode": "on", "maskByDefault": False})):
+        with _t.TemporaryDirectory() as tmp:
+            ctx = _launch(p, tmp)
+            sw = ctx.service_workers[0] if ctx.service_workers else ctx.wait_for_event("serviceworker", timeout=10000)
+            sw.evaluate("v => chrome.storage.sync.set(v)", patch)
+            time.sleep(0.4)
+            ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=base)
+            pg = ctx.new_page()
+            pg.goto(f"{base}/checkout.html", wait_until="load")
+            pg.wait_for_timeout(900)
+            leaks = []
+            for step in ("field", "page"):
+                pg.evaluate("navigator.clipboard.writeText('sentinel')")
+                if step == "field":
+                    pg.click("#cc-number")
+                else:
+                    pg.click("h1")
+                pg.keyboard.press("Control+A")
+                pg.keyboard.press("Control+C")
+                clip = pg.evaluate("navigator.clipboard.readText()")
+                leaks += [v for v in ("4111", "meera.synthetic", "Meera Iyer", "Gulmohar", "737") if v in clip]
+            out[label] = sorted(set(leaks))
+            ctx.close()
+    return out
+
+
 def run():
     from playwright.sync_api import sync_playwright
     srv, base = _serve()
-    report = {"baseline": [], "shielded": [], "focus": None, "latency": None, "scroll": None, "adversarial": None}
+    report = {"baseline": [], "shielded": [], "focus": None, "latency": None, "scroll": None, "adversarial": None, "copy": None}
     try:
         with sync_playwright() as p:
             for mode, key in (("off", "baseline"), ("auto", "shielded")):
@@ -225,6 +255,9 @@ def run():
                         report["latency"] = latency(ctx, base)
                         report["scroll"] = scroll_reload(ctx, base)
                         report["adversarial"] = adversarial(ctx, base)
+                        ctx.close()
+                        report["copy"] = copy_guard(p, base)
+                        continue
                         pg = ctx.new_page()
                         pg.goto(f"{base}/checkout.html", wait_until="load"); pg.wait_for_timeout(600)
                         pg.focus("#cc-number")  # an agent clicking the field must not drop the cover
@@ -248,7 +281,7 @@ def summarize(r):
          "uncovered_items": [u for x in r["shielded"] for u in x["uncovered"]],
          "mean_coverage": round(statistics.mean(c for x in r["shielded"] for c in x["coverage"]), 3) if any(x["coverage"] for x in r["shielded"]) else None,
          "context_kept": round(statistics.mean(x["context_kept"] for x in r["shielded"] if x["context_kept"] is not None), 3),
-         "focus_cover": r["focus"], "latency": r["latency"], "scroll": r["scroll"], "adversarial": r["adversarial"]}
+         "focus_cover": r["focus"], "latency": r["latency"], "scroll": r["scroll"], "adversarial": r["adversarial"], "copy_leaks": r["copy"]}
     return s
 
 

@@ -25,3 +25,5 @@ footer{display:flex;justify-content:space-between;gap:8px;padding:9px 14px;borde
 .iconbtn .i-sun{display:none}
 :root[data-theme=dark] .iconbtn .i-sun{display:inline}
 :root[data-theme=dark] .iconbtn .i-moon{display:none}
+
+.shield select + select{margin-top:6px}

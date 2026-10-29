@@ -49,3 +49,10 @@ def test_adversarial_cases_are_protected(report):
     rep, mod = report
     adv = mod.summarize(rep)["adversarial"]
     assert adv["failed"] == [], adv  # shadow DOM, split text, attributes, faces/video/avatars, animation, iframe
+
+
+def test_copy_from_covered_content_yields_no_real_values(report):
+    rep, mod = report
+    c = mod.summarize(rep)["copy_leaks"]
+    assert c["baseline"], "without the extension's guard copy must leak, else this test proves nothing"
+    assert c["mask"] == [] and c["shield"] == []

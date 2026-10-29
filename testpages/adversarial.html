@@ -13,6 +13,8 @@
 <video id="live" width="160" height="110"></video>
 <img id="round" width="80" height="80" style="border-radius:50%" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
 <div id="bgav" class="avatar" style="display:inline-block;width:70px;height:70px;background-image:url(data:image/gif;base64,R0lGODlhAQABAAAAACw=)"></div></section>
+<section><p id="closed-host"></p><canvas id="cv" width="300" height="60"></canvas>
+<img id="photo" width="220" height="150" alt="" src="" style="border:1px solid #999"></section>
 <section><input id="anim" autocomplete="cc-number" value="4111 1111 1111 1111"></section>
 <section><iframe id="frame" width="320" height="60" srcdoc="<body style='margin:4px'><input id='fin' autocomplete='cc-number' value='4111 1111 1111 1111' style='width:280px'>"></iframe></section>
 <script>
@@ -21,4 +23,9 @@ sr.innerHTML = '<p id="sh-text">Card 4111 1111 1111 1111</p><input id="sh-field"
 // a live MediaStream on a video with no hint at all: this is what a video-call tile looks like
 const c = document.createElement('canvas'); c.width = 64; c.height = 48; c.getContext('2d').fillRect(0, 0, 64, 48);
 document.getElementById('live').srcObject = c.captureStream(); document.getElementById('live').muted = true;
+const ch = document.getElementById('closed-host'), cs = ch.attachShadow({mode: 'closed'});  // reference dropped: page code cannot reach it
+cs.innerHTML = '<p id="closed-text">Card 4111 1111 1111 1111</p>';
+const cv = document.getElementById('cv').getContext('2d'); cv.fillStyle = '#fff'; cv.fillRect(0, 0, 300, 60); cv.fillStyle = '#000'; cv.font = '22px sans-serif'; cv.fillText('Card 4111 1111 1111 1111', 8, 38);
+const ph = document.createElement('canvas'); ph.width = 220; ph.height = 150; const pc = ph.getContext('2d'); const g = pc.createLinearGradient(0, 0, 220, 150); g.addColorStop(0, '#e8c07a'); g.addColorStop(1, '#a8d0c8'); pc.fillStyle = g; pc.fillRect(0, 0, 220, 150);
+document.getElementById('photo').src = ph.toDataURL('image/png');
 </script></body></html>

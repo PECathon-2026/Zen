@@ -39,6 +39,7 @@ function renderSummary(s) {
   $("mask").checked = !!s.mask;
   const sh = s.shield || { mode: "auto", active: false, agent: false };
   $("shield-mode").value = sh.mode || "auto";
+  CFG.load().then((st) => { $("shield-img").value = st.shieldImages || "all"; });
   $("shield-state").textContent = sh.active ? (sh.agent ? "active: agent detected" : "active") : "standing by";
   $("shield-state").className = "pill" + (sh.active ? " on" : "");
   $("guard").hidden = !(s.aiSite && s.guard);
@@ -61,6 +62,7 @@ $("shield-mode").addEventListener("change", async (e) => {
   setStatus(e.target.value === "off" ? "Agent Shield off." : e.target.value === "on" ? "Agent Shield always on." : "Agent Shield will switch on when an agent is detected.");
   setTimeout(async () => { const s = await send({ type: "zl:summary" }); if (s) renderSummary(s); }, 300);
 });
+$("shield-img").addEventListener("change", (e) => CFG.save({ shieldImages: e.target.value }));
 $("mask").addEventListener("change", async (e) => {
   await send({ type: "zl:setMask", on: e.target.checked });
   await CFG.save({ maskByDefault: e.target.checked }); // survives reloads and new tabs

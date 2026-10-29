@@ -51,6 +51,7 @@
       /* shield: opaque per-kind colour (nothing shows through), kind label inside; .p = soft highlight on text already replaced */
       .b.s{border:2px solid var(--c);border-radius:3px;background:color-mix(in srgb,var(--c) 72%,#14110f);color:#fff;display:flex;
            align-items:center;justify-content:center;overflow:hidden;font:700 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;white-space:nowrap}
+      .b.x{pointer-events:auto;user-select:none;-webkit-user-select:none;cursor:not-allowed}
       .b.p{border:1.5px solid var(--c);border-radius:3px;background:color-mix(in srgb,var(--c) 16%,transparent)}
       .t{position:absolute;right:-2px;top:-15px;font:600 9px/13px system-ui,sans-serif;color:#fff;background:var(--c);
          padding:0 4px;border-radius:3px 3px 0 3px;white-space:nowrap;letter-spacing:.02em}
@@ -222,7 +223,9 @@
       const r = q.shift();
       for (const el of r.querySelectorAll("*")) {
         n++;
-        if (el.shadowRoot && !isOurs(el)) { rs.push(el.shadowRoot); q.push(el.shadowRoot); observeRoot(el.shadowRoot); }
+        // chrome.dom.openOrClosedShadowRoot also returns CLOSED shadow roots (extensions only)
+        const sr = el.shadowRoot || (chrome.dom && chrome.dom.openOrClosedShadowRoot ? chrome.dom.openOrClosedShadowRoot(el) : null);
+        if (sr && !isOurs(el)) { rs.push(sr); q.push(sr); observeRoot(sr); }
       }
     }
     return rs;
@@ -321,7 +324,15 @@
           face = round && r.width <= 640 && Math.abs(r.width - r.height) <= 0.25 * Math.max(r.width, r.height);
         }
       }
-      if (face) { out.push({ kind: "FACE", reason: "media:" + el.tagName.toLowerCase(), el, media: true }); covered.add(el); }
+      if (face) { out.push({ kind: "FACE", reason: "media:" + el.tagName.toLowerCase(), el, media: true }); covered.add(el); continue; }
+      // Stock Chrome has no face detector and canvas text cannot be read: in shield mode cover what we cannot scan (fail closed).
+      if (shieldOn()) {
+        const big = r.width >= 80 && r.height >= 80;
+        if ((el.tagName === "IMG" && big && state.settings.shieldImages !== "hinted") ||
+            (el.tagName === "CANVAS" && r.width >= 64 && r.height >= 32 && state.settings.shieldCanvas !== "off")) {
+          out.push({ kind: "IMAGE", reason: "unscannable:" + el.tagName.toLowerCase(), el, media: true }); covered.add(el);
+        }
+      }
     }
     for (const el of qsa("[class*=avatar i],[class*=profile-pic i],[class*=participant i],[class*=userpic i],[id*=avatar i]")) {
       if (isOurs(el) || covered.has(el) || !visible(el)) continue;
@@ -409,6 +420,9 @@
           const d = document.createElement("div");
           d.className = "b" + (sh ? (f.placeholder ? " p" : " s") : state.mask ? " m" : "") + (!sh && state.mask && f.el && f.el === active ? " f" : "") + (r.top < 16 ? " low" : "");
           const out = pin ? frag : docFrag, ox = pin ? 0 : sx, oy = pin ? 0 : sy;
+          // Covers over text/media swallow clicks, drags and selection starts. Fields stay click-through (an agent must be
+          // able to focus and type); their value is masked and copy is intercepted below.
+          if ((sh || state.mask) && !f.field && !f.placeholder) d.classList.add("x");
           d.style.cssText = `--c:${CFG.kindColor(f.kind)};left:${r.left + ox - 2}px;top:${r.top + oy - 2}px;width:${r.width + 4}px;height:${r.height + 4}px`;
           if (sh) { if (!f.placeholder && r.width >= 44 && r.height >= 12) d.textContent = f.kind; out.appendChild(d); return; }
           if (!state.settings.highlight) d.style.borderColor = "transparent";
@@ -519,6 +533,41 @@
       }
     }
   });
+
+  // ---------- copy / cut / drag protection ----------
+  /** Text the user or an agent is trying to copy: selection, or the selected part of a focused field. */
+  function selectedText() {
+    const a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA)$/.test(a.tagName) && typeof a.selectionStart === "number" && a.selectionEnd > a.selectionStart) return { text: a.value.slice(a.selectionStart, a.selectionEnd), field: a };
+    return { text: String(getSelection() || ""), field: null };
+  }
+  const protectedNow = () => state.enabled && (shieldOn() || state.mask);
+  function touchesProtected(field) {
+    if (field) return state.findings.some((f) => f.el === field) || state.masked.has(field);
+    const sel = getSelection();
+    if (!sel || sel.isCollapsed) return false;
+    for (const f of allDrawn()) {
+      const node = f.el || (f.range && f.range.startContainer);
+      try { if (node && sel.containsNode(node, true)) return true; } catch (_) { /* detached */ }
+    }
+    return false;
+  }
+  /** Copying covered content yields [REDACTED:KIND] instead of the real value, whoever (or whatever) presses Ctrl+C. */
+  function guardCopy(e) {
+    if (!protectedNow()) return;
+    const { text, field } = selectedText();
+    if (!text || !touchesProtected(field)) return;
+    let out;
+    if (field) { const fnd = state.findings.find((f) => f.el === field); out = fnd ? `[REDACTED:${fnd.kind}]` : Z.redactAll(text, state.customRules).text; }
+    else out = Z.redactAll(text, state.customRules).text;
+    // a covered element with no detectable text (image, field label) still must not leak: placeholder for the whole selection
+    if (out === text) out = "[REDACTED]";
+    e.preventDefault(); e.stopImmediatePropagation();
+    try { e.clipboardData.setData("text/plain", out); } catch (_) { /* ignore */ }
+    if (e.type === "cut" && field) return; // never cut a protected value out of the page
+  }
+  for (const t of ["copy", "cut"]) document.addEventListener(t, guardCopy, true);
+  document.addEventListener("dragstart", (e) => { if (protectedNow() && touchesProtected(selectedText().field)) e.preventDefault(); }, true);
 
   // ---------- lifecycle ----------
   async function init() {
