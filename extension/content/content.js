@@ -45,7 +45,7 @@
     const host2 = document.createElement("zenlens-overlay-doc");
     host2.style.cssText = "all:initial;position:absolute;left:0;top:0;width:0;height:0;overflow:visible;pointer-events:none;z-index:2147483646;";
     const css = `
-      .b{position:fixed;box-sizing:border-box;border:2px solid var(--c);border-radius:3px;pointer-events:none}
+      .b{position:fixed;left:0;top:0;will-change:transform;box-sizing:border-box;border:2px solid var(--c);border-radius:3px;pointer-events:none}
       .b.m{background:color-mix(in srgb,var(--c) 18%,#111);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .b.m.f{background:transparent;backdrop-filter:none;border-style:dashed}
       /* shield: opaque per-kind colour (nothing shows through), kind label inside; .p = soft highlight on text already replaced */
@@ -397,6 +397,9 @@
         if (el.tagName === "IMG" && r.width >= 64 && r.height >= 64 && mode !== "hinted") {
           if (mode === "all") { out.push({ kind: "IMAGE", reason: "unscannable:img", el, media: true }); covered.add(el); }
           else imageFindings(el, imgKey(el), () => imgMessage(el), 10 * 60 * 1000, false, out, covered);
+        } else if (el.tagName === "VIDEO" && r.width >= 64 && r.height >= 48 && mode !== "hinted") {
+          // faces in moving video cannot be tracked from here: cover the whole player (click-through, so play/pause still work)
+          out.push({ kind: "IMAGE", reason: "unscannable:video", el, media: true }); covered.add(el);
         } else if (el.tagName === "CANVAS" && r.width >= 64 && r.height >= 32 && state.settings.shieldCanvas !== "off") {
           // canvas content changes: re-analyse every 2 s; without OCR we cannot know it holds no text, so cover it whole
           imageFindings(el, "canvas:" + canvasId(el), () => canvasMessage(el), 2000, true, out, covered);
@@ -469,41 +472,54 @@
     state.rafPending = true;
     requestAnimationFrame(() => { state.rafPending = false; paint(); });
   }
-  function paint() {
-    {
-      const sh = shieldOn();
-      const drawn = sh ? allDrawn() : state.findings;
-      const show = state.enabled && (sh || state.settings.highlight || state.mask) && drawn.length;
-      if (!show) { if (state.layer) state.layer.textContent = ""; if (state.docLayer) state.docLayer.textContent = ""; return; }
-      ensureOverlay();
-      const frag = document.createDocumentFragment(), docFrag = document.createDocumentFragment();
-      const vw = innerWidth, vh = innerHeight, active = document.activeElement, sx = scrollX, sy = scrollY;
-      for (const f of drawn) {
-        const rs = rectsOf(f);
-        if (!rs.length) continue;
-        const host = f.el || (f.range && f.range.startContainer.parentElement);
-        const pin = pinned(host);
-        rs.forEach((r, i) => {
-          // doc layer keeps a 2-viewport margin: a native scroll can reveal boxes before the next paint
-          if (pin ? (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw)
-                  : (r.bottom < -2 * vh || r.top > 3 * vh || r.right < -2 * vw || r.left > 3 * vw)) return;
-          const d = document.createElement("div");
-          d.className = "b" + (sh ? (f.placeholder ? " p" : " s") : state.mask ? " m" : "") + (!sh && state.mask && f.el && f.el === active ? " f" : "") + (r.top < 16 ? " low" : "");
-          const out = pin ? frag : docFrag, ox = pin ? 0 : sx, oy = pin ? 0 : sy;
-          // Covers over text/media swallow clicks, drags and selection starts. Fields stay click-through (an agent must be
-          // able to focus and type); their value is masked and copy is intercepted below.
-          if ((sh || state.mask) && !f.field && !f.placeholder) d.classList.add("x");
-          d.style.cssText = `--c:${CFG.kindColor(f.kind)};left:${r.left + ox - 2}px;top:${r.top + oy - 2}px;width:${r.width + 4}px;height:${r.height + 4}px`;
-          if (sh) { if (!f.placeholder && r.width >= 44 && r.height >= 12) d.textContent = f.kind; out.appendChild(d); return; }
-          if (!state.settings.highlight) d.style.borderColor = "transparent";
-          if (i === 0 && state.settings.highlight) {
-            const t = document.createElement("span"); t.className = "t"; t.textContent = f.kind; d.appendChild(t);
-          }
-          out.appendChild(d);
-        });
+  /** Reuse the overlay's DOM nodes and move them with transform: following a moving face / card field at 60 fps costs
+   *  a few style writes, not a rebuild, so covers stay glued to animated content. */
+  function applyBoxes(layer, specs) {
+    for (let i = 0; i < specs.length; i++) {
+      const sp = specs[i];
+      let d = layer.children[i];
+      if (!d) { d = document.createElement("div"); layer.appendChild(d); }
+      if (d._k !== sp.key) {
+        d._k = sp.key; d.className = sp.cls; d.style.setProperty("--c", sp.color);
+        d.style.borderColor = sp.quiet ? "transparent" : ""; d.textContent = sp.text || "";
+        if (sp.badge) { const t = document.createElement("span"); t.className = "t"; t.textContent = sp.badge; d.appendChild(t); }
       }
-      state.layer.replaceChildren(frag); state.docLayer.replaceChildren(docFrag);
+      const g = sp.x + "," + sp.y + "," + sp.w + "," + sp.h;
+      if (d._g !== g) { d._g = g; d.style.transform = `translate(${sp.x}px,${sp.y}px)`; d.style.width = sp.w + "px"; d.style.height = sp.h + "px"; }
     }
+    while (layer.children.length > specs.length) layer.lastChild.remove();
+  }
+  const px = (v) => Math.round(v * 100) / 100;
+  function paint() {
+    const sh = shieldOn();
+    const drawn = sh ? allDrawn() : state.findings;
+    const show = state.enabled && (sh || state.settings.highlight || state.mask) && drawn.length;
+    if (!show) { if (state.layer) state.layer.textContent = ""; if (state.docLayer) state.docLayer.textContent = ""; return; }
+    ensureOverlay();
+    const fixedSpecs = [], docSpecs = [];
+    const vw = innerWidth, vh = innerHeight, active = document.activeElement, sx = scrollX, sy = scrollY;
+    for (const f of drawn) {
+      const rs = rectsOf(f);
+      if (!rs.length) continue;
+      const host = f.el || (f.box && f.box.el) || (f.range && f.range.startContainer.parentElement);
+      const pin = pinned(host);
+      rs.forEach((r, i) => {
+        // doc layer keeps a 2-viewport margin: a native scroll can reveal boxes before the next paint
+        if (pin ? (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw)
+                : (r.bottom < -2 * vh || r.top > 3 * vh || r.right < -2 * vw || r.left > 3 * vw)) return;
+        let cls = "b" + (sh ? (f.placeholder ? " p" : " s") : state.mask ? " m" : "") + (!sh && state.mask && f.el && f.el === active ? " f" : "") + (r.top < 16 ? " low" : "");
+        // Text covers swallow clicks, drags and selection starts. Fields (an agent must focus and type) and media (links,
+        // play buttons) stay click-through; field values are masked and copy is intercepted.
+        if ((sh || state.mask) && !f.field && !f.placeholder && !f.media) cls += " x";
+        const color = CFG.kindColor(f.kind), ox = pin ? 0 : sx, oy = pin ? 0 : sy;
+        const sp = { key: "", cls, color, x: px(r.left + ox - 2), y: px(r.top + oy - 2), w: px(r.width + 4), h: px(r.height + 4) };
+        if (sh) { if (!f.placeholder && r.width >= 44 && r.height >= 12) sp.text = f.kind; }
+        else { sp.quiet = !state.settings.highlight; if (i === 0 && state.settings.highlight) sp.badge = f.kind; }
+        sp.key = [cls, color, sp.text || "", sp.quiet ? 1 : 0, sp.badge || ""].join("|");
+        (pin ? fixedSpecs : docSpecs).push(sp);
+      });
+    }
+    applyBoxes(state.layer, fixedSpecs); applyBoxes(state.docLayer, docSpecs);
   }
 
   // ---------- reporting / messages ----------

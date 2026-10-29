@@ -271,6 +271,21 @@ def faces(ctx, base, base2, ocr_up):
     return res
 
 
+def moving(ctx, base, samples=8):
+    """The animated card field (slides 220 px and back) must stay covered at every sampled instant."""
+    page = ctx.new_page()
+    page.goto(f"{base}/adversarial.html", wait_until="load")
+    page.wait_for_timeout(1200)
+    got = []
+    for _ in range(samples):
+        page.wait_for_timeout(137)  # arbitrary phase of the animation
+        png = page.screenshot()
+        rect = page.evaluate("(() => { const r = document.getElementById('anim').getBoundingClientRect(); return {x: r.x, y: r.y, width: r.width, height: r.height}; })()")
+        got.append(round(_cover_fraction(png, rect), 2))
+    page.close()
+    return got
+
+
 def copy_guard(p, base):
     """Select + copy covered content (field, then whole page): the clipboard must never hold the real values."""
     import tempfile as _t
@@ -304,7 +319,7 @@ def copy_guard(p, base):
 def run():
     from playwright.sync_api import sync_playwright
     srv, base = _serve()
-    report = {"baseline": [], "shielded": [], "focus": None, "latency": None, "scroll": None, "adversarial": None, "copy": None, "faces": None}
+    report = {"baseline": [], "shielded": [], "focus": None, "latency": None, "scroll": None, "adversarial": None, "copy": None, "faces": None, "moving": None}
     try:
         with sync_playwright() as p:
             for mode, key in (("off", "baseline"), ("auto", "shielded")):
@@ -318,6 +333,7 @@ def run():
                         report["latency"] = latency(ctx, base)
                         report["scroll"] = scroll_reload(ctx, base)
                         report["adversarial"] = adversarial(ctx, base)
+                        report["moving"] = moving(ctx, base)
                         pg = ctx.new_page()
                         pg.goto(f"{base}/checkout.html", wait_until="load"); pg.wait_for_timeout(600)
                         pg.focus("#cc-number")  # an agent clicking the field must not drop the cover
@@ -355,7 +371,7 @@ def summarize(r):
          "uncovered_items": [u for x in r["shielded"] for u in x["uncovered"]],
          "mean_coverage": round(statistics.mean(c for x in r["shielded"] for c in x["coverage"]), 3) if any(x["coverage"] for x in r["shielded"]) else None,
          "context_kept": round(statistics.mean(x["context_kept"] for x in r["shielded"] if x["context_kept"] is not None), 3),
-         "focus_cover": r["focus"], "latency": r["latency"], "scroll": r["scroll"], "adversarial": r["adversarial"], "copy_leaks": r["copy"], "faces": r["faces"]}
+         "focus_cover": r["focus"], "latency": r["latency"], "scroll": r["scroll"], "adversarial": r["adversarial"], "copy_leaks": r["copy"], "faces": r["faces"], "moving": r["moving"]}
     return s
 
 

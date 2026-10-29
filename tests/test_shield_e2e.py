@@ -65,3 +65,9 @@ def test_faces_in_photos_are_covered_text_clear_images_left_alone(report):
     assert f["clean_covered"] < 0.25, f  # an image with no face and no text is not blanked
     if f["ocr_up"]:
         assert not f["text_image_ocr_leak"] and f["canvas_text_hidden"], f
+
+
+def test_covers_follow_a_moving_field_at_every_instant(report):
+    rep, mod = report
+    m = mod.summarize(rep)["moving"]
+    assert len(m) >= 6 and min(m) >= 0.7, m
