@@ -96,7 +96,7 @@ def _pseudonymizer(privacy_mode: str) -> Pseudonymizer | None:
 def run_task(goal: str, start_url: str, *, llm="scripted", script: list[dict] | None = None, allowed_origins=None,
              vault=None, approve: Callable[[Action, str], bool] | bool | None = None, max_steps: int = 10,
              headless: bool = True, on_step: Callable[[dict], None] | None = None,
-             privacy_mode: str = "redact") -> dict:
+             privacy_mode: str = "redact", minimize: bool = True) -> dict:
     """Run the agent on a live headless page. Returns a JSON-safe, sanitized report (see module docstring)."""
     ps = _pseudonymizer(privacy_mode)
     vault = vault if isinstance(vault, Vault) else Vault(vault or {})
@@ -109,10 +109,10 @@ def run_task(goal: str, start_url: str, *, llm="scripted", script: list[dict] | 
               "start_url": _clean_url(start_url),
               "final_url": None, "allowed_origins": sorted({origin(o) or o for o in allowed}), "llm": llm_name,
               "steps": steps, "rejected": 0, "final_view": None, "final_privacy": None,
-              "privacy_mode": privacy_mode, "final_answer": None}
+              "privacy_mode": privacy_mode, "minimize": minimize, "final_answer": None}
     try:
         with Session(headless=headless) as s:
-            page = PlaywrightPage(s, allowed, canaries, pseudonymizer=ps)
+            page = PlaywrightPage(s, allowed, canaries, pseudonymizer=ps, minimize=minimize)
             page.goto(start_url)
             ex = _Exec(page, allowed, vault, _approver(approve), steps=steps, on_step=on_step, pseudonymizer=ps)
             res = agent.run(sent_goal, page, _Tap(model, steps), ex, max_steps=max_steps)
@@ -148,15 +148,16 @@ def _box(bbox) -> tuple[int, int, int, int]:
     return x, y, x + w, y + h
 
 
-def preview(target: str, *, faces: bool = True, privacy_mode: str = "redact") -> dict:
+def preview(target: str, *, faces: bool = True, privacy_mode: str = "redact", minimize: bool = True) -> dict:
     """Capture once and return {url, title, view, redactions, sensitive_elements, screenshot (b64 redacted PNG | None),
     screenshot_redactions, screenshot_reason, privacy_mode[, pseudonyms]}. Never returns the raw screenshot."""
     ps = _pseudonymizer(privacy_mode)
     snap = capture(target)
     out = {"url": _clean_url(snap.url), "title": None, "view": None, "redactions": {}, "sensitive_elements": [],
-           "screenshot": None, "screenshot_redactions": {}, "screenshot_reason": None, "privacy_mode": privacy_mode}
+           "screenshot": None, "screenshot_redactions": {}, "screenshot_reason": None, "privacy_mode": privacy_mode,
+           "minimize": minimize}
     try:
-        view = sanitized_view(snap, pseudonymizer=ps)
+        view = sanitized_view(snap, pseudonymizer=ps, minimize=minimize)
     except Blocked as e:
         out["screenshot_reason"] = f"view withheld: {e}"
         return out

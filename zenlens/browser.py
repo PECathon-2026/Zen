@@ -32,9 +32,10 @@ class PlaywrightPage:
     are aborted in the browser (backstop for link clicks; the executor already origin-checks navigate).
     With a `pseudonymizer`, the view carries stable tokens ([EMAIL_1]) instead of [REDACTED:KIND]."""
 
-    def __init__(self, session: Session, allowed_origins=(), canaries: tuple[str, ...] = (), pseudonymizer=None):
+    def __init__(self, session: Session, allowed_origins=(), canaries: tuple[str, ...] = (), pseudonymizer=None,
+                 minimize: bool = False):
         self.session, self.canaries = session, tuple(c for c in canaries if c)
-        self.pseudonymizer = pseudonymizer
+        self.pseudonymizer, self.minimize = pseudonymizer, minimize
         self.allowed = {origin(o) or o.lower().rstrip("/") for o in allowed_origins}
         self.snap: PageSnapshot | None = None
         self._view: dict | None = None
@@ -76,7 +77,7 @@ class PlaywrightPage:
         if self.snap is None:
             self.refresh()
         if self._view is None:
-            v = sanitized_view(self._masked(), self.canaries, self.pseudonymizer)
+            v = sanitized_view(self._masked(), self.canaries, self.pseudonymizer, minimize=self.minimize)
             for e in v["elements"]:
                 e["field_kind"] = FIELD_KIND.get(e.get("sensitive") or "") or field_kind(e)
             self._view = v

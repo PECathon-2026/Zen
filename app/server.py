@@ -113,6 +113,7 @@ class SanitizeReq(BaseModel):
     text: str = Field(max_length=MAX_TEXT)
     extra_rules: list[Rule] | None = None
     mode: str = Field(default="redact", pattern="^(redact|pseudonym)$")
+    minimize: bool = False  # also strip partials / quasi-identifiers (zenlens.minimize)
 
 
 class SanitizeHtmlReq(BaseModel):
@@ -127,6 +128,7 @@ class GateReq(BaseModel):
 class PreviewReq(BaseModel):
     url: str = Field(max_length=2048)
     privacy_mode: str = Field(default="redact", pattern="^(redact|pseudonym)$")
+    minimize: bool = True
 
 
 class AgentReq(BaseModel):
@@ -137,6 +139,7 @@ class AgentReq(BaseModel):
     auto_approve: bool = False
     max_steps: int = Field(default=10, ge=1, le=25)
     privacy_mode: str = Field(default="redact", pattern="^(redact|pseudonym)$")
+    minimize: bool = True
 
 
 # ---------------------------------------------------------------- helpers
@@ -311,6 +314,13 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
         return {"version": VERSION, "lan": lan, "local_only": local_only, "testpages": testpage_names(),
                 "runner": importlib.util.find_spec("zenlens.runner") is not None, "features": features(local_only)}
 
+    def _minimized(text: str, on: bool) -> tuple[str, dict]:
+        if not on:
+            return text, {}
+        from zenlens.minimize import minimize
+        out, notes = minimize(text)
+        return out, {"minimized": [{k: n[k] for k in ("rule", "reason") if k in n} for n in notes]}
+
     @app.post("/api/sanitize")
     def sanitize(req: SanitizeReq):
         rules = compile_rules(req.extra_rules)
@@ -322,13 +332,15 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
             from zenlens.pseudonym import Pseudonymizer
             ps = Pseudonymizer()
             try:
-                out = egress_check(ps.pseudonymize(req.text, spans)[0])
+                out, notes = _minimized(ps.pseudonymize(req.text, spans)[0], req.minimize)
+                out = egress_check(out)
             except Blocked as e:  # fail closed: never return a pseudonymized text with residue
                 return _err(409, f"egress gate blocked the pseudonymized text: {e}")
-            return {"sanitized": out, "mode": "pseudonym", "counts": counts, "legend": ps.legend(),
+            return {"sanitized": out, "mode": "pseudonym", "counts": counts, "legend": ps.legend(), **notes,
                     "findings": [{"start": s, "end": e, "kind": k, "token": ps.token(k, req.text[s:e], count=False)}
                                  for s, e, k in spans]}
-        return {"sanitized": redact_spans(req.text, spans),
+        out, notes = _minimized(redact_spans(req.text, spans), req.minimize)
+        return {"sanitized": out, **notes,
                 "findings": [{"start": s, "end": e, "kind": k} for s, e, k in spans], "counts": counts}
 
     @app.post("/api/sanitize_html")
@@ -393,7 +405,7 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
         target = resolve_target(req.url)
         runner = _runner()
         try:
-            return runner.preview(target, privacy_mode=req.privacy_mode)
+            return runner.preview(target, privacy_mode=req.privacy_mode, minimize=req.minimize)
         except Blocked as e:
             return _err(409, f"egress gate blocked the view: {e}")
         except Exception as e:
@@ -425,7 +437,8 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
             vault = _demo_vault() if demo else Vault.from_env()  # real sites: ZENLENS_SECRET_<NAME> env vars
             report = runner.run_task(req.goal, target, llm=_Recorder(inner, sent), vault=vault,
                                      approve=True if req.auto_approve else None,
-                                     max_steps=req.max_steps, headless=True, privacy_mode=req.privacy_mode)
+                                     max_steps=req.max_steps, headless=True, privacy_mode=req.privacy_mode,
+                                     minimize=req.minimize)
             report["llm"] = req.mode
             report["secrets_available"] = [f"{{{{SECRET:{n}}}}}" for n in vault.names()]  # names only
             # Exactly what the planner received each step (already egress-checked). In scripted mode the
