@@ -439,6 +439,7 @@
       scanSplit(out, covered);
     } catch (e) { console.debug("[Zen] scan error", e && e.message); }
     state.findings = out.slice(0, MAX_FINDINGS);
+    checkFrames();
     if (shieldOn()) { try { maskFields(); maskAttrs(); applyDom(); ensureWatch(); } catch (e) { console.debug("[Zen] dom redact error", e && e.message); } }
     render(); report();
   }
@@ -635,6 +636,20 @@
   }
   for (const t of ["copy", "cut"]) document.addEventListener(t, guardCopy, true);
   document.addEventListener("dragstart", (e) => { if (protectedNow() && touchesProtected(selectedText().field)) e.preventDefault(); }, true);
+
+  // ---------- about:srcdoc / about:blank frames ----------
+  const framesAsked = new WeakSet();
+  /** Top frame only: same-origin about: iframes the manifest may have skipped get the content script injected. */
+  function checkFrames() {
+    if (window !== window.top) return;
+    let need = false;
+    for (const f of document.querySelectorAll("iframe")) {
+      let d = null;
+      try { d = f.contentDocument; } catch (_) { /* cross-origin: manifest scripts cover it */ }
+      if (d && /^about:/.test(d.URL) && !framesAsked.has(f)) { framesAsked.add(f); need = true; f.addEventListener("load", () => { framesAsked.delete(f); setTimeout(checkFrames, 50); }, { once: true }); }
+    }
+    if (need) try { chrome.runtime.sendMessage({ type: "zl:injectFrames" }); } catch (_) { /* context gone */ }
+  }
 
   // ---------- lifecycle ----------
   async function init() {

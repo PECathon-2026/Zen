@@ -37,6 +37,13 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   }
   // Agent detection: is any debugger client (another extension's agent, DevTools, a CDP script) attached to this tab?
   // We never attach ourselves, so this shows no infobar. Only a boolean leaves this function.
+  // Some Chrome builds do not run manifest content scripts in about:srcdoc / about:blank frames. The top frame asks, and we
+  // inject into every frame of the tab (content.js is idempotent).
+  if (msg && msg.type === "zl:injectFrames" && sender.tab && sender.tab.id != null) {
+    chrome.scripting.executeScript({ target: { tabId: sender.tab.id, allFrames: true },
+      files: ["lib/detect.js", "lib/structural.js", "lib/settings.js", "content/content.js"] }).catch(() => {});
+    return;
+  }
   // Real agents (Claude in Chrome) attach the debugger per action and detach in between, so "attached right now" is
   // racy: a page load or read between two actions would be unprotected. Once a tab has seen an agent, keep the shield up for
   // STICKY_MS (kept in storage.session so it survives service-worker restarts).
