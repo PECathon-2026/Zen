@@ -132,7 +132,7 @@ function applyLocalOnly() {
   const hints = [];
   if (lo) hints.push('Local-only mode is on: Claude is disabled, nothing leaves this device.');
   else if (INFO && !INFO.features.claude) hints.push('Claude needs the anthropic package and ANTHROPIC_API_KEY on the server.');
-  if (!olOk) hints.push('On-device model needs Ollama running (ollama.com) with a model pulled, e.g. ollama pull llama3.2:3b.');
+  if (!olOk) hints.push('On-device model needs Ollama running (ollama.com) with a model pulled, e.g. ollama pull qwen2.5:0.5b.');
   $('#agent-claude-hint').textContent = hints.join(' ');
   syncScriptBox();
 }

@@ -431,7 +431,7 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
         elif req.mode == "ollama":  # on-device: allowed even in local-only mode
             st = ollama_status()
             if not st["up"] or not st["models"]:
-                raise HTTPException(503, "On-device model unavailable: start Ollama and run `ollama pull llama3.2:3b`")
+                raise HTTPException(503, "On-device model unavailable: start Ollama and run `ollama pull qwen2.5:0.5b`")
             inner = OllamaLLM(model=pick_ollama_model(st["models"]))
         else:
             if not features(local_only)["claude"]:

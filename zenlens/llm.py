@@ -117,7 +117,7 @@ class ClaudeLLM:
             return Action("ask_user", reason="unparseable model output")
 
 
-DEFAULT_OLLAMA_MODEL = "llama3.2:3b"
+DEFAULT_OLLAMA_MODEL = "qwen2.5:0.5b"
 DEFAULT_OLLAMA_HOST = "http://127.0.0.1:11434"
 
 

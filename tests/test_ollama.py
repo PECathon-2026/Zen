@@ -68,5 +68,5 @@ def test_status_and_model_pick(fake_ollama):
     assert ollama_status(host) == {"up": True, "models": ["qwen2.5:3b"]}
     assert ollama_status("http://127.0.0.1:1") == {"up": False, "models": []}
     assert ollama_status("http://example.com") == {"up": False, "models": []}
-    assert pick_ollama_model(["qwen2.5:3b"], "llama3.2:3b") == "qwen2.5:3b"  # wanted model absent: use what exists
+    assert pick_ollama_model(["qwen2.5:3b"], "qwen2.5:0.5b") == "qwen2.5:3b"  # wanted model absent: use what exists
     assert pick_ollama_model(["a", "b"], "b") == "b"
