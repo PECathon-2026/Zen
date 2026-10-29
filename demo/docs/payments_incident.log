@@ -1,0 +1,12 @@
+# payments-api · incident 2026-10-26 · exported for postmortem
+# SPECIMEN · synthetic data generated for the Zen privacy demo · all keys below are fake
+2026-10-26T09:14:02.118Z INFO  boot service=payments-api version=v3.18.2 build 2026.10.25 region=ap-south-1
+2026-10-26T09:14:02.231Z INFO  config OPENAI_API_KEY=sk-proj-Zx8Qm2Lr7Tn4Vb9Kc1Wd6Hs3Pj5Fg0Ye8Ua2Nq
+2026-10-26T09:14:02.232Z INFO  config AWS_ACCESS_KEY_ID=AKIAZ7Q4M2LR8TN4VB9K
+2026-10-26T09:14:02.233Z INFO  config GITHUB_TOKEN=ghp_Q7m2Lr8Tn4Vb9Kc1Wd6Hs3Pj5Fg0Ye8Ua2Nq
+2026-10-26T09:14:02.240Z INFO  db connect host=10.24.3.17 port=5432 user=payments DB_PASSWORD=pg_R7v2Kq9Lm4Xt
+2026-10-26T09:31:47.902Z WARN  slow request path=/v1/charges latency_ms=2381 request_id=550e8400-e29b-41d4-a716-446655440000
+2026-10-26T09:31:48.004Z ERROR charge failed customer_email=priya.menon@example.com card=4111 1111 1111 1111 reason=issuer_timeout
+2026-10-26T09:31:48.006Z ERROR upstream auth header=Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjdXN0XzQ4MjEiLCJyb2xlIjoiYWRtaW4ifQ.c3ludGhldGljLXNpZ25hdHVyZS0wMDE
+2026-10-26T09:32:10.551Z INFO  retry ok order=ORD-2026-118934 amount=18499.00 currency=INR client_ip=203.0.113.45
+2026-10-26T09:40:00.000Z INFO  on-call paged: s.ghosh@zen-team.example, phone 87654 32109

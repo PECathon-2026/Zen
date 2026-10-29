@@ -122,6 +122,11 @@ def ocr_text(png_bytes: bytes) -> str:
     return "\n".join(" ".join(w.text for w in line) for line in ocr_lines(img))
 
 
+# OCR sometimes returns Cyrillic/Greek lookalikes for Latin letters ("А/c no" with Cyrillic А), which would
+# silently defeat keyword rules. One char -> one char, so detected spans still map onto the word boxes.
+_LOOKALIKES = str.maketrans("АВЕКМНОРСТХаеорсухіјѕΑΒΕΖΗΙΚΜΝΟΡΤΥΧαο", "ABEKMHOPCTXaeopcyxijsABEZHIKMNOPTYXao")
+
+
 def _sensitive_boxes(lines: list[list[Word]]) -> list[Redaction]:
     out = []
     for words in lines:
@@ -129,7 +134,7 @@ def _sensitive_boxes(lines: list[list[Word]]) -> list[Redaction]:
         for w in words:
             offs.append((len(text), len(text) + len(w.text)))
             text += w.text + " "
-        for sp in detect(text):
+        for sp in detect(text.translate(_LOOKALIKES)):
             hit = [w.box for w, (s, e) in zip(words, offs) if s < sp.end and sp.start < e]
             if hit:
                 out.append(Redaction((min(b[0] for b in hit), min(b[1] for b in hit),

@@ -95,6 +95,11 @@ Optional: `brew install tesseract` (OCR on non-macOS; macOS uses Apple Vision by
 .venv/bin/python demo/run_demo.py --claude --yes    # real Claude (needs ANTHROPIC_API_KEY)
 ```
 
+**Specimen documents for live demos** (`demo/docs/`, regenerate with `.venv/bin/python demo/make_docs.py`):
+a bank statement, GST tax invoice and KYC form as PNG (Screenshot screen or phone share), plus a Hinglish
+support chat (`.txt`) and a server incident log (`.log`) for the Text screen's *Attach file*. All
+organisations and people are fictional; IDs are checksum-valid so every detector fires.
+
 Demo scenes: (1) checkout page detection + redacted screenshot, (2) sign-in with vault secrets and
 approvals, (3) card payment from the vault, raw card typed by the model rejected, (4) prompt-injection page:
 all 5 hijack attempts blocked, (5) gate blocks PII payloads, (6) leak audit: 0 vault values in any payload

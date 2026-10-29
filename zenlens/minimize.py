@@ -154,8 +154,10 @@ def _echo(t, c):
         tok_s = t.rfind(" ", 0, st) + 1
         tok_e = t.find(" ", en)
         tok = t[tok_s:len(t) if tok_e < 0 else tok_e]
-        ident = glued or bool(re.search(r"[/_=]|\.\w{2,4}$", tok))
+        ident = glued or bool(re.search(r"[/_=]|\.[A-Za-z]\w{1,3}$", tok))  # ".00" in ₹18,499.00 is not a file ext
         where = c.context or ident
+        # OTP echoes live in URLs/query strings or metadata; ticket-style IDs (TKT-20431, SR-77120-B) are not echoes.
+        otp_where = c.context or bool(re.search(r"[/=?&_]", tok))
         n, k = len(d), c.kinds
         kind = None
         if 13 <= n <= 19 and luhn_ok(d) and (glued or c.context or "CARD" in k):
@@ -164,7 +166,7 @@ def _echo(t, c):
             kind = "AADHAAR"
         elif "PHONE" in k and where and ((n == 10 and d[0] in "6789") or (n == 12 and d[:2] == "91" and d[2] in "6789")):
             kind = "PHONE"
-        elif "OTP" in k and where and 4 <= n <= 8 and not (n == 4 and 1900 <= int(d) <= 2099):
+        elif "OTP" in k and otp_where and 4 <= n <= 8 and not (n == 4 and 1900 <= int(d) <= 2099):
             kind = "OTP"
         elif "BANK_ACCOUNT" in k and where and 9 <= n <= 18:
             kind = "BANK_ACCOUNT"
