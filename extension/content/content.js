@@ -17,7 +17,7 @@
     settings: { ...CFG.DEFAULTS }, customRules: [], enabled: false, mask: false,
     findings: [],   // {kind, reason, el?:Element, range?:Range, field?:bool}  — no values kept
     host: null, layer: null, rescanTimer: 0, rafPending: false, lastScan: 0,
-    agent: false, probeTimer: 0, armSheet: null, domRedacted: [], masked: new Map(), attrMasked: [], img: new Map(), analyzing: 0, roots: [], observed: new WeakSet(), watching: false, sig: "",  // Agent Shield
+    agent: false, probeTimer: 0, armSheet: null, domRedacted: [], masked: new Map(), attrMasked: [], img: new Map(), analyzing: 0, frameRetry: 0, roots: [], observed: new WeakSet(), watching: false, sig: "",  // Agent Shield
   };
   const STICKY_MS = 10 * 60 * 1000;
   const SHIELD_MIN_GAP = 40; // ms between rescans while the shield is up (normal mode: 600)
@@ -435,7 +435,7 @@
     try {
       try { state.roots = collectRoots(); } catch (e) { state.roots = [document]; console.debug("[Zen] roots error", e && e.message); }
       // each stage on its own: one failing stage (odd markup on some site) must not hide what the others found
-      for (const stage of [scanFields, scanStructuralLeaves, scanMedia, scanText, scanSplit]) {
+      for (const stage of [scanFields, scanStructuralLeaves, scanMedia, scanText, scanSplit, scanFrames]) {
         try { stage(out, covered); } catch (e) { console.debug("[Zen] scan stage error", stage.name, e && e.message); }
       }
     } catch (e) { console.debug("[Zen] scan error", e && e.message); }
@@ -639,6 +639,19 @@
   document.addEventListener("dragstart", (e) => { if (protectedNow() && touchesProtected(selectedText().field)) e.preventDefault(); }, true);
 
   // ---------- about:srcdoc / about:blank frames ----------
+  /** Fail closed: a same-origin about: frame whose copy of this script is not running (marker attribute missing) is covered whole. */
+  function scanFrames(out, covered) {
+    if (!shieldOn()) return;
+    for (const f of qsa("iframe")) {
+      let d = null;
+      try { d = f.contentDocument; } catch (_) { continue; }          // cross-origin: its own content script handles it
+      if (!d || !/^about:/.test(d.URL) || !d.documentElement || d.documentElement.hasAttribute("data-zen") || isOurs(f)) continue;
+      const r = f.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8 || !visible(f)) continue;
+      out.push({ kind: "IMAGE", reason: "frame-unprotected", el: f, media: true }); covered.add(f);
+      if (state.frameRetry < 12) { state.frameRetry++; scheduleScan(250); }   // injection may just be late
+    }
+  }
   const framesAsked = new WeakSet();
   /** Top frame only: same-origin about: iframes the manifest may have skipped get the content script injected. */
   function checkFrames() {
@@ -714,6 +727,7 @@
     addEventListener("load", () => scheduleScan(0), { once: true });
     init();
   }
+  try { document.documentElement.setAttribute("data-zen", "1"); } catch (_) { /* marker for a parent frame's fail-closed check */ }
   if (navigator.webdriver === true) arm(); // automation present: blank until the first scan has put covers up
   start();   // document_start: the observer is armed before the page paints
 })();
