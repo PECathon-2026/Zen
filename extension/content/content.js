@@ -25,7 +25,7 @@
     const m = state.settings.shieldMode;
     return m === "on" || (m !== "off" && (navigator.webdriver === true || state.agent));
   }
-  const ZL = (globalThis.__ZenContent = { state, scheduleScan, render, ui: {} });
+  const ZL = (globalThis.__ZenContent = { state, scheduleScan, render, scan: () => scan(), ui: {} });
 
   // ---------- overlay ----------
   /** Constructable stylesheet (not subject to page style-src CSP); <style> fallback. */
@@ -134,8 +134,11 @@
       if (el.tagName === "SELECT" || /^(checkbox|radio|button|submit|reset|file|image)$/.test(el.type) || !(el.value || "").trim()) continue;
       const ph = `[REDACTED:${f.kind}]`;
       if (el.value === ph) continue;
-      state.masked.set(el, { orig: el.value, ph });
+      // the value ATTRIBUTE (outerHTML, getAttribute) holds the original too: mask it as well
+      const isTa = el.tagName === "TEXTAREA";
+      state.masked.set(el, { orig: el.value, ph, attr: isTa ? el.defaultValue : el.getAttribute("value") });
       setValue(el, ph);
+      try { if (isTa) el.defaultValue = ph; else if (el.hasAttribute("value")) el.setAttribute("value", ph); } catch (_) { /* ignore */ }
     }
     mo.takeRecords();
   }
@@ -144,7 +147,11 @@
     try { Object.getOwnPropertyDescriptor(proto, "value").set.call(el, v); } catch (_) { el.value = v; }
   }
   function unmaskFields(remask) {
-    for (const [el, m] of state.masked) if (el.isConnected && el.value === m.ph) setValue(el, m.orig);
+    for (const [el, m] of state.masked) {
+      if (!el.isConnected) continue;
+      if (el.value === m.ph) setValue(el, m.orig);
+      try { if (el.tagName === "TEXTAREA") el.defaultValue = m.attr; else if (m.attr != null) el.setAttribute("value", m.attr); } catch (_) { /* ignore */ }
+    }
     if (!remask) state.masked.clear();
     else setTimeout(() => { state.masked.clear(); if (shieldOn()) scan(); }, 400);
     mo.takeRecords();
@@ -409,7 +416,7 @@
   /** Auto mode: ask the service worker once a second whether a debugger client (an AI agent) is attached to this tab. */
   function startProbe() {
     if (state.probeTimer || navigator.webdriver === true) return;
-    state.probeTimer = setInterval(async () => {
+    const tick = async () => {
       if (state.settings.shieldMode !== "auto") return;
       let r = null;
       try { r = await chrome.runtime.sendMessage({ type: "zl:probe" }); } catch (_) { return; }
@@ -418,7 +425,9 @@
       state.agent = a;
       if (a) arm();
       scan(); disarm();
-    }, 1000);
+    };
+    tick();                                  // ask right away: a page that loads between two agent actions is still covered
+    state.probeTimer = setInterval(tick, 1000);
   }
   chrome.storage.onChanged.addListener((_c, area) => { if (area === "sync") init(); });
 
