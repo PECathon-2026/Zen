@@ -17,7 +17,14 @@
     settings: { ...CFG.DEFAULTS }, customRules: [], enabled: false, mask: false,
     findings: [],   // {kind, reason, el?:Element, range?:Range, field?:bool}  — no values kept
     host: null, layer: null, rescanTimer: 0, rafPending: false, lastScan: 0,
+    agent: false, probeTimer: 0, armSheet: null, domRedacted: [], masked: new Map(),  // Agent Shield
   };
+  const SHIELD_MIN_GAP = 40; // ms between rescans while the shield is up (normal mode: 600)
+  /** Agent Shield is up when forced on, or in auto mode when an automation signal is present. */
+  function shieldOn() {
+    const m = state.settings.shieldMode;
+    return m === "on" || (m !== "off" && (navigator.webdriver === true || state.agent));
+  }
   const ZL = (globalThis.__ZenContent = { state, scheduleScan, render, ui: {} });
 
   // ---------- overlay ----------
@@ -36,6 +43,8 @@
       .b{position:fixed;box-sizing:border-box;border:2px solid var(--c);border-radius:3px;pointer-events:none}
       .b.m{background:color-mix(in srgb,var(--c) 18%,#111);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .b.m.f{background:transparent;backdrop-filter:none;border-style:dashed}
+      .b.s{border:0;border-radius:2px;background:#1b1c1a;color:#fbf9f5;display:flex;align-items:center;justify-content:center;
+           overflow:hidden;font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;white-space:nowrap}
       .t{position:absolute;right:-2px;top:-15px;font:600 9px/13px system-ui,sans-serif;color:#fff;background:var(--c);
          padding:0 4px;border-radius:3px 3px 0 3px;white-space:nowrap;letter-spacing:.02em}
       .b.low .t{top:auto;bottom:-15px}`);
@@ -54,10 +63,90 @@
     return el.getClientRects().length > 0;
   }
 
+  // ---------- agent shield: arm, DOM redaction ----------
+  /** Until the first scan finishes, hide the page entirely so a screenshot taken during load shows nothing. */
+  function arm() {
+    if (state.armSheet) return;
+    try {
+      const sh = new CSSStyleSheet(); sh.replaceSync("html{visibility:hidden!important}");
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sh]; state.armSheet = sh;
+      setTimeout(disarm, 1500); // never leave a page blank if a scan stalls
+    } catch (_) { /* old engine: overlay only */ }
+  }
+  function disarm() {
+    if (!state.armSheet) return;
+    try { document.adoptedStyleSheets = document.adoptedStyleSheets.filter((s) => s !== state.armSheet); } catch (_) { /* ignore */ }
+    state.armSheet = null;
+  }
+  const MAX_DOM_EDITS = 5000;
+  /** Replace sensitive text in the DOM by [REDACTED:KIND] so get_page_text / accessibility-tree reads are redacted too.
+   *  Originals live only in this array (page memory) and are restored when the shield drops. */
+  function applyDom() {
+    if (!state.settings.domRedact || state.domRedacted.length >= MAX_DOM_EDITS) return;
+    const byNode = new Map(), leaves = [];
+    for (const f of state.findings) {
+      if (f.range) {
+        const n = f.range.startContainer;
+        if (n.nodeType === 3 && n === f.range.endContainer && !(n.parentElement && n.parentElement.isContentEditable)) {
+          if (!byNode.has(n)) byNode.set(n, []);
+          byNode.get(n).push({ s: f.range.startOffset, e: f.range.endOffset, k: f.kind }); f.done = true;
+        }
+      } else if (f.el && !f.field && f.el.childElementCount === 0 && !f.el.isContentEditable &&
+                 !["IMG", "VIDEO", "CANVAS", "A"].includes(f.el.tagName) && /\S{3}/.test(f.el.textContent || "")) leaves.push(f);
+    }
+    for (const [node, spans] of byNode) {
+      const orig = node.data; let out = orig;
+      for (const sp of spans.sort((a, b) => b.s - a.s)) out = out.slice(0, sp.s) + `[REDACTED:${sp.k}]` + out.slice(sp.e);
+      node.data = out; state.domRedacted.push({ node, orig, kinds: spans.map((x) => x.k) });
+    }
+    for (const f of leaves) {
+      const orig = f.el.textContent; f.el.textContent = `[REDACTED:${f.kind}]`; f.done = true;
+      state.domRedacted.push({ el: f.el, orig, kinds: [f.kind] });
+    }
+    state.findings = state.findings.filter((f) => !f.done);
+    mo.takeRecords(); // our own writes must not trigger a rescan
+  }
+  /** Pre-filled / autofilled sensitive field values are replaced in the DOM (el.value is what DOM-reading agents get).
+   *  Originals stay in `state.masked`. A field the user or agent types into starts empty; real values are restored for the
+   *  instant of a submit/click/Enter so the page still works, then masked again. */
+  function maskFields() {
+    if (!state.settings.domRedact) return;
+    for (const f of state.findings) {
+      const el = f.el; if (!f.field || !el || f.empty || state.masked.has(el)) continue;
+      if (el.tagName === "SELECT" || /^(checkbox|radio|button|submit|reset|file|image)$/.test(el.type) || !(el.value || "").trim()) continue;
+      const ph = `[REDACTED:${f.kind}]`;
+      if (el.value === ph) continue;
+      state.masked.set(el, { orig: el.value, ph });
+      setValue(el, ph);
+    }
+    mo.takeRecords();
+  }
+  function setValue(el, v) {
+    const proto = el.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    try { Object.getOwnPropertyDescriptor(proto, "value").set.call(el, v); } catch (_) { el.value = v; }
+  }
+  function unmaskFields(remask) {
+    for (const [el, m] of state.masked) if (el.isConnected && el.value === m.ph) setValue(el, m.orig);
+    if (!remask) state.masked.clear();
+    else setTimeout(() => { state.masked.clear(); if (shieldOn()) scan(); }, 400);
+    mo.takeRecords();
+  }
+  function restoreDom() {
+    unmaskFields(false);
+    for (const r of state.domRedacted) {
+      try {
+        if (r.node && r.node.isConnected && r.node.data.includes("[REDACTED:")) r.node.data = r.orig;
+        else if (r.el && r.el.isConnected && r.el.textContent.startsWith("[REDACTED:")) r.el.textContent = r.orig;
+      } catch (_) { /* node gone */ }
+    }
+    state.domRedacted = []; mo.takeRecords();
+  }
+
   // ---------- scanning ----------
   function scanFields(out, covered) {
     for (const el of document.querySelectorAll(FIELD_SEL)) {
-      if (isOurs(el) || el.type === "hidden" || !visible(el)) continue;
+      // hidden inputs (csrf tokens, session ids) draw nothing but DOM-reading agents get their value: scan them too
+      if (isOurs(el) || (el.type !== "hidden" && !visible(el))) continue;
       let r = null;
       try { r = ST.classifyDomElement(el); } catch (_) { /* ignore */ }
       const value = el.tagName === "SELECT" ? (el.selectedOptions[0] || {}).text || "" : el.value || "";
@@ -123,6 +212,7 @@
   function scan() {
     state.rescanTimer = 0; state.lastScan = Date.now();
     if (!state.enabled || !document.body) { state.findings = []; render(); report(); return; }
+    if (!shieldOn() && state.domRedacted.length) restoreDom();
     const out = [], covered = new Set();
     try {
       scanFields(out, covered);
@@ -130,12 +220,14 @@
       scanText(out, covered);
     } catch (e) { console.debug("[Zen] scan error", e && e.message); }
     state.findings = out.slice(0, MAX_FINDINGS);
+    if (shieldOn()) { try { maskFields(); applyDom(); } catch (e) { console.debug("[Zen] dom redact error", e && e.message); } }
     render(); report();
   }
   /** Throttled rescan: at most once per 600ms, trailing. */
   function scheduleScan(delay = 300) {
     if (state.rescanTimer) return;
-    const wait = Math.max(delay, 600 - (Date.now() - state.lastScan));
+    const wait = shieldOn() ? Math.max(0, SHIELD_MIN_GAP - (Date.now() - state.lastScan))
+      : Math.max(delay, 600 - (Date.now() - state.lastScan));
     state.rescanTimer = setTimeout(scan, wait);
   }
 
@@ -146,11 +238,16 @@
     return [];
   }
   function render() {
+    // Shield mode paints synchronously (a scroll or layout shift must never expose a frame); normal mode uses rAF.
+    if (shieldOn()) return paint();
     if (state.rafPending) return;
     state.rafPending = true;
-    requestAnimationFrame(() => {
-      state.rafPending = false;
-      const show = state.enabled && (state.settings.highlight || state.mask) && state.findings.length;
+    requestAnimationFrame(() => { state.rafPending = false; paint(); });
+  }
+  function paint() {
+    {
+      const sh = shieldOn();
+      const show = state.enabled && (sh || state.settings.highlight || state.mask) && state.findings.length;
       if (!show) { if (state.layer) state.layer.textContent = ""; return; }
       ensureOverlay();
       const frag = document.createDocumentFragment();
@@ -160,8 +257,9 @@
         rs.forEach((r, i) => {
           if (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) return;
           const d = document.createElement("div");
-          d.className = "b" + (state.mask ? " m" : "") + (state.mask && f.el && f.el === active ? " f" : "") + (r.top < 16 ? " low" : "");
+          d.className = "b" + (sh ? " s" : state.mask ? " m" : "") + (!sh && state.mask && f.el && f.el === active ? " f" : "") + (r.top < 16 ? " low" : "");
           d.style.cssText = `--c:${CFG.kindColor(f.kind)};left:${r.left - 2}px;top:${r.top - 2}px;width:${r.width + 4}px;height:${r.height + 4}px`;
+          if (sh) { if (r.width >= 44 && r.height >= 12) d.textContent = f.kind; frag.appendChild(d); return; }
           if (!state.settings.highlight) d.style.borderColor = "transparent";
           if (i === 0 && state.settings.highlight) {
             const t = document.createElement("span"); t.className = "t"; t.textContent = f.kind; d.appendChild(t);
@@ -170,17 +268,18 @@
         });
       }
       state.layer.replaceChildren(frag);
-    });
+    }
   }
 
   // ---------- reporting / messages ----------
   function counts() {
     const c = {};
     for (const f of state.findings) c[f.kind] = (c[f.kind] || 0) + 1;
+    for (const r of state.domRedacted) for (const k of r.kinds) c[k] = (c[k] || 0) + 1;
     return c;
   }
   function report() {
-    try { chrome.runtime.sendMessage({ type: "zl:count", total: state.findings.length }).catch(() => {}); } catch (_) { /* context gone */ }
+    try { chrome.runtime.sendMessage({ type: "zl:count", total: Object.values(counts()).reduce((a, b) => a + b, 0), shield: shieldOn() }).catch(() => {}); } catch (_) { /* context gone */ }
   }
   function pageText() { return document.body ? document.body.innerText || "" : ""; }
   /** Page text spans: structurally flagged leaf text (e.g. .shipping-address) first, then text rules. */
@@ -239,7 +338,8 @@
     const h = location.hostname;
     switch (msg.type) {
       case "zl:summary":
-        reply({ enabled: state.enabled, host: h, counts: counts(), total: state.findings.length, mask: state.mask,
+        reply({ enabled: state.enabled, host: h, counts: counts(), total: Object.values(counts()).reduce((a, b) => a + b, 0), mask: state.mask,
+          shield: { mode: state.settings.shieldMode, active: shieldOn(), agent: navigator.webdriver === true || state.agent },
           aiSite: CFG.isAiSite(state.settings, h), guard: !!(ZL.guardActive && ZL.guardActive()) });
         return;
       case "zl:setMask":
@@ -276,24 +376,53 @@
     state.customRules = Z.compileCustomRules(s.customRules).rules;
     state.enabled = CFG.siteEnabled(s, location.hostname);
     if (state.mask === false && s.maskByDefault) state.mask = true;
+    if (shieldOn()) arm(); else { disarm(); restoreDom(); }
     scan();
+    disarm(); // first scan is done: covers are up
     if (ZL.onSettings) ZL.onSettings(s);
+    startProbe();
+  }
+  /** Auto mode: ask the service worker once a second whether a debugger client (an AI agent) is attached to this tab. */
+  function startProbe() {
+    if (state.probeTimer || navigator.webdriver === true) return;
+    state.probeTimer = setInterval(async () => {
+      if (state.settings.shieldMode !== "auto") return;
+      let r = null;
+      try { r = await chrome.runtime.sendMessage({ type: "zl:probe" }); } catch (_) { return; }
+      const a = !!(r && r.agent);
+      if (a === state.agent) return;
+      state.agent = a;
+      if (a) arm();
+      scan(); disarm();
+    }, 1000);
   }
   chrome.storage.onChanged.addListener((_c, area) => { if (area === "sync") init(); });
 
   const mo = new MutationObserver((muts) => {
     if (!state.enabled) return;
-    for (const m of muts) if (!isOurs(m.target)) { scheduleScan(); return; }
+    for (const m of muts) if (!isOurs(m.target)) { if (shieldOn()) render(); scheduleScan(); return; }
   });
   function start() {
     mo.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["value", "type", "autocomplete", "class", "hidden", "style"] });
-    addEventListener("input", (e) => { if (!isOurs(e.target)) scheduleScan(400); }, true);
+    addEventListener("input", (e) => { if (!isOurs(e.target)) scheduleScan(400); }, true); // shield: 40 ms
     addEventListener("change", () => scheduleScan(200), true);
     addEventListener("scroll", render, { capture: true, passive: true });
     addEventListener("resize", render, { passive: true });
     addEventListener("focusin", render, true);
     addEventListener("focusout", render, true);
+    // document_start: settings load async, so mutations before `enabled` was set were ignored. Rescan once the DOM exists.
+    document.addEventListener("beforeinput", (e) => {  // typing into a masked field starts from empty, never appends to the placeholder
+      const m = state.masked.get(e.target);
+      if (m && e.target.value === m.ph) { setValue(e.target, ""); state.masked.delete(e.target); }
+    }, true);
+    const real = () => { if (state.masked.size && shieldOn()) unmaskFields(true); };  // page code must see real values on submit
+    document.addEventListener("submit", real, true);
+    document.addEventListener("click", (e) => { if (e.target && e.target.closest && e.target.closest("button,[type=submit],input[type=submit],a")) real(); }, true);
+    document.addEventListener("keydown", (e) => { if (e.key === "Enter") real(); }, true);
+    document.addEventListener("DOMContentLoaded", () => scheduleScan(0), { once: true });
+    addEventListener("load", () => scheduleScan(0), { once: true });
     init();
   }
-  if (document.body) start(); else addEventListener("DOMContentLoaded", start, { once: true });
+  if (navigator.webdriver === true) arm(); // automation present: blank until the first scan has put covers up
+  start();   // document_start: the observer is armed before the page paints
 })();

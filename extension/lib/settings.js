@@ -11,6 +11,8 @@
     highlight: true,          // outline sensitive elements
     guard: true,              // paste/submit guard on AI sites
     maskByDefault: false,
+    shieldMode: "auto",      // Agent Shield: "auto" (when an AI agent drives the tab), "on" (always), "off"
+    domRedact: true,          // in shield mode also replace sensitive text in the DOM so text/a11y reads are redacted
   };
   const ALLOWED_SERVERS = ["http://localhost:8765", "http://127.0.0.1:8765"];
 

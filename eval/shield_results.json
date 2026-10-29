@@ -1,0 +1,277 @@
+{
+ "report": {
+  "baseline": [
+   {
+    "page": "checkout",
+    "mode": "off",
+    "items": 8,
+    "ocr_leaks": [
+     "CARD",
+     "CARD_EXP",
+     "ADDRESS",
+     "ADDRESS",
+     "EMAIL"
+    ],
+    "dom_text_leaks": [
+     "ADDRESS",
+     "EMAIL"
+    ],
+    "dom_value_leaks": [
+     "NAME",
+     "CARD",
+     "CARD_EXP",
+     "CVV",
+     "ADDRESS",
+     "ADDRESS"
+    ],
+    "coverage": [
+     0.002,
+     0.003,
+     0.005,
+     0.001,
+     0.007,
+     0.004
+    ],
+    "uncovered": [
+     "NAME:cc-name",
+     "CARD:cc-number",
+     "CARD_EXP:cc-exp",
+     "CVV:f3",
+     "ADDRESS:addr-line1",
+     "ADDRESS:postal"
+    ],
+    "context_kept": 1.0,
+    "negatives": 7
+   },
+   {
+    "page": "auth",
+    "mode": "off",
+    "items": 7,
+    "ocr_leaks": [
+     "OTP",
+     "OTP",
+     "PIN",
+     "AADHAAR",
+     "PAN"
+    ],
+    "dom_text_leaks": [
+     "OTP"
+    ],
+    "dom_value_leaks": [
+     "EMAIL",
+     "PASSWORD",
+     "OTP",
+     "PIN",
+     "AADHAAR",
+     "PAN"
+    ],
+    "coverage": [
+     0.006,
+     0.003,
+     0.004,
+     0.002,
+     0.004,
+     0.006
+    ],
+    "uncovered": [
+     "EMAIL:login-email",
+     "PASSWORD:login-password",
+     "OTP:otp-input",
+     "PIN:upi-pin",
+     "AADHAAR:kyc-aadhaar",
+     "PAN:kyc-pan"
+    ],
+    "context_kept": 1.0,
+    "negatives": 3
+   },
+   {
+    "page": "support_chat",
+    "mode": "off",
+    "items": 4,
+    "ocr_leaks": [
+     "PHONE",
+     "EMAIL",
+     "PHONE"
+    ],
+    "dom_text_leaks": [
+     "PHONE",
+     "EMAIL",
+     "PHONE"
+    ],
+    "dom_value_leaks": [],
+    "coverage": [],
+    "uncovered": [],
+    "context_kept": 1.0,
+    "negatives": 6
+   },
+   {
+    "page": "video_call",
+    "mode": "off",
+    "items": 5,
+    "ocr_leaks": [
+     "FACE",
+     "NAME",
+     "FACE",
+     "NAME",
+     "EMAIL"
+    ],
+    "dom_text_leaks": [
+     "FACE",
+     "NAME",
+     "FACE",
+     "NAME",
+     "EMAIL"
+    ],
+    "dom_value_leaks": [],
+    "coverage": [],
+    "uncovered": [],
+    "context_kept": 1.0,
+    "negatives": 5
+   },
+   {
+    "page": "dev_settings",
+    "mode": "off",
+    "items": 10,
+    "ocr_leaks": [
+     "IP",
+     "IP",
+     "IP"
+    ],
+    "dom_text_leaks": [
+     "API_KEY",
+     "API_KEY",
+     "TOKEN",
+     "IP",
+     "IP",
+     "IP",
+     "IP"
+    ],
+    "dom_value_leaks": [
+     "API_KEY",
+     "SECRET",
+     "TOKEN"
+    ],
+    "coverage": [
+     0.009,
+     0.005,
+     0.0
+    ],
+    "uncovered": [
+     "API_KEY:aws-access-key",
+     "SECRET:webhook-secret",
+     "TOKEN:csrf"
+    ],
+    "context_kept": 1.0,
+    "negatives": 7
+   }
+  ],
+  "shielded": [
+   {
+    "page": "checkout",
+    "mode": "auto",
+    "items": 8,
+    "ocr_leaks": [],
+    "dom_text_leaks": [],
+    "dom_value_leaks": [],
+    "coverage": [
+     0.944,
+     0.951,
+     0.908,
+     0.967,
+     0.909,
+     0.909
+    ],
+    "uncovered": [],
+    "context_kept": 1.0,
+    "negatives": 7
+   },
+   {
+    "page": "auth",
+    "mode": "auto",
+    "items": 7,
+    "ocr_leaks": [],
+    "dom_text_leaks": [],
+    "dom_value_leaks": [],
+    "coverage": [
+     0.944,
+     0.896,
+     0.968,
+     0.97,
+     0.912,
+     0.966
+    ],
+    "uncovered": [],
+    "context_kept": 1.0,
+    "negatives": 3
+   },
+   {
+    "page": "support_chat",
+    "mode": "auto",
+    "items": 4,
+    "ocr_leaks": [],
+    "dom_text_leaks": [],
+    "dom_value_leaks": [],
+    "coverage": [],
+    "uncovered": [],
+    "context_kept": 1.0,
+    "negatives": 6
+   },
+   {
+    "page": "video_call",
+    "mode": "auto",
+    "items": 5,
+    "ocr_leaks": [],
+    "dom_text_leaks": [],
+    "dom_value_leaks": [],
+    "coverage": [],
+    "uncovered": [],
+    "context_kept": 1.0,
+    "negatives": 5
+   },
+   {
+    "page": "dev_settings",
+    "mode": "auto",
+    "items": 10,
+    "ocr_leaks": [],
+    "dom_text_leaks": [],
+    "dom_value_leaks": [],
+    "coverage": [
+     0.928,
+     0.935,
+     0.0
+    ],
+    "uncovered": [
+     "TOKEN:csrf"
+    ],
+    "context_kept": 1.0,
+    "negatives": 7
+   }
+  ],
+  "focus": 0.951,
+  "latency": {
+   "trials": 5,
+   "covered": 5,
+   "median_ms": 3.0,
+   "max_ms": 4.5
+  }
+ },
+ "summary": {
+  "items": 34,
+  "baseline_ocr_visible": 21,
+  "shielded_ocr_leaks": 0,
+  "shielded_dom_text_leaks": 0,
+  "shielded_dom_value_leaks": 0,
+  "uncovered_items": [
+   "TOKEN:csrf"
+  ],
+  "mean_coverage": 0.874,
+  "context_kept": 1.0,
+  "focus_cover": 0.951,
+  "latency": {
+   "trials": 5,
+   "covered": 5,
+   "median_ms": 3.0,
+   "max_ms": 4.5
+  }
+ }
+}

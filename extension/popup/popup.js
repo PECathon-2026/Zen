@@ -37,6 +37,10 @@ function renderSummary(s) {
     li.append(tag, x, c); ul.append(li);
   });
   $("mask").checked = !!s.mask;
+  const sh = s.shield || { mode: "auto", active: false, agent: false };
+  $("shield-mode").value = sh.mode || "auto";
+  $("shield-state").textContent = sh.active ? (sh.agent ? "active: agent detected" : "active") : "standing by";
+  $("shield-state").className = "pill" + (sh.active ? " on" : "");
   $("guard").hidden = !(s.aiSite && s.guard);
 }
 
@@ -57,6 +61,11 @@ async function init() {
   renderSummary(s);
 }
 
+$("shield-mode").addEventListener("change", async (e) => {
+  await CFG.save({ shieldMode: e.target.value });
+  setStatus(e.target.value === "off" ? "Agent Shield off." : e.target.value === "on" ? "Agent Shield always on." : "Agent Shield will switch on when an agent is detected.");
+  setTimeout(async () => { const s = await send({ type: "zl:summary" }); if (s) renderSummary(s); }, 300);
+});
 $("mask").addEventListener("change", async (e) => {
   await send({ type: "zl:setMask", on: e.target.checked });
   setStatus(e.target.checked ? "Sensitive items are masked on screen." : "Mask off.");

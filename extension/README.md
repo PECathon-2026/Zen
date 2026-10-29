@@ -2,6 +2,39 @@
 
 Zen in your own browser. It finds sensitive data on the pages you visit, can mask it on screen, and checks what you paste or send into AI chat sites. All detection runs inside the extension. The optional local Zen server (`http://localhost:8765`) is used only for screenshot OCR.
 
+## Agent Shield (the point of the extension)
+
+When an AI agent drives the browser (Claude in Chrome, Antigravity, Playwright/CDP scripts), it sees the page through
+**screenshots** and **DOM reads** (page text, accessibility tree, input values). Agent Shield makes both show
+`[REDACTED:KIND]` instead of sensitive data, on the page itself, so it works for any agent without integrating with it.
+
+| What the agent uses | What Shield does |
+|---|---|
+| Screenshot (`Captures composited pixels`) | Opaque black blocks with the kind label over every sensitive field and text span. Painted synchronously on scroll and layout shifts. No blur, no focus exemption: focusing a field does not drop its cover. |
+| Page text / accessibility tree | Sensitive text nodes are rewritten to `[REDACTED:KIND]` (originals kept only in page memory, restored when the shield drops). |
+| Input values (`el.value`, form reads) | Pre-filled / autofilled sensitive values, including hidden CSRF fields, are swapped for the placeholder. Typing into one starts from empty. Real values are restored for the instant of a submit, click or Enter so the page still works, then masked again. |
+| Page load | With an automation signal present the page stays blank until the first scan has put covers up (max 1.5 s). |
+| New content | Rescan every 40 ms while the shield is up; median 3 ms from insertion to redacted in the benchmark. |
+
+**Turning on:** `Auto` (default) switches on when `navigator.webdriver` is true (Playwright, Puppeteer, many agent browsers)
+or when the service worker sees a debugger client attached to the tab (`chrome.debugger.getTargets()`, the `debugger`
+permission; the extension never attaches, so no infobar). `Always on` is the fail-closed choice for agents that hide both
+signals. Opening DevTools also counts as a debugger client.
+
+**Measured** (`python -m eval.shield_eval`, real Chromium with this extension, 5 synthetic scenario pages, 34 sensitive
+items; screenshots taken with `page.screenshot()` like a CDP agent, read back with local OCR):
+
+- Baseline, shield off: OCR reads 21 of the values (so a zero below is meaningful).
+- Shield on: **0** values readable by OCR, **0** in `innerText`, **0** in `input.value`.
+- Non-sensitive text still readable (context kept): 100%. Form-field cover: 87% mean pixel coverage, every field above 85%.
+- Focusing a field keeps it covered (95%). Insert-to-redacted latency: median 3 ms, max 4.5 ms.
+- These claims cover the tested pages and these two channels (screenshot, DOM read) only.
+
+**Known gaps:** canvas, images, video and cross-origin iframes with no content script access are not read (faces in video
+tiles are only flagged by structure); closed shadow DOM text is not scanned; an agent that runs JavaScript in the page's
+*main world* can read the page's own variables (we protect what the DOM shows, not what the app's scripts hold);
+detection is regex/structure based (see Limitations below).
+
 ## Install
 
 1. Open `chrome://extensions`.
@@ -32,11 +65,12 @@ Optional: start the local server (`.venv/bin/python -m app.server`). The popup's
 |---|---|
 | `activeTab` | `captureVisibleTab` for screenshot redaction, and injecting the scripts into tabs opened before install. Granted only when you click the icon or the context menu. |
 | `storage` | Settings in `chrome.storage.sync`. Only configuration is stored, never detected values. |
+| `debugger` | Read-only: `chrome.debugger.getTargets()` tells the shield whether an agent is attached to a tab. We never call `attach`. |
 | `scripting` | Injects the content scripts on demand (see `activeTab`). |
 | `sidePanel` | The Privacy preview panel. |
 | `contextMenus` | "Redact selection & copy". |
 | host `http://localhost:8765/*`, `http://127.0.0.1:8765/*` | The optional local Zen server, and nothing else. The extension CSP also sets `connect-src` to these two origins. |
-| content scripts on `<all_urls>` | Sensitive data can be on any page (banking, HR, cloud consoles), and the paste guard has to be in place *before* you paste. That is why the scripts load on every page instead of on request. They do no network I/O. Use the deny list, or allow-list mode, to limit where they run. |
+| content scripts on `<all_urls>`, all frames, `document_start` | The shield must be up before first paint and inside iframes (payment forms). Sensitive data can be on any page (banking, HR, cloud consoles), and the paste guard has to be in place *before* you paste. That is why the scripts load on every page instead of on request. They do no network I/O. Use the deny list, or allow-list mode, to limit where they run. |
 
 ## Privacy guarantees
 

@@ -18,7 +18,16 @@
     <ul id="kinds"></ul>
     <p id="guard" class="muted" hidden>Paste/submit guard is active on this AI site.</p>
   </section>
-  <label class="toggle"><input type="checkbox" id="mask"> <span>Mask on screen</span></label>
+  <section id="shield" class="shield">
+    <div class="shield-head"><strong>Agent Shield</strong><span class="pill" id="shield-state">off</span></div>
+    <p class="muted" id="shield-note">When an AI agent controls this tab, every screenshot and page read shows [REDACTED] instead of sensitive data.</p>
+    <select id="shield-mode" aria-label="Agent Shield mode">
+      <option value="auto">Auto: when an agent is detected</option>
+      <option value="on">Always on (fail closed)</option>
+      <option value="off">Off</option>
+    </select>
+  </section>
+  <label class="toggle"><input type="checkbox" id="mask"> <span>Mask on screen (for you)</span></label>
   <div class="actions">
     <button id="copy">Copy sanitized page text</button>
     <button id="preview" class="p">Privacy preview</button>
