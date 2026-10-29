@@ -229,8 +229,8 @@ def copy_guard(p, base):
                     pg.click("#cc-number")
                 else:
                     pg.click("h1")
-                pg.keyboard.press("Control+A")
-                pg.keyboard.press("Control+C")
+                pg.keyboard.press("ControlOrMeta+A")
+                pg.keyboard.press("ControlOrMeta+C")
                 clip = pg.evaluate("navigator.clipboard.readText()")
                 leaks += [v for v in ("4111", "meera.synthetic", "Meera Iyer", "Gulmohar", "737") if v in clip]
             out[label] = sorted(set(leaks))
@@ -255,9 +255,6 @@ def run():
                         report["latency"] = latency(ctx, base)
                         report["scroll"] = scroll_reload(ctx, base)
                         report["adversarial"] = adversarial(ctx, base)
-                        ctx.close()
-                        report["copy"] = copy_guard(p, base)
-                        continue
                         pg = ctx.new_page()
                         pg.goto(f"{base}/checkout.html", wait_until="load"); pg.wait_for_timeout(600)
                         pg.focus("#cc-number")  # an agent clicking the field must not drop the cover
@@ -265,6 +262,7 @@ def run():
                         rect = pg.evaluate("(() => { const r = document.getElementById('cc-number').getBoundingClientRect(); return {x: r.x, y: r.y, width: r.width, height: r.height}; })()")
                         report["focus"] = round(_cover_fraction(pg.screenshot(), rect), 3)
                     ctx.close()
+            report["copy"] = copy_guard(p, base)
     finally:
         srv.shutdown()
     return report

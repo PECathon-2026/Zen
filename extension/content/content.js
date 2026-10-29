@@ -448,8 +448,10 @@
   }
   function pageText() { return document.body ? document.body.innerText || "" : ""; }
   /** Page text spans: structurally flagged leaf text (e.g. .shipping-address) first, then text rules. */
-  function sanitizePage() {
-    const text = pageText(), spans = [];
+  function sanitizePage() { return sanitizeText(pageText()); }
+  /** Spans for structurally flagged leaf text (e.g. .shipping-address) first, then the text rules, over any string. */
+  function sanitizeText(text) {
+    const spans = [];
     for (const f of state.findings) {
       if (!f.el || f.field) continue;
       const v = (f.el.innerText || "").trim();
@@ -558,8 +560,8 @@
     const { text, field } = selectedText();
     if (!text || !touchesProtected(field)) return;
     let out;
-    if (field) { const fnd = state.findings.find((f) => f.el === field); out = fnd ? `[REDACTED:${fnd.kind}]` : Z.redactAll(text, state.customRules).text; }
-    else out = Z.redactAll(text, state.customRules).text;
+    if (field) { const fnd = state.findings.find((f) => f.el === field); out = fnd ? `[REDACTED:${fnd.kind}]` : sanitizeText(text).after; }
+    else out = sanitizeText(text).after;
     // a covered element with no detectable text (image, field label) still must not leak: placeholder for the whole selection
     if (out === text) out = "[REDACTED]";
     e.preventDefault(); e.stopImmediatePropagation();
