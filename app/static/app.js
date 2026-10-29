@@ -499,10 +499,14 @@ function applyTheme(t) {
 }
 mq.addEventListener('change', () => { if (store.get('theme', 'system') === 'system') applyTheme('system'); });
 $$('input[name=theme]').forEach(r => r.addEventListener('change', () => { store.set('theme', r.value); applyTheme(r.value); }));
-$('#theme-toggle').onclick = () => {
-  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-  store.set('theme', next); applyTheme(next);
-  $$('input[name=theme]').forEach(r => { r.checked = r.value === next; });
+$('#theme-toggle').onclick = e => {
+  const btn = e.currentTarget, next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  btn.classList.add('switching');
+  setTimeout(() => {
+    store.set('theme', next); applyTheme(next);
+    $$('input[name=theme]').forEach(r => { r.checked = r.value === next; });
+    btn.classList.remove('switching');
+  }, 150);
 };
 
 function renderRules() {
