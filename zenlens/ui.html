@@ -2,24 +2,34 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ZenLens</title>
 <style>
-:root{--bg:#f7f7f5;--fg:#1b1b1a;--mut:#6b6b66;--card:#fff;--bd:#e2e2dc;--ok:#1a7f4b;--bad:#b3261e;--acc:#2f5bea}
-@media (prefers-color-scheme:dark){:root{--bg:#161615;--fg:#ecece8;--mut:#9a9a93;--card:#202020;--bd:#33332f;--ok:#4cc38a;--bad:#ff6b61;--acc:#7b9bff}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
-main{max-width:980px;margin:0 auto;padding:24px 16px 64px}
-h1{font-size:22px;margin:0 0 4px}p.sub{color:var(--mut);margin:0 0 20px}
-section{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:16px}
-h2{font-size:15px;margin:0 0 10px}
-select,button{font:inherit;padding:7px 12px;border-radius:7px;border:1px solid var(--bd);background:var(--card);color:var(--fg)}
-button{background:var(--acc);color:#fff;border-color:var(--acc);cursor:pointer}button:disabled{opacity:.5}
-button.alt{background:var(--card);color:var(--fg);border-color:var(--bd)}
-table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd);vertical-align:top;word-break:break-all}
-th{color:var(--mut);font-weight:500}.local{color:var(--bad)}.model{color:var(--ok)}
-pre{background:var(--bg);border:1px solid var(--bd);border-radius:7px;padding:10px;overflow:auto;font-size:12.5px;max-height:240px;margin:8px 0 0}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
-.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12.5px;border:1px solid var(--bd)}
-.pill.ok{color:var(--ok);border-color:var(--ok)}.pill.bad{color:var(--bad);border-color:var(--bad)}
-input[type=text]{font:inherit;padding:7px 10px;border-radius:7px;border:1px solid var(--bd);background:var(--card);color:var(--fg);flex:1;min-width:240px}
-.note{color:var(--mut);font-size:13px}
+/* Warm Civic Minimal (from Code-Flux docs/stitch/DESIGN.md). System fonts: a privacy tool should not call out to a font CDN. */
+:root{color-scheme:light;--bg:#fbf9f5;--card:#fff;--fg:#18181b;--body:#52525b;--mut:#71717a;--bd:#ede8de;--stone:#e7e2d7;
+ --pri:#b8431e;--pri-h:#9e391b;--pri-a:#873016;--ok:#1e6b3a;--ok-bg:#e6f4ea;--bad:#93000a;--bad-bg:#ffdad6;--pend:#f4ede4;
+ --shadow:0 8px 24px -4px rgba(40,25,20,.06),0 2px 6px -2px rgba(40,25,20,.04)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--body);font:15px/1.6 "Plus Jakarta Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1200px;margin:0 auto;padding:32px 20px 80px}
+h1{font-size:36px;line-height:44px;letter-spacing:-.02em;font-weight:700;color:var(--fg);margin:0 0 6px}
+p.sub{color:var(--mut);margin:0 0 32px;font-size:15px}
+section{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:24px;margin-bottom:24px;transition:transform .15s,box-shadow .15s}
+section:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+h2{font-size:18px;line-height:24px;letter-spacing:-.01em;font-weight:600;color:var(--fg);margin:0 0 16px}
+select,input[type=text]{font:inherit;color:var(--fg);background:#fff;border:1px solid var(--stone);border-radius:10px;padding:10px 14px}
+select:focus,input[type=text]:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+input[type=text]{flex:1;min-width:240px}input[type=text]::placeholder{color:#a1a1aa}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--pri);vertical-align:-3px;margin-right:4px}
+button{font:inherit;font-weight:600;color:#fff;background:var(--pri);border:1px solid var(--pri);border-radius:9999px;padding:10px 24px;cursor:pointer;transition:background .15s}
+button:hover{background:var(--pri-h)}button:active{background:var(--pri-a)}button:disabled{opacity:.5;cursor:default}
+button.alt{background:#fff;color:var(--fg);border-color:var(--stone)}button.alt:hover{background:#f7f5f0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--bd);vertical-align:top;word-break:break-all}
+th{color:var(--mut);font-weight:600;font-size:12px;letter-spacing:.02em;text-transform:uppercase}
+.local{color:var(--bad);font-weight:500}.model{color:var(--ok);font-weight:500}
+pre{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:14px;overflow:auto;font-size:12.5px;max-height:260px;margin:10px 0 0;color:var(--fg)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.pill{display:inline-block;padding:2px 12px;border-radius:9999px;font-size:12px;font-weight:600;letter-spacing:.02em;background:var(--pend);color:var(--fg)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.note{color:var(--mut);font-size:13px}summary{cursor:pointer;margin-top:12px}
 </style></head><body><main>
 <h1>ZenLens</h1>
 <p class="sub">An AI agent drives the page. Sensitive values stay on this machine. All data here is synthetic.</p>
