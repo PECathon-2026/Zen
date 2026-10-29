@@ -1,0 +1,124 @@
+{"canaries": [], "id": "checkout-001", "scenario": "checkout", "tags": ["positive"], "text": "Pay with card 4478 3594 3263 6707, expiry 08/29", "truth": [["4478 3594 3263 6707", "CARD"]]}
+{"canaries": [], "id": "checkout-002", "scenario": "checkout", "tags": ["format_variant", "positive"], "text": "Card number: 4984-0140-8036-5664", "truth": [["4984-0140-8036-5664", "CARD"]]}
+{"canaries": [], "id": "checkout-003", "scenario": "checkout", "tags": ["format_variant", "positive"], "text": "cc=4648719316801005&amount=4999", "truth": [["4648719316801005", "CARD"]]}
+{"canaries": [], "id": "checkout-004", "scenario": "checkout", "tags": ["positive"], "text": "Mastercard 5985 8271 9806 0695 saved for next time", "truth": [["5985 8271 9806 0695", "CARD"]]}
+{"canaries": [], "id": "checkout-005", "scenario": "checkout", "tags": ["format_variant", "positive"], "text": "Amex 3786 780728 05291 CVV on file", "truth": [["3786 780728 05291", "CARD"]]}
+{"canaries": [], "id": "checkout-006", "scenario": "checkout", "tags": ["format_variant", "positive"], "text": "AMEX:344413840925119", "truth": [["344413840925119", "CARD"]]}
+{"canaries": [], "id": "checkout-007", "scenario": "checkout", "tags": ["positive"], "text": "RuPay card 6063 1642 7658 1555 linked", "truth": [["6063 1642 7658 1555", "CARD"]]}
+{"canaries": [], "id": "checkout-008", "scenario": "checkout", "tags": ["positive"], "text": "Pay with card 4307 9170 9288 7659, receipt to buyer.lui3@example.com", "truth": [["4307 9170 9288 7659", "CARD"], ["buyer.lui3@example.com", "EMAIL"]]}
+{"canaries": [], "id": "checkout-009", "scenario": "checkout", "tags": ["format_variant", "positive"], "text": "Bill to riya+orders@mail.example.co.in, card ending 4251", "truth": [["riya+orders@mail.example.co.in", "EMAIL"]]}
+{"canaries": [], "id": "checkout-010", "scenario": "checkout", "tags": ["hard_negative", "order_id"], "text": "Order #7012345678 total 4999 INR", "truth": []}
+{"canaries": [], "id": "checkout-011", "scenario": "checkout", "tags": ["hard_negative"], "text": "Order total 4999 INR, ref 1234567", "truth": []}
+{"canaries": [], "id": "checkout-012", "scenario": "checkout", "tags": ["hard_negative"], "text": "Price: Rs 1,49,999.00 incl. GST (18%)", "truth": []}
+{"canaries": [], "id": "checkout-013", "scenario": "checkout", "tags": ["hard_negative", "luhn_invalid"], "text": "Gift voucher 4280 2205 5394 9825 (not a card)", "truth": []}
+{"canaries": [], "id": "checkout-014", "scenario": "checkout", "tags": ["hard_negative", "luhn_invalid"], "text": "Tracking no 4893852032620608", "truth": []}
+{"canaries": [], "id": "checkout-015", "scenario": "checkout", "tags": ["hard_negative"], "text": "Invoice INV-2026-000123 dated 2026-01-05 14:32:07", "truth": []}
+{"canaries": [], "id": "checkout-016", "scenario": "checkout", "tags": ["hard_negative", "pan_like"], "text": "Coupon code ERROR4040X applied", "truth": []}
+{"canaries": [], "id": "checkout-017", "scenario": "checkout", "tags": ["hard_negative", "pan_like"], "text": "Model MODEL2025S in stock: 12 units", "truth": []}
+{"canaries": [], "id": "checkout-018", "scenario": "checkout", "tags": ["positive"], "text": "Card 4610 9221 0275 3968 (GST no 29ABCDE1234F1Z5)", "truth": [["4610 9221 0275 3968", "CARD"]]}
+{"canaries": ["ZLCANARY-13T7PGU7G5"], "id": "checkout-019", "scenario": "checkout", "tags": ["canary", "positive"], "text": "Saved card 4404 6988 0199 6849 for user ZLCANARY-13T7PGU7G5", "truth": [["4404 6988 0199 6849", "CARD"]]}
+{"canaries": [], "id": "checkout-020", "scenario": "checkout", "tags": ["format_variant", "positive"], "text": "Card: 4516  3017  2129  6268", "truth": [["4516  3017  2129  6268", "CARD"]]}
+{"canaries": [], "id": "checkout-021", "scenario": "checkout", "tags": ["format_variant", "positive"], "text": "card no. 4210.1621.2543.0989", "truth": [["4210.1621.2543.0989", "CARD"]]}
+{"canaries": [], "id": "checkout-022", "scenario": "checkout", "tags": ["mixed_lang", "positive"], "text": "Mera card number 4444 7687 4558 6113 hai, payment kar do", "truth": [["4444 7687 4558 6113", "CARD"]]}
+{"canaries": [], "id": "checkout-023", "scenario": "checkout", "tags": ["mixed_lang", "positive"], "text": "कार्ड नंबर 4159 7959 7483 2202 से भुगतान करें", "truth": [["4159 7959 7483 2202", "CARD"]]}
+{"canaries": [], "id": "checkout-024", "scenario": "checkout", "tags": ["adversarial", "positive"], "text": "card: 4 5 4 9 6 6 0 5 8 9 7 3 9 0 3 7", "truth": [["4 5 4 9 6 6 0 5 8 9 7 3 9 0 3 7", "CARD"]]}
+{"canaries": [], "id": "checkout-025", "scenario": "checkout", "tags": ["hard_negative", "timestamp"], "text": "epoch_ms=1735689600127 cart updated", "truth": []}
+{"canaries": [], "id": "checkout-026", "scenario": "checkout", "tags": ["hard_negative", "timestamp"], "text": "epoch_ms=1735689600123 cart updated", "truth": []}
+{"canaries": [], "id": "auth-027", "scenario": "auth", "tags": ["positive"], "text": "Login: password: Hunter2!x and your OTP is 375759", "truth": [["Hunter2!x", "PASSWORD"], ["375759", "OTP"]]}
+{"canaries": [], "id": "auth-028", "scenario": "auth", "tags": ["positive"], "text": "KYC Aadhaar 9259 5053 1730 PAN BBBPG0924E", "truth": [["9259 5053 1730", "AADHAAR"], ["BBBPG0924E", "PAN"]]}
+{"canaries": [], "id": "auth-029", "scenario": "auth", "tags": ["format_variant", "positive"], "text": "Aadhaar: 4424-1656-0195", "truth": [["4424-1656-0195", "AADHAAR"]]}
+{"canaries": [], "id": "auth-030", "scenario": "auth", "tags": ["format_variant", "positive"], "text": "uid=689402524580", "truth": [["689402524580", "AADHAAR"]]}
+{"canaries": [], "id": "auth-031", "scenario": "auth", "tags": ["hard_negative", "verhoeff_invalid"], "text": "Application no 7024 9291 5370", "truth": []}
+{"canaries": [], "id": "auth-032", "scenario": "auth", "tags": ["hard_negative", "verhoeff_invalid"], "text": "Ref 319575813653 generated", "truth": []}
+{"canaries": [], "id": "auth-033", "scenario": "auth", "tags": ["positive"], "text": "pan_number=NCAPN4787O", "truth": [["NCAPN4787O", "PAN"]]}
+{"canaries": [], "id": "auth-034", "scenario": "auth", "tags": ["adversarial", "positive"], "text": "PAN card: blnpe7692i", "truth": [["blnpe7692i", "PAN"]]}
+{"canaries": [], "id": "auth-035", "scenario": "auth", "tags": ["format_variant", "positive"], "text": "pwd=S3cure#c00li", "truth": [["S3cure#c00li", "PASSWORD"]]}
+{"canaries": [], "id": "auth-036", "scenario": "auth", "tags": ["format_variant", "positive"], "text": "Password = Tr0ub4dor&NpL", "truth": [["Tr0ub4dor&NpL", "PASSWORD"]]}
+{"canaries": [], "id": "auth-037", "scenario": "auth", "tags": ["positive"], "text": "my password is Monsoon@4187", "truth": [["Monsoon@4187", "PASSWORD"]]}
+{"canaries": [], "id": "auth-038", "scenario": "auth", "tags": ["mixed_lang", "positive"], "text": "mera password hai Chai@2018, kisi ko mat batana", "truth": [["Chai@2018", "PASSWORD"]]}
+{"canaries": [], "id": "auth-039", "scenario": "auth", "tags": ["mixed_lang", "positive"], "text": "पासवर्ड: Diwali#268", "truth": [["Diwali#268", "PASSWORD"]]}
+{"canaries": [], "id": "auth-040", "scenario": "auth", "tags": ["hard_negative"], "text": "Forgot password? Reset it from the login page", "truth": []}
+{"canaries": [], "id": "auth-041", "scenario": "auth", "tags": ["hard_negative", "masked"], "text": "password: ********", "truth": []}
+{"canaries": [], "id": "auth-042", "scenario": "auth", "tags": ["positive"], "text": "Your verification code: 237035", "truth": [["237035", "OTP"]]}
+{"canaries": [], "id": "auth-043", "scenario": "auth", "tags": ["format_variant", "positive"], "text": "OTP 4399 valid for 5 min", "truth": [["4399", "OTP"]]}
+{"canaries": [], "id": "auth-044", "scenario": "auth", "tags": ["positive"], "text": "Use one-time password 839424 to sign in", "truth": [["839424", "OTP"]]}
+{"canaries": [], "id": "auth-045", "scenario": "auth", "tags": ["mixed_lang", "positive"], "text": "aapka OTP 396037 hai, kisi ko share na karein", "truth": [["396037", "OTP"]]}
+{"canaries": [], "id": "auth-046", "scenario": "auth", "tags": ["mixed_lang", "positive"], "text": "आपका OTP 949405 है", "truth": [["949405", "OTP"]]}
+{"canaries": [], "id": "auth-047", "scenario": "auth", "tags": ["positive"], "text": "Your login code is 880549", "truth": [["880549", "OTP"]]}
+{"canaries": [], "id": "auth-048", "scenario": "auth", "tags": ["hard_negative", "otp_like"], "text": "OTP valid for 1800 seconds", "truth": []}
+{"canaries": [], "id": "auth-049", "scenario": "auth", "tags": ["hard_negative"], "text": "OTP sent at 10:45, expires in 10 minutes", "truth": []}
+{"canaries": [], "id": "auth-050", "scenario": "auth", "tags": ["format_variant", "positive"], "text": "Username Admin.User@corp.example.org", "truth": [["Admin.User@corp.example.org", "EMAIL"]]}
+{"canaries": [], "id": "auth-051", "scenario": "auth", "tags": ["format_variant", "positive"], "text": "login as a_b-c.d@sub-domain.example.io", "truth": [["a_b-c.d@sub-domain.example.io", "EMAIL"]]}
+{"canaries": ["ZLCANARY-8M6NB16VIU"], "id": "auth-052", "scenario": "auth", "tags": ["canary", "positive"], "text": "session ZLCANARY-8M6NB16VIU password: Pa55w0rd!SYT", "truth": [["Pa55w0rd!SYT", "PASSWORD"]]}
+{"canaries": [], "id": "auth-053", "scenario": "auth", "tags": ["adversarial", "positive"], "text": "OTP: 4 4 6 5 9 9", "truth": [["4 4 6 5 9 9", "OTP"]]}
+{"canaries": [], "id": "support-054", "scenario": "support", "tags": ["positive"], "text": "Call me on +91 7683993248 about ticket 5521", "truth": [["+91 7683993248", "PHONE"]]}
+{"canaries": [], "id": "support-055", "scenario": "support", "tags": ["format_variant", "positive"], "text": "My number is 8789826516", "truth": [["8789826516", "PHONE"]]}
+{"canaries": [], "id": "support-056", "scenario": "support", "tags": ["format_variant", "positive"], "text": "WhatsApp +918347600057", "truth": [["+918347600057", "PHONE"]]}
+{"canaries": [], "id": "support-057", "scenario": "support", "tags": ["format_variant", "positive"], "text": "Reach me at +91-7805294488", "truth": [["+91-7805294488", "PHONE"]]}
+{"canaries": [], "id": "support-058", "scenario": "support", "tags": ["format_variant", "positive"], "text": "landline-style 08274301878", "truth": [["08274301878", "PHONE"]]}
+{"canaries": [], "id": "support-059", "scenario": "support", "tags": ["format_variant", "positive"], "text": "call 95797 90953 after 6pm", "truth": [["95797 90953", "PHONE"]]}
+{"canaries": [], "id": "support-060", "scenario": "support", "tags": ["format_variant", "positive"], "text": "Phone: +91 79329 01524", "truth": [["+91 79329 01524", "PHONE"]]}
+{"canaries": [], "id": "support-061", "scenario": "support", "tags": ["format_variant", "positive"], "text": "tel: 918011470492", "truth": [["918011470492", "PHONE"]]}
+{"canaries": [], "id": "support-062", "scenario": "support", "tags": ["mixed_lang", "positive"], "text": "mera number 7892594265 hai", "truth": [["7892594265", "PHONE"]]}
+{"canaries": [], "id": "support-063", "scenario": "support", "tags": ["mixed_lang", "positive"], "text": "bhai 9207019706 pe call karo jaldi", "truth": [["9207019706", "PHONE"]]}
+{"canaries": [], "id": "support-064", "scenario": "support", "tags": ["mixed_lang", "positive"], "text": "मेरा नंबर 8268588401 है", "truth": [["8268588401", "PHONE"]]}
+{"canaries": [], "id": "support-065", "scenario": "support", "tags": ["mixed_lang", "positive"], "text": "मोबाइल:8095832233", "truth": [["8095832233", "PHONE"]]}
+{"canaries": [], "id": "support-066", "scenario": "support", "tags": ["positive"], "text": "Customer help.jj2@support.example.com called from +91 6785996213", "truth": [["help.jj2@support.example.com", "EMAIL"], ["+91 6785996213", "PHONE"]]}
+{"canaries": [], "id": "support-067", "scenario": "support", "tags": ["hard_negative"], "text": "Ticket 998877 resolved on 2026-01-05", "truth": []}
+{"canaries": [], "id": "support-068", "scenario": "support", "tags": ["hard_negative", "order_id"], "text": "Your ticket ID is 8123456789, keep it for reference", "truth": []}
+{"canaries": [], "id": "support-069", "scenario": "support", "tags": ["hard_negative"], "text": "Refund of Rs 2,499 processed; ETA 5-7 business days", "truth": []}
+{"canaries": [], "id": "support-070", "scenario": "support", "tags": ["hard_negative", "timestamp"], "text": "Logged at 2026-01-05T09:15:22+05:30 by agent 42", "truth": []}
+{"canaries": ["ZLCANARY-ATY8PJ6XCR"], "id": "support-071", "scenario": "support", "tags": ["canary", "positive"], "text": "note ZLCANARY-ATY8PJ6XCR: callback +91 6567521697", "truth": [["+91 6567521697", "PHONE"]]}
+{"canaries": [], "id": "support-072", "scenario": "support", "tags": ["adversarial", "positive"], "text": "call 8 3 2 1 2 8 1 2 4 6", "truth": [["8 3 2 1 2 8 1 2 4 6", "PHONE"]]}
+{"canaries": [], "id": "support-073", "scenario": "support", "tags": ["adversarial", "mixed_lang", "positive"], "text": "नंबर ६२७०६१९७८७", "truth": [["६२७०६१९७८७", "PHONE"]]}
+{"canaries": [], "id": "support-074", "scenario": "support", "tags": ["adversarial", "positive"], "text": "number is 955.341.7771", "truth": [["955.341.7771", "PHONE"]]}
+{"canaries": [], "id": "support-075", "scenario": "support", "tags": ["adversarial", "positive"], "text": "email me: anu at example dot com", "truth": [["anu at example dot com", "EMAIL"]]}
+{"canaries": [], "id": "support-076", "scenario": "support", "tags": ["adversarial", "positive"], "text": "write to ravi[at]example[dot]in", "truth": [["ravi[at]example[dot]in", "EMAIL"]]}
+{"canaries": [], "id": "support-077", "scenario": "support", "tags": ["mixed_lang", "positive"], "text": "mujhe priya.s@example.in pe mail karo", "truth": [["priya.s@example.in", "EMAIL"]]}
+{"canaries": [], "id": "support-078", "scenario": "support", "tags": ["format_variant", "positive"], "text": "Write to dev+support@example.com.", "truth": [["dev+support@example.com", "EMAIL"]]}
+{"canaries": [], "id": "video-079", "scenario": "video", "tags": ["positive"], "text": "Participants: Ravi (ravi.k@corp.in), 12 online", "truth": [["ravi.k@corp.in", "EMAIL"]]}
+{"canaries": [], "id": "video-080", "scenario": "video", "tags": ["positive"], "text": "Invitees: meera.n@team.example.com; arjun@example.org", "truth": [["meera.n@team.example.com", "EMAIL"], ["arjun@example.org", "EMAIL"]]}
+{"canaries": [], "id": "video-081", "scenario": "video", "tags": ["hard_negative", "meeting_id"], "text": "Meeting ID 845 2210 9934, passcode shared in chat", "truth": []}
+{"canaries": [], "id": "video-082", "scenario": "video", "tags": ["hard_negative", "timestamp"], "text": "Recording 00:42:17 of 01:05:00, 1080p, 30fps", "truth": []}
+{"canaries": [], "id": "video-083", "scenario": "video", "tags": ["hard_negative"], "text": "Room 6 has 9 participants; bitrate 2500 kbps", "truth": []}
+{"canaries": [], "id": "video-084", "scenario": "video", "tags": ["positive"], "text": "Dial-in: +91 8851555993", "truth": [["+91 8851555993", "PHONE"]]}
+{"canaries": [], "id": "video-085", "scenario": "video", "tags": ["mixed_lang", "positive"], "text": "neha (neha@example.com) ne screen share kiya", "truth": [["neha@example.com", "EMAIL"]]}
+{"canaries": ["ZLCANARY-E265N7IUNH"], "id": "video-086", "scenario": "video", "tags": ["canary", "positive"], "text": "Host host@example.com meeting token ZLCANARY-E265N7IUNH", "truth": [["host@example.com", "EMAIL"]]}
+{"canaries": [], "id": "video-087", "scenario": "video", "tags": ["hard_negative", "uuid"], "text": "Session 550e8400-e29b-41d4-a716-446655440000 started", "truth": []}
+{"canaries": [], "id": "video-088", "scenario": "video", "tags": ["hard_negative"], "text": "Join at meet.example.com/abc-defg-hij", "truth": []}
+{"canaries": [], "id": "video-089", "scenario": "video", "tags": ["mixed_lang", "positive"], "text": "chat: mera whatsapp 8781619283 hai, wahan bhej do", "truth": [["8781619283", "PHONE"]]}
+{"canaries": [], "id": "video-090", "scenario": "video", "tags": ["positive"], "text": "Screen share shows inbox of s.iyer@example.net (3 unread)", "truth": [["s.iyer@example.net", "EMAIL"]]}
+{"canaries": [], "id": "video-091", "scenario": "video", "tags": ["positive"], "text": "Popup over shared screen: Your OTP is 989726", "truth": [["989726", "OTP"]]}
+{"canaries": [], "id": "video-092", "scenario": "video", "tags": ["positive"], "text": "Shared tab visible: card 4537 7500 4409 5598 on billing page", "truth": [["4537 7500 4409 5598", "CARD"]]}
+{"canaries": [], "id": "video-093", "scenario": "video", "tags": ["hard_negative", "timestamp"], "text": "Webinar 2026-03-14 at 18:30 IST, 250 seats, ID 98765", "truth": []}
+{"canaries": [], "id": "video-094", "scenario": "video", "tags": ["hard_negative"], "text": "Breakout room 7, timer 15:00, 4 of 6 joined", "truth": []}
+{"canaries": [], "id": "video-095", "scenario": "video", "tags": ["known_gap", "ner", "positive"], "text": "Participant Ananya Rao joined from Pune", "truth": [["Ananya Rao", "NAME"]]}
+{"canaries": [], "id": "video-096", "scenario": "video", "tags": ["adversarial", "positive"], "text": "cohost Kiran​@example.com", "truth": [["Kiran​@example.com", "EMAIL"]]}
+{"canaries": [], "id": "devsettings-097", "scenario": "devsettings", "tags": ["positive"], "text": "OPENAI_KEY=sk-G3FTs95LizBlQnhh3ApoR6K8cvxYV1Vv AWS=AKIAIP4E70KVBXO4THUS", "truth": [["sk-G3FTs95LizBlQnhh3ApoR6K8cvxYV1Vv", "API_KEY"], ["AKIAIP4E70KVBXO4THUS", "API_KEY"]]}
+{"canaries": [], "id": "devsettings-098", "scenario": "devsettings", "tags": ["positive"], "text": "GITHUB_TOKEN=ghp_K3Blps3AVzCPoAQ0ottl5tsWoqvoGATgN1F6", "truth": [["ghp_K3Blps3AVzCPoAQ0ottl5tsWoqvoGATgN1F6", "API_KEY"]]}
+{"canaries": [], "id": "devsettings-099", "scenario": "devsettings", "tags": ["positive"], "text": "maps_key: AIzax5tPbJxdNTz98JJkoPSuS9B1A-C2k-0aGYQ", "truth": [["AIzax5tPbJxdNTz98JJkoPSuS9B1A-C2k-0aGYQ", "API_KEY"]]}
+{"canaries": [], "id": "devsettings-100", "scenario": "devsettings", "tags": ["format_variant", "positive"], "text": "export OPENAI_API_KEY='sk-proj-28cxVHbdHyhe83KeASSmlkIvInfrprh2VPUzg3JJ'", "truth": [["sk-proj-28cxVHbdHyhe83KeASSmlkIvInfrprh2VPUzg3JJ", "API_KEY"]]}
+{"canaries": [], "id": "devsettings-101", "scenario": "devsettings", "tags": ["positive"], "text": "SLACK_BOT_TOKEN=xoxb-616892570939-3004348295578-hK7oLvblMz464tKFKuF3wOOp", "truth": [["xoxb-616892570939-3004348295578-hK7oLvblMz464tKFKuF3wOOp", "API_KEY"]]}
+{"canaries": [], "id": "devsettings-102", "scenario": "devsettings", "tags": ["positive"], "text": "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.pU7WYwMTTldxbZSNQq5uNjBm8uPJyuxjPGfVL0Zg.DYvDie5o8mkwIgR5x7YFdbT3nHFdClknJOMQYfSmuvE", "truth": [["eyJhbGciOiJIUzI1NiJ9.pU7WYwMTTldxbZSNQq5uNjBm8uPJyuxjPGfVL0Zg.DYvDie5o8mkwIgR5x7YFdbT3nHFdClknJOMQYfSmuvE", "TOKEN"]]}
+{"canaries": [], "id": "devsettings-103", "scenario": "devsettings", "tags": ["positive"], "text": "aws_secret_access_key = TdtxnvmtlOh4NJDFNqlRu7SzeRLG3gBQTQnDSwPr", "truth": [["TdtxnvmtlOh4NJDFNqlRu7SzeRLG3gBQTQnDSwPr", "API_KEY"]]}
+{"canaries": [], "id": "devsettings-104", "scenario": "devsettings", "tags": ["positive"], "text": "DB_PASSWORD=pg_mGv6cCVZhLZt", "truth": [["pg_mGv6cCVZhLZt", "PASSWORD"]]}
+{"canaries": [], "id": "devsettings-105", "scenario": "devsettings", "tags": ["positive"], "text": "redis.password: r3dis!nUFPOX", "truth": [["r3dis!nUFPOX", "PASSWORD"]]}
+{"canaries": [], "id": "devsettings-106", "scenario": "devsettings", "tags": ["ip", "positive"], "text": "DB_HOST=10.24.3.17", "truth": [["10.24.3.17", "IP"]]}
+{"canaries": [], "id": "devsettings-107", "scenario": "devsettings", "tags": ["ip", "positive"], "text": "Allowed origin http://192.168.1.20:8080", "truth": [["192.168.1.20", "IP"]]}
+{"canaries": [], "id": "devsettings-108", "scenario": "devsettings", "tags": ["ip", "positive"], "text": "Last login from 203.0.113.45", "truth": [["203.0.113.45", "IP"]]}
+{"canaries": [], "id": "devsettings-109", "scenario": "devsettings", "tags": ["hard_negative", "version"], "text": "version 2.10.0.1 released; requires python>=3.11", "truth": []}
+{"canaries": [], "id": "devsettings-110", "scenario": "devsettings", "tags": ["hard_negative", "version"], "text": "Deployed v6.12.3 build 9876 on node-7", "truth": []}
+{"canaries": [], "id": "devsettings-111", "scenario": "devsettings", "tags": ["git_sha", "hard_negative"], "text": "commit 3f2a9c8e1b7d6a5f4e3d2c1b0a9f8e7d6c5b4a39 merged", "truth": []}
+{"canaries": [], "id": "devsettings-112", "scenario": "devsettings", "tags": ["hard_negative", "uuid"], "text": "request_id=550e8400-e29b-41d4-a716-446655440000", "truth": []}
+{"canaries": [], "id": "devsettings-113", "scenario": "devsettings", "tags": ["hard_negative", "key_like"], "text": "sk-short and AKIA123 are placeholders, not keys", "truth": []}
+{"canaries": [], "id": "devsettings-114", "scenario": "devsettings", "tags": ["config_number", "hard_negative"], "text": "PORT=8080 TIMEOUT_MS=30000 MAX_CONN=9999999999", "truth": []}
+{"canaries": [], "id": "devsettings-115", "scenario": "devsettings", "tags": ["hard_negative"], "text": "STRIPE_PUBLISHABLE=pk_test_placeholder", "truth": []}
+{"canaries": [], "id": "devsettings-116", "scenario": "devsettings", "tags": ["ip", "positive"], "text": "curl https://10.0.12.34/api/v1 from server 172.16.5.4.", "truth": [["10.0.12.34", "IP"], ["172.16.5.4", "IP"]]}
+{"canaries": [], "id": "devsettings-117", "scenario": "devsettings", "tags": ["ip", "positive"], "text": "IPv6 gateway fd00:1234:5678::25 and link 2001:db8::8a2e:370:7334", "truth": [["fd00:1234:5678::25", "IP"], ["2001:db8::8a2e:370:7334", "IP"]]}
+{"canaries": [], "id": "devsettings-118", "scenario": "devsettings", "tags": ["hard_negative", "ip"], "text": "Invalid 999.1.1.1 and 256.10.0.1; uptime 12:30:45; MAC aa:bb:cc:dd:ee:ff; std::vector", "truth": []}
+{"canaries": [], "id": "support-119", "scenario": "support", "tags": ["ip", "positive"], "text": "call +91 7399814026 or ping 8.8.8.8", "truth": [["+91 7399814026", "PHONE"], ["8.8.8.8", "IP"]]}
+{"canaries": [], "id": "checkout-120", "scenario": "checkout", "tags": ["hard_negative"], "text": "Order ORD-2026-118934 on 29 Oct 2026, SKU 88213409, total 1,499.00", "truth": []}
+{"canaries": [], "id": "video-121", "scenario": "video", "tags": ["hard_negative"], "text": "Meeting ID 845 2210 9931, duration 00:42:17, Room 4B", "truth": []}
+{"canaries": ["ZLCANARY-0E9CS232I8"], "id": "devsettings-122", "scenario": "devsettings", "tags": ["canary", "positive"], "text": "CI_SECRET=ZLCANARY-0E9CS232I8 TOKEN=ghp_ZCOKYoBMZIHNsja62NPlKg6qobx5LMafyzUg", "truth": [["ghp_ZCOKYoBMZIHNsja62NPlKg6qobx5LMafyzUg", "API_KEY"]]}
+{"canaries": [], "id": "devsettings-123", "scenario": "devsettings", "tags": ["mixed_lang", "positive"], "text": "key ye hai sk-YnrTNmRZ9ExRPDBm4lsNL2LpDPGiUXWr, kisi ko mat dena", "truth": [["sk-YnrTNmRZ9ExRPDBm4lsNL2LpDPGiUXWr", "API_KEY"]]}
+{"canaries": [], "id": "devsettings-124", "scenario": "devsettings", "tags": ["adversarial", "positive"], "text": "OPENAI_KEY=\"sk-5HCWJye5op0L6\" \"TjgerWGP7thISAFXiyn\"", "truth": [["sk-5HCWJye5op0L6", "API_KEY"]]}

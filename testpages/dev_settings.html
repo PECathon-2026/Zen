@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Developer settings (synthetic)</title></head>
+<body>
+<h1>Developer settings</h1>
+<p id="build-info">Console v2.14.3 &middot; Build 2026.10.29 &middot; Region ap-south-1 &middot; release 4.2.1</p>
+<table id="keys">
+  <tr><th>API key</th><td><code id="openai-key">sk-synthTESTkey0123456789abcdefABCDEF</code></td></tr>
+  <tr><th>GitHub</th><td><code id="gh-token">ghp_SyntheticTestToken000000000000000000</code></td></tr>
+</table>
+<form id="cloud-form">
+  <label for="aws-access-key">AWS access key ID</label>
+  <input id="aws-access-key" name="aws_access_key_id" value="AKIAZZTESTSYNTH00012">
+  <label for="webhook-secret">Webhook signing secret</label>
+  <input id="webhook-secret" name="webhook_secret" value="whsec_synthetic_9f8e7d6c5b4a">
+  <input id="csrf" type="hidden" name="csrf_token" value="c5rf-Synth-7f3a9b2e4d1c">
+</form>
+<pre id="curl-example">curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c3ludGhldGljc2ln' https://10.0.12.34/api/v1</pre>
+<table id="hosts">
+  <tr><th>DB host</th><td id="db-host">192.168.1.20</td><td>Port 5432</td></tr>
+  <tr><th>Cache host</th><td id="cache-host">172.16.5.4</td><td>Port 6379</td></tr>
+  <tr><th>IPv6 gateway</th><td id="ipv6-gw">fd00:1234:5678::25</td></tr>
+</table>
+<p id="rotation">Last rotated 29/10/2026 &middot; Next rotation in 90 days</p>
+</body></html>

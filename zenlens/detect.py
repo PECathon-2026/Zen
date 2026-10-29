@@ -1,4 +1,5 @@
 """Local PII detection: regex + checksum validators. Nothing here touches the network."""
+import ipaddress
 import re
 from dataclasses import dataclass
 
@@ -37,16 +38,32 @@ def luhn_ok(num: str) -> bool:
 def _digits(s): return re.sub(r"\D", "", s)
 
 
+def _ipv6_ok(s):
+    try:
+        ipaddress.IPv6Address(s)
+        return sum(1 for g in s.split(":") if g) >= 3  # skip short tokens like a::b, C++ scopes
+    except ValueError:
+        return False
+
+
 # (kind, regex, group, validator). Order = priority when spans overlap.
 _RULES = [
-    ("API_KEY", r"\b(?:sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|AIza[0-9A-Za-z_-]{35})\b", 0, None),
-    ("CARD", r"\b\d(?:[ -]?\d){12,18}\b", 0, lambda s: luhn_ok(_digits(s))),
+    ("API_KEY", r"\b(?:sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|AIza[0-9A-Za-z_-]{35}|xox[abprs]-[A-Za-z0-9-]{10,})\b", 0, None),
+    ("API_KEY", r"(?i)aws_secret_access_key\s*[:=]\s*([A-Za-z0-9/+]{40})(?![A-Za-z0-9/+])", 1, None),
+    ("TOKEN", r"\beyJ[\w-]{10,}\.[\w-]{10,}\.[\w-]{10,}", 0, None),
+    ("CARD", r"\b\d(?:[ .-]{0,2}\d){12,18}\b", 0, lambda s: luhn_ok(_digits(s))),
     ("AADHAAR", r"\b[2-9]\d{3}[ -]?\d{4}[ -]?\d{4}\b", 0, lambda s: verhoeff_ok(_digits(s))),
-    ("PAN", r"\b[A-Z]{5}\d{4}[A-Z]\b", 0, None),
+    # 4th letter = holder type (P person, C company, H HUF, F firm, A AOP, T trust, B BOI, L local, J AJP, G govt)
+    ("PAN", r"\b[A-Z]{3}[ABCFGHJLPT][A-Z]\d{4}[A-Z]\b", 0, None),
     ("EMAIL", r"\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b", 0, None),
-    ("PHONE", r"(?<![\w-])(?:\+91[ -]?)?[6-9]\d{9}\b", 0, None),
-    ("PASSWORD", r"(?i)\b(?:password|passwd|pwd)\s*[:=]\s*(?!\[REDACTED)(\S+)", 1, None),
-    ("OTP", r"(?i)\b(?:otp|verification code|one[- ]time (?:code|password))\D{0,20}?(\d{4,8})\b", 1, None),
+    # 5+5 splits, +91/91/0 prefixes; skip "#123..." / "ID is ..." and repeated-digit sentinels like 9999999999.
+    ("PHONE", r"(?<![\w#-])(?<!(?i:\bid) )(?<!(?i:\bid:) )(?<!(?i:\bid is) )(?:(?:\+?91|0)[ -]?)?[6-9]\d{4}[ -]?\d{5}\b", 0,
+     lambda s: len(set(_digits(s)[-10:])) > 2),
+    # IPv4: octets 0-255; not in a longer dotted run (1.2.3.4.5), not after v/version/release/build.
+    ("IP", r"(?<![\w.])(?<!(?i:\bversion) )(?<!(?i:\brelease) )(?<!(?i:\bbuild) )(?<!(?i:\bver) )(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?!\.?\d|\w)", 0, None),
+    ("IP", r"(?<![\w:.])(?=[0-9A-Fa-f:]*[0-9A-Fa-f]:[0-9A-Fa-f]*:)[0-9A-Fa-f:]{3,39}(?![\w:])", 0, _ipv6_ok),
+    ("PASSWORD", r"(?i)(?<![a-z])(?:password|passwd|pwd|पासवर्ड)\s*(?:[:=]|is\b|hai\b)\s*(?!\[REDACTED)(?!\*+(?:\s|$))(\S+?)[,;]?(?=\s|$)", 1, None),
+    ("OTP", r"(?i)\b(?:otp|verification code|one[- ]time (?:code|password)|login code|security code|code is)\D{0,20}?(\d{4,8})\b(?!\s*(?:seconds|secs?|minutes|mins?)\b)", 1, None),
 ]
 
 
@@ -57,7 +74,11 @@ class Span:
     kind: str
 
 
+_NATIVE_DIGITS = {0x0966 + i: str(i) for i in range(10)}  # Devanagari -> ASCII, same length so spans still map
+
+
 def detect(text: str) -> list[Span]:
+    text = text.translate(_NATIVE_DIGITS)
     spans: list[Span] = []
     for kind, pat, grp, ok in _RULES:
         for m in re.finditer(pat, text):

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Checkout - ZenShop (synthetic)</title>
+<style>body{font-family:sans-serif;max-width:640px;margin:2em auto}label{display:block;margin-top:.6em}</style></head>
+<body>
+<h1>Checkout</h1>
+<section id="order-summary">
+  <p>Order <span id="order-id">ORD-2026-118934</span> placed on <span id="order-date">29 Oct 2026</span></p>
+  <p>Wireless Mouse (SKU <span id="sku">88213409</span>) x 2 &mdash; <span id="price">&#8377;1,499.00</span></p>
+  <p>Contact: <span id="contact-email">meera.synthetic@example.com</span></p>
+</section>
+<form id="payment-form">
+  <label for="cc-name">Name on card</label>
+  <input id="cc-name" name="ccname" autocomplete="cc-name" value="Meera Iyer">
+  <label for="cc-number">Card number</label>
+  <input id="cc-number" name="cardnumber" autocomplete="cc-number" inputmode="numeric" value="4111 1111 1111 1111">
+  <label for="cc-exp">Expiry (MM/YY)</label>
+  <input id="cc-exp" name="exp" autocomplete="cc-exp" value="08/29">
+  <label for="f3">CVV / CVC</label>
+  <input id="f3" name="f3" inputmode="numeric" maxlength="4" value="737">
+  <label for="addr-line1">Street address</label>
+  <input id="addr-line1" name="address1" autocomplete="address-line1" value="42 Lakeview Road, Indiranagar">
+  <label for="postal">PIN code</label>
+  <input id="postal" name="postal" autocomplete="postal-code" value="560038">
+  <button id="pay" type="submit">Pay &#8377;2,998.00</button>
+</form>
+<aside>
+  <h2>Ships to</h2>
+  <p id="ship-address" class="shipping-address">17 Gulmohar Lane, Koramangala</p>
+  <p id="eta">Arrives by 03/11/2026. Coupon SAVE10 applied.</p>
+</aside>
+</body></html>
