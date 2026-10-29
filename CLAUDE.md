@@ -30,3 +30,8 @@ Stack: Python 3.14, pytest, Playwright (Chromium), Apple Vision / Tesseract OCR,
 - Every new detector gets a labelled case in `eval/make_cases.py` (then regenerate) and a test.
 - JS detector in `extension/lib/detect.js` must stay in parity with `zenlens/detect.py` (parity test).
 - Local test servers bind `localhost`, never `127.0.0.1` (IPs are detected and blocked by the gate).
+
+## Git
+- Two remotes: `origin` (ShadowIzzHerZ/ZenLens) and `pecathon` (PECathon-2026/Zen). `git push origin main` pushes to both (two push URLs on origin). Push both on every push.
+- No `Co-Authored-By` trailers in commits.
+- GitHub push protection blocks secret-shaped strings, even synthetic ones: keep test tokens non-vendor-shaped (e.g. `xoxb-SYNTHETIC-...`).

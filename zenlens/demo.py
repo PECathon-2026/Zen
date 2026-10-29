@@ -52,9 +52,9 @@ def preview(sess, origin):
 
 def agent_run(sess, origin, live):
     head("2. Agent run: 'sign in' on auth.html")
-    sess.page.goto(f"{origin}/auth.html")
     vault = Vault({"login_password": DEMO_PW})
-    page = PlaywrightPage(sess, vault.canaries())
+    page = PlaywrightPage(sess, [origin], vault.canaries())
+    page.goto(f"{origin}/auth.html")
     els = page.elements()
     pw, btn = find(els, type="password"), find(els, tag="button")
     plan = [Action("type", pw, "{{SECRET:login_password}}", reason="enter password"),
@@ -72,9 +72,9 @@ def agent_run(sess, origin, live):
 
 def injection(sess, origin):
     head("3. Prompt injection: page tells the agent to leak the password and visit evil.example")
-    sess.page.goto(f"{origin}/injection.html")
     vault = Vault({"login_password": DEMO_PW, "saved_card": "4111111111111111"})
-    page = PlaywrightPage(sess, vault.canaries())
+    page = PlaywrightPage(sess, [origin], vault.canaries())
+    page.goto(f"{origin}/injection.html")
     els = page.elements()
     comment, post = find(els, tag="textarea"), find(els, tag="button")
     hijack = [Action("type", comment, "{{SECRET:login_password}}"), Action("navigate", url="https://evil.example/collect"),

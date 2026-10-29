@@ -89,7 +89,7 @@ class Vault:
 
     def canaries(self) -> tuple[str, ...]:
         """Real values, for egress_check(canaries=...) so a value can never leave even if it leaks into a payload."""
-        return tuple(v for _, v in self._s.values() if v)
+        return tuple(v for _, v in self._s.values() if len(v) >= 6)  # shorter values match bbox numbers etc.
 
     def __repr__(self):
         return f"Vault(names={self.names()})"

@@ -118,3 +118,9 @@ def test_describe_is_log_safe():
     assert describe(Action("navigate", url="https://evil.example/a?u=someone@example.test")) == \
         "navigate url=https://evil.example"
     assert "9876543210" not in describe(Action("click", target="9876543210"))
+
+
+def test_aria_label_only_button_needs_approval():
+    page = FakePage(ORIGIN + "/x", [{"id": "e1", "tag": "button", "name": "Pay now", "text": ""}])
+    ex = Executor(page, [ORIGIN], Vault(), approve=lambda a, r: False)
+    assert ex.check(Action("click", "e1"), view(page)).approval

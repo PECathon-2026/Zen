@@ -120,7 +120,7 @@ class Executor:
             return Verdict(False, f"unknown target: {_safe(a.target)}")
         el = els[a.target]
         if a.type == "click":
-            label = f'{el.get("label") or ""} {el.get("text") or ""} {el.get("value") or ""}'
+            label = f'{el.get("label") or ""} {el.get("name") or ""} {el.get("text") or ""} {el.get("value") or ""}'
             if (el.get("type") or "").lower() == "submit" or IRREVERSIBLE.search(label):
                 return Verdict(True, approval=f"irreversible click on {a.target}")
             return Verdict(True)
