@@ -1,8 +1,12 @@
 """Planner side: the model sees only the sanitized view and returns one Action. Every outbound payload passes egress_check."""
+import ipaddress
 import json
+import os
 import re
+import urllib.request
 from dataclasses import asdict, dataclass
 from typing import Protocol
+from urllib.parse import urlsplit
 
 from .gate import egress_check
 
@@ -107,6 +111,68 @@ class ClaudeLLM:
         if getattr(resp, "stop_reason", None) == "refusal":
             return Action("ask_user", reason="model refused")
         text = next((b.text for b in resp.content if getattr(b, "type", None) == "text"), None)
+        try:
+            return Action.from_dict(json.loads(text))
+        except (TypeError, ValueError):
+            return Action("ask_user", reason="unparseable model output")
+
+
+DEFAULT_OLLAMA_MODEL = "llama3.2:3b"
+DEFAULT_OLLAMA_HOST = "http://127.0.0.1:11434"
+
+
+def _ollama_host(host: str | None = None) -> str:
+    """Ollama base URL. Must be loopback: this planner exists so nothing leaves the device (fail closed otherwise)."""
+    h = host or os.environ.get("OLLAMA_HOST") or DEFAULT_OLLAMA_HOST
+    if "://" not in h:
+        h = "http://" + h
+    name = urlsplit(h).hostname or ""
+    try:
+        local = ipaddress.ip_address(name).is_loopback
+    except ValueError:
+        local = name == "localhost"
+    if not local:
+        raise ValueError("Ollama host must be on this device (localhost / 127.0.0.1)")
+    return h.rstrip("/")
+
+
+def ollama_status(host: str | None = None, timeout: float = 0.5) -> dict:
+    """{"up": bool, "models": [names]}. Never raises; a missing or remote host reports up=False."""
+    try:
+        with urllib.request.urlopen(_ollama_host(host) + "/api/tags", timeout=timeout) as r:
+            return {"up": True, "models": [m["name"] for m in json.load(r).get("models", [])]}
+    except Exception:
+        return {"up": False, "models": []}
+
+
+def pick_ollama_model(models: list[str], want: str | None = None) -> str:
+    want = want or os.environ.get("ZENLENS_OLLAMA_MODEL") or DEFAULT_OLLAMA_MODEL
+    return want if want in models or not models else models[0]
+
+
+class OllamaLLM:
+    """Small on-device model via Ollama's /api/chat with a JSON-schema constrained reply.
+
+    Nothing leaves the machine (loopback host enforced). Payloads still go through egress_check: a local model
+    gets the same sanitized view as a remote one, so swapping planners never changes what the planner may see.
+    """
+
+    def __init__(self, model: str | None = None, host: str | None = None, canaries: tuple[str, ...] = (),
+                 pseudonymizer=None, timeout: float = 120, num_ctx: int = 8192):
+        self.host, self.timeout, self.canaries = _ollama_host(host), timeout, tuple(canaries)
+        self.model, self.pseudonymizer, self.num_ctx = model or pick_ollama_model([]), pseudonymizer, num_ctx
+
+    def next_action(self, goal, view, history):
+        canaries = self.canaries + (self.pseudonymizer.canaries() if self.pseudonymizer is not None else ())
+        system = egress_check(SYSTEM, canaries)
+        payload = egress_check(build_payload(goal, view, history), canaries)
+        body = json.dumps({"model": self.model, "stream": False, "format": ACTION_SCHEMA,
+                           "options": {"temperature": 0, "num_ctx": self.num_ctx},
+                           "messages": [{"role": "system", "content": system},
+                                        {"role": "user", "content": payload}]}).encode()
+        req = urllib.request.Request(self.host + "/api/chat", body, {"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            text = json.load(r).get("message", {}).get("content")
         try:
             return Action.from_dict(json.loads(text))
         except (TypeError, ValueError):

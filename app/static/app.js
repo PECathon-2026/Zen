@@ -126,8 +126,14 @@ function applyLocalOnly() {
   const r = $('#mode-claude');
   r.disabled = !claudeOk;
   if (!claudeOk && r.checked) $('input[name=mode][value=scripted]').checked = true;
-  $('#agent-claude-hint').textContent = lo ? 'Local-only mode is on: Claude mode is disabled, nothing leaves this device.'
-    : (INFO && !INFO.features.claude ? 'Claude mode needs the anthropic package and ANTHROPIC_API_KEY on the server.' : '');
+  const ol = $('#mode-ollama'), olOk = !!(INFO && INFO.features.ollama);
+  ol.disabled = !olOk;
+  if (!olOk && ol.checked) $('input[name=mode][value=scripted]').checked = true;
+  const hints = [];
+  if (lo) hints.push('Local-only mode is on: Claude is disabled, nothing leaves this device.');
+  else if (INFO && !INFO.features.claude) hints.push('Claude needs the anthropic package and ANTHROPIC_API_KEY on the server.');
+  if (!olOk) hints.push('On-device model needs Ollama running (ollama.com) with a model pulled, e.g. ollama pull llama3.2:3b.');
+  $('#agent-claude-hint').textContent = hints.join(' ');
   syncScriptBox();
 }
 
@@ -462,6 +468,7 @@ async function renderReport(r) {
   const bytes = eg.payloads.reduce((a, p) => a + new Blob([JSON.stringify(p)]).size, 0);
   $('#agent-egress-note').textContent = eg.sent_to_third_party
     ? `${eg.payloads.length} request${eg.payloads.length === 1 ? '' : 's'} (${(bytes / 1024).toFixed(1)} KB) sent to ${eg.destination}. Every one passed the egress gate; this is exactly what was sent.`
+    : eg.local_model ? `Nothing left this device: the on-device model (${eg.local_model}) ran locally. Below is exactly what it received (${eg.payloads.length} request${eg.payloads.length === 1 ? '' : 's'}, ${(bytes / 1024).toFixed(1)} KB), already sanitized and egress-checked.`
     : `Nothing left this device: the scripted planner runs locally. Below is exactly what Claude would have received (${eg.payloads.length} request${eg.payloads.length === 1 ? '' : 's'}, ${(bytes / 1024).toFixed(1)} KB), already sanitized and egress-checked.`;
   const box = $('#agent-egress'); box.replaceChildren();
   if (r.pseudonyms && r.pseudonyms.length) {
@@ -481,7 +488,7 @@ function renderSettings() {
   $('#set-server').textContent = location.origin;
   $('#set-lan').textContent = INFO ? (INFO.lan ? 'LAN (token required)' : 'This computer only') + (INFO.local_only ? ' · server local-only' : '') : 'offline';
   const f = INFO ? INFO.features : {};
-  $('#set-features').textContent = INFO ? `OCR ${f.ocr ? '✓' : '✗'} · Browser ${f.playwright ? '✓' : '✗'} · Claude ${f.claude ? '✓' : '✗'} · Agent ${INFO.runner ? '✓' : '✗'}` : '—';
+  $('#set-features').textContent = INFO ? `OCR ${f.ocr ? '✓' : '✗'} · Browser ${f.playwright ? '✓' : '✗'} · Claude ${f.claude ? '✓' : '✗'} · Ollama ${f.ollama ? '✓' : '✗'} · Agent ${INFO.runner ? '✓' : '✗'}` : '—';
   $('#set-token').value = store.get('token', '');
   const theme = store.get('theme', 'system');
   $$('input[name=theme]').forEach(r => { r.checked = r.value === theme; });

@@ -47,7 +47,7 @@ def _png(lines=("Order 4412 (synthetic)", f"Card {CARD}"), size=(900, 200)):
 def test_health_shape(client):
     j = client.get("/api/health").json()
     assert j["ok"] is True and isinstance(j["version"], str)
-    assert set(j["features"]) == {"ocr", "playwright", "claude"} and all(isinstance(v, bool) for v in j["features"].values())
+    assert set(j["features"]) == {"ocr", "playwright", "claude", "ollama"} and all(isinstance(v, bool) for v in j["features"].values())
 
 
 def test_local_only_disables_claude_feature():

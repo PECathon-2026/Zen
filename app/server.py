@@ -160,7 +160,9 @@ def features(local_only: bool) -> dict:
         ocr = False
     claude = (not local_only and importlib.util.find_spec("anthropic") is not None
               and bool(os.environ.get("ANTHROPIC_API_KEY")))
-    return {"ocr": ocr, "playwright": importlib.util.find_spec("playwright") is not None, "claude": claude}
+    from zenlens.llm import ollama_status
+    return {"ocr": ocr, "playwright": importlib.util.find_spec("playwright") is not None, "claude": claude,
+            "ollama": ollama_status()["up"]}
 
 
 def testpage_names() -> list[str]:
@@ -414,18 +416,23 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
 
     @app.post("/api/agent/run")
     def agent_run(req: AgentReq):
-        if req.mode not in ("scripted", "claude"):
-            raise HTTPException(422, "mode must be 'scripted' or 'claude'")
+        if req.mode not in ("scripted", "claude", "ollama"):
+            raise HTTPException(422, "mode must be 'scripted', 'claude' or 'ollama'")
         if req.mode == "claude" and local_only:
             raise HTTPException(403, "server is in local-only mode: Claude mode is disabled")
         target = resolve_target(req.url)
         runner = _runner()
-        from zenlens.llm import Action, ClaudeLLM, ScriptedLLM
+        from zenlens.llm import Action, ClaudeLLM, OllamaLLM, ScriptedLLM, ollama_status, pick_ollama_model
         if req.mode == "scripted":
             try:
                 inner = ScriptedLLM([Action.from_dict(a) for a in (req.script or [])])
             except ValueError as e:
                 raise HTTPException(422, f"invalid script: {e}") from None
+        elif req.mode == "ollama":  # on-device: allowed even in local-only mode
+            st = ollama_status()
+            if not st["up"] or not st["models"]:
+                raise HTTPException(503, "On-device model unavailable: start Ollama and run `ollama pull llama3.2:3b`")
+            inner = OllamaLLM(model=pick_ollama_model(st["models"]))
         else:
             if not features(local_only)["claude"]:
                 raise HTTPException(503, "Claude mode unavailable: install `anthropic` and set ANTHROPIC_API_KEY")
@@ -445,6 +452,7 @@ def create_app(*, lan: bool = False, token: str | None = None, local_only: bool 
             # planner is local, so these payloads are what *would* have been sent; nothing left the device.
             report["egress"] = {"sent_to_third_party": req.mode == "claude" and bool(sent),
                                 "destination": "Anthropic API (Claude)" if req.mode == "claude" else None,
+                                "local_model": inner.model if req.mode == "ollama" else None,
                                 "payloads": [json.loads(p) for p in sent]}
             return report
         except Blocked as e:

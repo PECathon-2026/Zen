@@ -15,7 +15,7 @@ from .browser import PlaywrightPage, redaction_counts
 from .capture import Session, _clean_url, capture, sanitized_view
 from .executor import Executor, Rejected, _safe, describe, origin
 from .gate import Blocked, egress_check
-from .llm import LLM, Action, ClaudeLLM, ScriptedLLM
+from .llm import LLM, Action, ClaudeLLM, OllamaLLM, ScriptedLLM
 from .pseudonym import TOKEN, Pseudonymizer
 from .sanitize import redact
 from .vault import Vault
@@ -76,8 +76,10 @@ def _make_llm(llm, script, canaries, ps=None) -> tuple[LLM, str]:
         return ScriptedLLM(script or []), "scripted"
     if llm == "claude":
         return ClaudeLLM(canaries=canaries, pseudonymizer=ps), "claude"
+    if llm == "ollama":
+        return OllamaLLM(canaries=canaries, pseudonymizer=ps), "ollama"
     if isinstance(llm, str):
-        raise ValueError("llm must be 'scripted', 'claude' or an LLM object")
+        raise ValueError("llm must be 'scripted', 'claude', 'ollama' or an LLM object")
     return llm, type(llm).__name__
 
 
