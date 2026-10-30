@@ -2,7 +2,7 @@ import { linearTiming, TransitionSeries } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { CalculateMetadataFunction, Composition, useVideoConfig } from "remotion";
 import { ClipScene, EndScene, ResultsScene, TitleScene } from "./Scenes";
-import { FADE, NARRATION, sceneFrames } from "./theme";
+import { cue, FADE, NARRATION, sceneFrames } from "./theme";
 
 type Props = {};
 
@@ -42,9 +42,9 @@ export const MyComponent: React.FC<Props> = () => {
           kicker="Chrome extension · detection"
           title="Found on the device, before anything leaves"
           callouts={[
-            { at: 2.5, text: "No server, no network" },
-            { at: 7.0, text: "Luhn for cards, Verhoeff for Aadhaar" },
-            { at: 12.5, text: "Password, OTP and CVV fields found by structure" },
+            { at: cue(2, "server"), text: "No server, no network" },
+            { at: cue(2, "Luhn"), text: "Luhn for cards, Verhoeff for Aadhaar" },
+            { at: cue(2, "structure"), text: "Password, OTP and CVV fields found by structure" },
           ]}
         />
       </TransitionSeries.Sequence>
@@ -55,9 +55,9 @@ export const MyComponent: React.FC<Props> = () => {
           kicker="Agent Shield"
           title="The agent sees placeholders, not data"
           callouts={[
-            { at: 2.0, text: "Without Zen: every value is readable" },
-            { at: 7.4, text: "Shield turns on when automation is detected" },
-            { at: 15.0, text: "Screenshot, page text and input values all redacted" },
+            { at: cue(3, "Without"), text: "Without Zen: every value is readable" },
+            { at: cue(3, "switches"), text: "Shield turns on when automation is detected" },
+            { at: cue(3, "placeholder"), text: "Screenshot, page text and input values all redacted" },
           ]}
         />
       </TransitionSeries.Sequence>
@@ -68,10 +68,10 @@ export const MyComponent: React.FC<Props> = () => {
           kicker="Any page · any agent"
           title="No integration with the agent needed"
           callouts={[
-            { at: 3.5, text: "API keys, tokens, IP addresses" },
-            { at: 8.0, text: "Phones and emails in a support chat" },
-            { at: 13.2, text: "OTP, Aadhaar and PAN at sign-in" },
-            { at: 16.5, text: "New content covered in ~3 ms" },
+            { at: cue(4, "API"), text: "API keys and IP addresses" },
+            { at: cue(4, "Phone"), text: "Phones and emails in a support chat" },
+            { at: cue(4, "OTPs"), text: "OTPs, Aadhaar and PAN at sign-in" },
+            { at: cue(4, "covered"), text: "New content covered in ~3 ms" },
           ]}
         />
       </TransitionSeries.Sequence>
@@ -82,9 +82,9 @@ export const MyComponent: React.FC<Props> = () => {
           kicker="AI-chat send guard"
           title="An unsafe message is stopped before it is sent"
           callouts={[
-            { at: 4.0, text: "Card, phone and email detected locally" },
-            { at: 12.0, text: "“Send sanitized” is the default" },
-            { at: 18.0, text: "Fails closed if the editor refuses" },
+            { at: cue(5, "pauses"), text: "Card, phone and email detected locally" },
+            { at: cue(5, "sanitized"), text: "“Send sanitized” is the default" },
+            { at: cue(5, "editor"), text: "Fails closed if the editor refuses" },
           ]}
         />
       </TransitionSeries.Sequence>
@@ -95,10 +95,10 @@ export const MyComponent: React.FC<Props> = () => {
           kicker="Python agent · local executor"
           title="Hijack attempts are rejected on the device"
           callouts={[
-            { at: 4.5, text: "The planner sees sanitized views only" },
-            { at: 12.5, text: "5 of 5 injection attempts rejected" },
-            { at: 16.0, text: "Irreversible click waits for approval" },
-            { at: 19.5, text: "Every payload passes a fail-closed gate" },
+            { at: cue(6, "sees"), text: "The planner sees sanitized views only" },
+            { at: cue(6, "executor"), text: "5 of 5 injection attempts rejected" },
+            { at: cue(6, "risky"), text: "Irreversible click waits for approval" },
+            { at: cue(6, "panel"), text: "See exactly what would leave the device" },
           ]}
         />
       </TransitionSeries.Sequence>

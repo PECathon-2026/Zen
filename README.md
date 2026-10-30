@@ -14,7 +14,7 @@ What makes it different:
 
 **Core rule:** compute what is sensitive locally; reason globally only on sanitized data.
 
-**Submission:** [2:56 demo video](submission/Zen_demo.mp4), [8-slide deck](submission/Zen_PECathon.pptx) ([PDF](submission/Zen_PECathon.pdf)), [narration script](submission/narration.md).
+**Submission:** [demo video (captioned)](submission/Zen_demo.mp4), [8-slide deck](submission/Zen_PECathon.pptx) ([PDF](submission/Zen_PECathon.pdf)), [narration script](submission/narration.md).
 
 Three ways to use it:
 
